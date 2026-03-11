@@ -8,8 +8,8 @@ use App\Models\Supir;
 use App\Models\TransaksiDo;
 use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
@@ -80,7 +80,7 @@ class TransaksiDoForm
                                                 ->default(0)
                                                 ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0),
                                         ])
-                                        ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                        ->afterStateUpdated(function ($state, Set $set) {
                                             if ($state) {
                                                 $penjual = Penjual::find($state);
                                                 if ($penjual) {
@@ -98,7 +98,7 @@ class TransaksiDoForm
                                         ->preload()
                                         ->live()
                                         ->required()
-                                        ->afterStateUpdated(fn($state, Forms\Set $set) => $set('kendaraan_id', null))
+                                        ->afterStateUpdated(fn($state, Set $set) => $set('kendaraan_id', null))
                                         ->createOptionForm([
                                             Forms\Components\TextInput::make('nama')->required()->maxLength(255),
                                             Forms\Components\TextInput::make('alamat')->maxLength(255),
@@ -107,7 +107,7 @@ class TransaksiDoForm
 
                                     Forms\Components\Select::make('kendaraan_id')
                                         ->label('Nomor Polisi')
-                                        ->options(function (Forms\Get $get) {
+                                        ->options(function (Get $get) {
                                             $supirId = $get('supir_id');
                                             return $supirId ? Kendaraan::query()->where('supir_id', $supirId)->pluck('no_polisi', 'id') : [];
                                         })
@@ -116,9 +116,9 @@ class TransaksiDoForm
                                         ->live()
                                         ->createOptionForm([
                                             Forms\Components\TextInput::make('no_polisi')->required()->unique(Kendaraan::class, 'no_polisi')->maxLength(10),
-                                            Forms\Components\Hidden::make('supir_id')->default(fn(Forms\Get $get) => $get('../../supir_id'))
+                                            Forms\Components\Hidden::make('supir_id')->default(fn(Get $get) => $get('../../supir_id'))
                                         ])
-                                        ->createOptionUsing(function (array $data, Forms\Get $get) {
+                                        ->createOptionUsing(function (array $data, Get $get) {
                                             DB::beginTransaction();
                                             try {
                                                 $noPolisi = strtoupper(trim($data['no_polisi']));
@@ -139,7 +139,7 @@ class TransaksiDoForm
                                         ->numeric()
                                         ->suffix('Kg')
                                         ->live(onBlur: true)
-                                        ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
+                                        ->afterStateUpdated(function ($state, Get $get, Set $set) {
                                             $penjualId = $get('penjual_id');
                                             if ($state && $penjualId && !$get('supir_id')) {
                                                 $penjual = Penjual::find($penjualId);
@@ -159,7 +159,7 @@ class TransaksiDoForm
                                         ->prefix('Rp')
                                         ->numeric()
                                         ->live(onBlur: true)
-                                        ->afterStateUpdated(fn($state, Forms\Get $get, Forms\Set $set) => self::hitungTotal($get('tonase'), $get, $set)),
+                                        ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungTotal($get('tonase'), $get, $set)),
                                 ])
                                 ->columns(3),
                         ])
@@ -200,7 +200,7 @@ class TransaksiDoForm
                                         ->prefix('Rp')
                                         ->default(0)
                                         ->live(onBlur: true)
-                                        ->afterStateUpdated(fn($state, Forms\Get $get, Forms\Set $set) => self::hitungSisaBayar($get, $set)),
+                                        ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
 
                                     Forms\Components\TextInput::make('biaya_lain')
                                         ->label('Biaya')
@@ -208,7 +208,7 @@ class TransaksiDoForm
                                         ->prefix('Rp')
                                         ->default(0)
                                         ->live(onBlur: true)
-                                        ->afterStateUpdated(fn($state, Forms\Get $get, Forms\Set $set) => self::hitungSisaBayar($get, $set)),
+                                        ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
 
                                     Forms\Components\TextInput::make('pembayaran_hutang')
                                         ->label('Bayar Hutang')
@@ -216,8 +216,8 @@ class TransaksiDoForm
                                         ->prefix('Rp')
                                         ->default(0)
                                         ->live(onBlur: true)
-                                        ->visible(fn(Forms\Get $get): bool => $get('hutang_awal') > 0)
-                                        ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
+                                        ->visible(fn(Get $get): bool => $get('hutang_awal') > 0)
+                                        ->afterStateUpdated(function ($state, Get $get, Set $set) {
                                             $hutangAwal = self::formatCurrency($get('hutang_awal'));
                                             $bayarHutang = self::formatCurrency($state);
                                             if ($bayarHutang > $hutangAwal) {
@@ -234,7 +234,7 @@ class TransaksiDoForm
                                         ->default('tunai')
                                         ->required()
                                         ->live()
-                                        ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
+                                        ->afterStateUpdated(function ($state, Get $get, Set $set) {
                                             $penjualId = $get('penjual_id');
                                             if ($state && $penjualId && !$get('supir_id')) {
                                                 $penjual = Penjual::find($penjualId);
@@ -244,7 +244,7 @@ class TransaksiDoForm
                                                 }
                                             }
                                         }),
-                                    
+
                                     Section::make('Informasi Saldo')
                                         ->schema([
                                             Forms\Components\Placeholder::make('saldo_perusahaan')
@@ -283,7 +283,7 @@ class TransaksiDoForm
         ]);
     }
 
-    public static function hitungTotal($tonase, Forms\Get $get, Forms\Set $set): void
+    public static function hitungTotal($tonase, Get $get, Set $set): void
     {
         $tonaseValue = self::formatCurrency($tonase);
         $hargaSatuan = self::formatCurrency($get('harga_satuan'));
@@ -292,7 +292,7 @@ class TransaksiDoForm
         self::hitungSisaBayar($get, $set);
     }
 
-    public static function hitungSisaBayar(Forms\Get $get, Forms\Set $set): void
+    public static function hitungSisaBayar(Get $get, Set $set): void
     {
         $subTotal = self::formatCurrency($get('sub_total'));
         $upahBongkar = self::formatCurrency($get('upah_bongkar'));

@@ -11,8 +11,8 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class PenjualHutangTertinggiWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
-    protected static int | string | array $columnSpan = 'full';
-    protected static ?string $pollingInterval = '15s';
+    protected int | string | array $columnSpan = 'full';
+    protected ?string $pollingInterval = '15s';
 
     public function table(Table $table): Table
     {

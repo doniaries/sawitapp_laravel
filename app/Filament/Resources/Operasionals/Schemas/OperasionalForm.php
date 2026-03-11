@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Operasionals\Schemas;
 
 use App\Enums\KategoriOperasional;
 use Filament\Forms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
@@ -37,7 +37,7 @@ class OperasionalForm
                                     ])
                                     ->required()
                                     ->live()
-                                    ->afterStateUpdated(fn($state, Forms\Set $set) => $set('kategori', null)),
+                                    ->afterStateUpdated(fn($state, Set $set) => $set('kategori', null)),
 
                                 Forms\Components\Select::make('kategori')
                                     ->label('Kategori')
@@ -61,7 +61,7 @@ class OperasionalForm
                                     ])
                                     ->required()
                                     ->live()
-                                    ->afterStateUpdated(fn($state, Forms\Set $set) => [
+                                    ->afterStateUpdated(fn($state, Set $set) => [
                                         $set('penjual_id', null),
                                         $set('supir_id', null),
                                         $set('pekerja_id', null),
