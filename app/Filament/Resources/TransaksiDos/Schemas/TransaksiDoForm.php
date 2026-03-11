@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 
 class TransaksiDoForm
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(\Filament\Forms\Form $schema): \Filament\Forms\Form
     {
         return $schema->schema([
             // Header Section

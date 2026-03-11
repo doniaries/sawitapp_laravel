@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\PenjualResource\Pages;
+namespace App\Filament\Resources\Penjuals\Pages;
 
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use App\Filament\Resources\PenjualResource;
-use App\Filament\Resources\PenjualResource\RelationManagers\RiwayatHutangPinjamanRelationManager;
+use App\Filament\Resources\Penjuals\PenjualResource;
+use App\Filament\Resources\Penjuals\RelationManagers\RiwayatHutangPinjamanRelationManager;
 
 class EditPenjual extends EditRecord
 {

@@ -6,7 +6,7 @@ use App\Filament\Resources\Penjuals\PenjualResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\Penjuals\Widgets\PenjualStatsOverview;
-use App\Filament\Resources\PenjualResource\RelationManagers\RiwayatHutangPinjamanRelationManager;
+use App\Filament\Resources\Penjuals\RelationManagers\RiwayatHutangPinjamanRelationManager;
 
 
 class ListPenjuals extends ListRecords

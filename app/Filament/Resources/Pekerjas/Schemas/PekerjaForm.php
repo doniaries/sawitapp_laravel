@@ -9,7 +9,7 @@ use Filament\Schemas\Components\Grid;
 
 class PekerjaForm
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(\Filament\Forms\Form $schema): \Filament\Forms\Form
     {
         return $schema->schema([
             Forms\Components\TextInput::make('nama')

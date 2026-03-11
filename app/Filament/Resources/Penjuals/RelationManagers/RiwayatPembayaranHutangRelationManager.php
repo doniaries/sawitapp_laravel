@@ -1,7 +1,7 @@
 <?php
 // Path: App\Filament\Resources\PenjualResource\RelationManagers\RiwayatPembayaranHutangRelationManager.php
 
-namespace App\Filament\Resources\PenjualResource\RelationManagers;
+namespace App\Filament\Resources\Penjuals\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;

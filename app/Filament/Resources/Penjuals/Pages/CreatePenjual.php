@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\PenjualResource\Pages;
+namespace App\Filament\Resources\Penjuals\Pages;
 
-use App\Filament\Resources\PenjualResource;
+use App\Filament\Resources\Penjuals\PenjualResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Notifications\Notification;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\PenjualResource\Widgets;
+namespace App\Filament\Resources\Penjuals\Widgets;
 
 use App\Models\Penjual;
 use Filament\Tables;
