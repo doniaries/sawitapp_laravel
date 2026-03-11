@@ -13,7 +13,7 @@ class LaporanKeuanganDoStatsWidget extends BaseWidget
 {
     // Widget configuration
     protected static ?int $sort = 1;
-    protected static ?string $pollingInterval = '15s';
+    protected ?string $pollingInterval = '15s';
     protected int | string | array $columnSpan = 'full';
 
     // State untuk filter

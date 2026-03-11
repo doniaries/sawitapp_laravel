@@ -11,7 +11,7 @@ class PenjualHutangTertinggiWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'full';
-    protected static ?string $pollingInterval = '15s';
+    protected ?string $pollingInterval = '15s';
 
     public function table(Table $table): Table
     {

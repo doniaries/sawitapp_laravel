@@ -11,7 +11,7 @@ use Filament\Schemas\Components\Group;
 
 class OperasionalForm
 {
-    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public static function configure(Schema $schema): Schema
     {
         return $schema->schema([
             Section::make()

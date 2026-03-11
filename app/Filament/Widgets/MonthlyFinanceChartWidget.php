@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class MonthlyFinanceChartWidget extends ChartWidget
 {
-    protected static ?string $heading = 'Grafik Keuangan Bulanan';
+    protected ?string $heading = 'Grafik Keuangan Bulanan';
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 'full';
 

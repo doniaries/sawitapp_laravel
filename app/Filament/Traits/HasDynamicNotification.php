@@ -6,7 +6,7 @@ use Filament\Notifications\Notification;
 
 trait HasDynamicNotification
 {
-    protected function getModelLabel(): string
+    public function getModelLabel(): string
     {
         return $this->getResource()::getModelLabel();
     }

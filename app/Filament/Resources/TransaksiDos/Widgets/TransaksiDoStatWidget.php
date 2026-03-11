@@ -12,8 +12,8 @@ class TransaksiDoStatWidget extends BaseWidget
 {
     // Widget configuration
     protected static ?int $sort = 1;
-    protected static ?string $pollingInterval = '5s';
-    protected static bool $isLazy = true;
+    protected ?string $pollingInterval = '5s';
+    protected bool $isLazy = true;
     protected int | string | array $columnSpan = 'full';
 
     protected function getStats(): array

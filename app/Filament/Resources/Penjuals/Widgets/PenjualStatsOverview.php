@@ -8,8 +8,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class PenjualStatsOverview extends StatsOverviewWidget
 {
-    protected static ?string $pollingInterval = '15s';
-    protected static bool $isLazy = true;
+    protected ?string $pollingInterval = '15s';
+    protected bool $isLazy = true;
 
     protected function getStats(): array
     {

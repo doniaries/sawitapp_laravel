@@ -12,7 +12,7 @@ class TopHutangPenjualWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'half';
-    protected static ?string $heading = 'Hutang Penjual Terbesar';
+    protected ?string $heading = 'Hutang Penjual Terbesar';
 
     public function table(Table $table): Table
     {

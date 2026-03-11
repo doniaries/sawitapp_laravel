@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class DailyFinanceChartWidget extends ChartWidget
 {
-    protected static ?string $heading = 'Grafik Keuangan Harian';
+    protected ?string $heading = 'Grafik Keuangan Harian';
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'full';
 
