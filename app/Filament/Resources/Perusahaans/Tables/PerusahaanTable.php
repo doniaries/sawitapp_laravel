@@ -1,0 +1,180 @@
+<?php
+
+namespace App\Filament\Resources\Perusahaans\Tables;
+
+use App\Models\Perusahaan;
+use App\Models\LaporanKeuangan;
+use App\Enums\TipeNama;
+use App\Events\SaldoUpdated;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
+
+class PerusahaanTable
+{
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nama Perusahaan')
+                    ->searchable(),
+                Tables\Columns\ImageColumn::make('logo')
+                    ->label('Logo')
+                    ->disk('public')
+                    ->height(40)
+                    ->defaultImageUrl(url('/images/default-logo.png'))
+                    ->getStateUsing(fn($record) => $record->logo ?? '/images/default-logo.png'),
+                Tables\Columns\TextColumn::make('saldo')
+                    ->weight('5')
+                    ->badge()
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->alignRight()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('alamat')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('telepon')
+                    ->hidden()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->hidden()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('pimpinan')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('npwp')
+                    ->hidden()
+                    ->searchable(),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                Tables\Filters\TrashedFilter::make(),
+            ])
+            ->actions([
+                Action::make('tambah_saldo')
+                    ->label('Tambah Saldo')
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('success')
+                    ->modalHeading('Tambah Saldo Perusahaan')
+                    ->modalDescription('Masukkan jumlah saldo yang akan ditambahkan')
+                    ->form([
+                        Grid::make()
+                            ->schema([
+                                Section::make()
+                                    ->schema([
+                                        DatePicker::make('tanggal')
+                                            ->label('Tanggal')
+                                            ->default(now())
+                                            ->required(),
+
+                                        TextInput::make('nominal')
+                                            ->label('Nominal')
+                                            ->numeric()
+                                            ->required()
+                                            ->currencyMask(
+                                                thousandSeparator: '.',
+                                                decimalSeparator: ',',
+                                                precision: 0,
+                                            )
+                                            ->prefix('Rp'),
+
+                                        Select::make('cara_bayar')
+                                            ->label('Cara Bayar')
+                                            ->options([
+                                                'tunai' => 'tunai',
+                                                'transfer' => 'transfer'
+                                            ])
+                                            ->required()
+                                            ->default('tunai')
+                                            ->live(),
+
+                                        Textarea::make('keterangan')
+                                            ->label('Keterangan')
+                                            ->placeholder('Sumber dana / keterangan lainnya')
+                                            ->rows(3),
+                                        FileUpload::make('bukti_tambah_saldo')
+                                            ->label('Upload Bukti')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('bukti-saldo')
+                                    ])
+                                    ->columns(1)
+                            ])
+                    ])
+                    ->action(static function (Perusahaan $record, array $data): void {
+                        try {
+                            DB::beginTransaction();
+
+                            $nominal = (int)str_replace(['.', ','], '', $data['nominal']);
+
+                            $record->increment('saldo', $nominal);
+                            event(new SaldoUpdated($nominal));
+
+                            LaporanKeuangan::create([
+                                'tanggal' => $data['tanggal'],
+                                'jenis_transaksi' => 'Pemasukan',
+                                'kategori' => 'Saldo',
+                                'tipe_pihak' => TipeNama::USER->value,
+                                'sub_kategori' => 'Tambah Saldo',
+                                'nominal' => $nominal,
+                                'sumber_transaksi' => 'Perusahaan',
+                                'referensi_id' => $record->id,
+                                'nomor_referensi' => 'TBS-' . now()->format('Ymd-His'),
+                                'pihak_terkait' => $record->pimpinan,
+                                'cara_pembayaran' => $data['cara_bayar'],
+                                'keterangan' => $data['keterangan'],
+                                'bukti_tambah_saldo' => $data['bukti_tambah_saldo'] ?? null,
+                                'mempengaruhi_kas' => $data['cara_bayar'] === 'tunai'
+                            ]);
+
+                            DB::commit();
+
+                            event(new SaldoUpdated($nominal));
+
+                            Notification::make()
+                                ->title('Berhasil Tambah Saldo')
+                                ->success()
+                                ->duration(3000)
+                                ->persistent(false)
+                                ->body(sprintf(
+                                    "Saldo bertambah Rp %s\nCara bayar: %s\nSaldo akhir: Rp %s",
+                                    number_format($nominal, 0, ',', '.'),
+                                    $data['cara_bayar'],
+                                    number_format($record->fresh()->saldo, 0, ',', '.')
+                                ))
+                                ->send();
+                        } catch (\Exception $e) {
+                            DB::rollBack();
+                            Notification::make()
+                                ->danger()
+                                ->title('Gagal Tambah Saldo')
+                                ->body('Terjadi kesalahan: ' . $e->getMessage())
+                                ->send();
+                        }
+                    })
+                    ->requiresConfirmation()
+                    ->modalWidth('lg'),
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                ]),
+            ]);
+    }
+}
