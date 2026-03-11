@@ -151,7 +151,7 @@ class LaporanKeuanganTable
                 Action::make('downloadPdf')
                     ->label('Download PDF')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->form([
+                    ->schema([
                         Grid::make()
                             ->schema([
                                 DatePicker::make('start_date')
@@ -204,7 +204,7 @@ class LaporanKeuanganTable
                     ->label('Jenis Transaksi'),
 
                 Filter::make('date_range')
-                    ->form([
+                    ->schema([
                         DatePicker::make('dari_tanggal')
                             ->label('Dari Tanggal')
                             ->displayFormat('d/m/Y')

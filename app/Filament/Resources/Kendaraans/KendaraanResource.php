@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class KendaraanResource extends Resource
 {
-    protected static ?string $model = \App\Models\Kendaraan::class;
+    protected static ?string $model = Kendaraan::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-truck';
     protected static ?string $navigationLabel = 'Data Kendaraan';
     protected static string | \UnitEnum | null $navigationGroup = 'Master Data';

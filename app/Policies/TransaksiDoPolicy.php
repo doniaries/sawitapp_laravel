@@ -14,57 +14,58 @@ class TransaksiDoPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:TransaksiDo');
+        return true;
+        // return $authUser->can('view_any_transaksi_do');
     }
 
     public function view(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('View:TransaksiDo');
+        return $authUser->can('view_transaksi_do');
     }
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('Create:TransaksiDo');
+        return $authUser->can('create_transaksi_do');
     }
 
     public function update(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('Update:TransaksiDo');
+        return $authUser->can('update_transaksi_do');
     }
 
     public function delete(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('Delete:TransaksiDo');
+        return $authUser->can('delete_transaksi_do');
     }
 
     public function restore(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('Restore:TransaksiDo');
+        return $authUser->can('restore_transaksi_do');
     }
 
     public function forceDelete(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('ForceDelete:TransaksiDo');
+        return $authUser->can('force_delete_transaksi_do');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ForceDeleteAny:TransaksiDo');
+        return $authUser->can('force_delete_any_transaksi_do');
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('RestoreAny:TransaksiDo');
+        return $authUser->can('restore_any_transaksi_do');
     }
 
     public function replicate(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('Replicate:TransaksiDo');
+        return $authUser->can('replicate_transaksi_do');
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('Reorder:TransaksiDo');
+        return $authUser->can('reorder_transaksi_do');
     }
 
 }

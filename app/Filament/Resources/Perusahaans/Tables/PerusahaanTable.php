@@ -75,7 +75,7 @@ class PerusahaanTable
                     ->color('success')
                     ->modalHeading('Tambah Saldo Perusahaan')
                     ->modalDescription('Masukkan jumlah saldo yang akan ditambahkan')
-                    ->form([
+                    ->schema([
                         Grid::make()
                             ->schema([
                                 Section::make()

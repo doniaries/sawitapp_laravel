@@ -14,57 +14,58 @@ class SupirPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:Supir');
+        return true;
+        // return $authUser->can('view_any_supir');
     }
 
-    public function view(AuthUser $authUser, Supir $supir): bool
+    public function view(AuthUser $authUser): bool
     {
-        return $authUser->can('View:Supir');
+        return $authUser->can('view_supir');
     }
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('Create:Supir');
+        return $authUser->can('create_supir');
     }
 
-    public function update(AuthUser $authUser, Supir $supir): bool
+    public function update(AuthUser $authUser): bool
     {
-        return $authUser->can('Update:Supir');
+        return $authUser->can('update_supir');
     }
 
-    public function delete(AuthUser $authUser, Supir $supir): bool
+    public function delete(AuthUser $authUser): bool
     {
-        return $authUser->can('Delete:Supir');
+        return $authUser->can('delete_supir');
     }
 
-    public function restore(AuthUser $authUser, Supir $supir): bool
+    public function restore(AuthUser $authUser): bool
     {
-        return $authUser->can('Restore:Supir');
+        return $authUser->can('restore_supir');
     }
 
-    public function forceDelete(AuthUser $authUser, Supir $supir): bool
+    public function forceDelete(AuthUser $authUser): bool
     {
-        return $authUser->can('ForceDelete:Supir');
+        return $authUser->can('force_delete_supir');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ForceDeleteAny:Supir');
+        return $authUser->can('force_delete_any_supir');
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('RestoreAny:Supir');
+        return $authUser->can('restore_any_supir');
     }
 
-    public function replicate(AuthUser $authUser, Supir $supir): bool
+    public function replicate(AuthUser $authUser): bool
     {
-        return $authUser->can('Replicate:Supir');
+        return $authUser->can('replicate_supir');
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('Reorder:Supir');
+        return $authUser->can('reorder_supir');
     }
 
 }

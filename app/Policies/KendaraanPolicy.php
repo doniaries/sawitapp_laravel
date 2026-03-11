@@ -14,57 +14,58 @@ class KendaraanPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:Kendaraan');
+        return true;
+        // return $authUser->can('view_any_kendaraan');
     }
 
     public function view(AuthUser $authUser, Kendaraan $kendaraan): bool
     {
-        return $authUser->can('View:Kendaraan');
+        return $authUser->can('view_kendaraan');
     }
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('Create:Kendaraan');
+        return $authUser->can('create_kendaraan');
     }
 
     public function update(AuthUser $authUser, Kendaraan $kendaraan): bool
     {
-        return $authUser->can('Update:Kendaraan');
+        return $authUser->can('update_kendaraan');
     }
 
     public function delete(AuthUser $authUser, Kendaraan $kendaraan): bool
     {
-        return $authUser->can('Delete:Kendaraan');
+        return $authUser->can('delete_kendaraan');
     }
 
     public function restore(AuthUser $authUser, Kendaraan $kendaraan): bool
     {
-        return $authUser->can('Restore:Kendaraan');
+        return $authUser->can('restore_kendaraan');
     }
 
     public function forceDelete(AuthUser $authUser, Kendaraan $kendaraan): bool
     {
-        return $authUser->can('ForceDelete:Kendaraan');
+        return $authUser->can('force_delete_kendaraan');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ForceDeleteAny:Kendaraan');
+        return $authUser->can('force_delete_any_kendaraan');
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('RestoreAny:Kendaraan');
+        return $authUser->can('restore_any_kendaraan');
     }
 
     public function replicate(AuthUser $authUser, Kendaraan $kendaraan): bool
     {
-        return $authUser->can('Replicate:Kendaraan');
+        return $authUser->can('replicate_kendaraan');
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('Reorder:Kendaraan');
+        return $authUser->can('reorder_kendaraan');
     }
 
 }

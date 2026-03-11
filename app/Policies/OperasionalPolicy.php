@@ -14,57 +14,58 @@ class OperasionalPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:Operasional');
+        return true;
+        // return $authUser->can('view_any_operasional');
     }
 
     public function view(AuthUser $authUser, Operasional $operasional): bool
     {
-        return $authUser->can('View:Operasional');
+        return $authUser->can('view_operasional');
     }
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('Create:Operasional');
+        return $authUser->can('create_operasional');
     }
 
     public function update(AuthUser $authUser, Operasional $operasional): bool
     {
-        return $authUser->can('Update:Operasional');
+        return $authUser->can('update_operasional');
     }
 
     public function delete(AuthUser $authUser, Operasional $operasional): bool
     {
-        return $authUser->can('Delete:Operasional');
+        return $authUser->can('delete_operasional');
     }
 
     public function restore(AuthUser $authUser, Operasional $operasional): bool
     {
-        return $authUser->can('Restore:Operasional');
+        return $authUser->can('restore_operasional');
     }
 
     public function forceDelete(AuthUser $authUser, Operasional $operasional): bool
     {
-        return $authUser->can('ForceDelete:Operasional');
+        return $authUser->can('force_delete_operasional');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ForceDeleteAny:Operasional');
+        return $authUser->can('force_delete_any_operasional');
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('RestoreAny:Operasional');
+        return $authUser->can('restore_any_operasional');
     }
 
     public function replicate(AuthUser $authUser, Operasional $operasional): bool
     {
-        return $authUser->can('Replicate:Operasional');
+        return $authUser->can('replicate_operasional');
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('Reorder:Operasional');
+        return $authUser->can('reorder_operasional');
     }
 
 }

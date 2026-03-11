@@ -14,57 +14,58 @@ class PekerjaPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:Pekerja');
+        return true;
+        // return $authUser->can('view_any_pekerja');
     }
 
-    public function view(AuthUser $authUser, Pekerja $pekerja): bool
+    public function view(AuthUser $authUser): bool
     {
-        return $authUser->can('View:Pekerja');
+        return $authUser->can('view_pekerja');
     }
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('Create:Pekerja');
+        return $authUser->can('create_pekerja');
     }
 
-    public function update(AuthUser $authUser, Pekerja $pekerja): bool
+    public function update(AuthUser $authUser): bool
     {
-        return $authUser->can('Update:Pekerja');
+        return $authUser->can('update_pekerja');
     }
 
-    public function delete(AuthUser $authUser, Pekerja $pekerja): bool
+    public function delete(AuthUser $authUser): bool
     {
-        return $authUser->can('Delete:Pekerja');
+        return $authUser->can('delete_pekerja');
     }
 
-    public function restore(AuthUser $authUser, Pekerja $pekerja): bool
+    public function restore(AuthUser $authUser): bool
     {
-        return $authUser->can('Restore:Pekerja');
+        return $authUser->can('restore_pekerja');
     }
 
-    public function forceDelete(AuthUser $authUser, Pekerja $pekerja): bool
+    public function forceDelete(AuthUser $authUser): bool
     {
-        return $authUser->can('ForceDelete:Pekerja');
+        return $authUser->can('force_delete_pekerja');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ForceDeleteAny:Pekerja');
+        return $authUser->can('force_delete_any_pekerja');
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('RestoreAny:Pekerja');
+        return $authUser->can('restore_any_pekerja');
     }
 
-    public function replicate(AuthUser $authUser, Pekerja $pekerja): bool
+    public function replicate(AuthUser $authUser): bool
     {
-        return $authUser->can('Replicate:Pekerja');
+        return $authUser->can('replicate_pekerja');
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('Reorder:Pekerja');
+        return $authUser->can('reorder_pekerja');
     }
 
 }
