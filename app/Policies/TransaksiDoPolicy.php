@@ -1,108 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\TransaksiDo;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TransaksiDoPolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_transaksi::do');
+        return $authUser->can('ViewAny:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, TransaksiDo $transaksiDo): bool
+    public function view(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $user->can('view_transaksi::do');
+        return $authUser->can('View:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_transaksi::do');
+        return $authUser->can('Create:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, TransaksiDo $transaksiDo): bool
+    public function update(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $user->can('update_transaksi::do');
+        return $authUser->can('Update:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, TransaksiDo $transaksiDo): bool
+    public function delete(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $user->can('delete_transaksi::do');
+        return $authUser->can('Delete:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $user->can('delete_any_transaksi::do');
+        return $authUser->can('Restore:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, TransaksiDo $transaksiDo): bool
+    public function forceDelete(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $user->can('force_delete_transaksi::do');
+        return $authUser->can('ForceDelete:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_transaksi::do');
+        return $authUser->can('ForceDeleteAny:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, TransaksiDo $transaksiDo): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_transaksi::do');
+        return $authUser->can('RestoreAny:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $user->can('restore_any_transaksi::do');
+        return $authUser->can('Replicate:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, TransaksiDo $transaksiDo): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_transaksi::do');
+        return $authUser->can('Reorder:TransaksiDo');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_transaksi::do');
-    }
 }

@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->spa()
-            ->topNavigation(true)
+            ->topNavigation()
             ->maxContentWidth('full')
             ->id('admin')
             ->path('admin')
@@ -67,9 +67,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            // ->auth([
-            //     'guard' => 'web', // Pastikan menggunakan guard yang benar
-            // ])
+
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 FilamentDeveloperLoginsPlugin::make()

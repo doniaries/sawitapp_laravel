@@ -1,108 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Supir;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SupirPolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_supir');
+        return $authUser->can('ViewAny:Supir');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Supir $supir): bool
+    public function view(AuthUser $authUser, Supir $supir): bool
     {
-        return $user->can('view_supir');
+        return $authUser->can('View:Supir');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_supir');
+        return $authUser->can('Create:Supir');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Supir $supir): bool
+    public function update(AuthUser $authUser, Supir $supir): bool
     {
-        return $user->can('update_supir');
+        return $authUser->can('Update:Supir');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Supir $supir): bool
+    public function delete(AuthUser $authUser, Supir $supir): bool
     {
-        return $user->can('delete_supir');
+        return $authUser->can('Delete:Supir');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, Supir $supir): bool
     {
-        return $user->can('delete_any_supir');
+        return $authUser->can('Restore:Supir');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, Supir $supir): bool
+    public function forceDelete(AuthUser $authUser, Supir $supir): bool
     {
-        return $user->can('force_delete_supir');
+        return $authUser->can('ForceDelete:Supir');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_supir');
+        return $authUser->can('ForceDeleteAny:Supir');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, Supir $supir): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_supir');
+        return $authUser->can('RestoreAny:Supir');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, Supir $supir): bool
     {
-        return $user->can('restore_any_supir');
+        return $authUser->can('Replicate:Supir');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, Supir $supir): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_supir');
+        return $authUser->can('Reorder:Supir');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_supir');
-    }
 }

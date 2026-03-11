@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Forms;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Illuminate\Support\Facades\Hash;
 
@@ -62,10 +61,12 @@ class UserForm
                             ->password()
                             ->revealable(true)
                             ->dehydrateStateUsing(fn($state) => filled($state) ? Hash::make($state) : null)
-                            ->required(fn(string $operation, Get $get): bool =>
+                            ->required(
+                                fn(string $operation, Get $get): bool =>
                                 $operation === 'create' || filled($get('password'))
                             )
-                            ->visible(fn(string $operation, Get $get): bool =>
+                            ->visible(
+                                fn(string $operation, Get $get): bool =>
                                 $operation === 'create' || filled($get('password'))
                             )
                             ->minLength(8)

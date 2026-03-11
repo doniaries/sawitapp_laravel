@@ -1,108 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Penjual;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PenjualPolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_penjual');
+        return $authUser->can('ViewAny:Penjual');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Penjual $penjual): bool
+    public function view(AuthUser $authUser, Penjual $penjual): bool
     {
-        return $user->can('view_penjual');
+        return $authUser->can('View:Penjual');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_penjual');
+        return $authUser->can('Create:Penjual');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Penjual $penjual): bool
+    public function update(AuthUser $authUser, Penjual $penjual): bool
     {
-        return $user->can('update_penjual');
+        return $authUser->can('Update:Penjual');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Penjual $penjual): bool
+    public function delete(AuthUser $authUser, Penjual $penjual): bool
     {
-        return $user->can('delete_penjual');
+        return $authUser->can('Delete:Penjual');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function restore(AuthUser $authUser, Penjual $penjual): bool
     {
-        return $user->can('delete_any_penjual');
+        return $authUser->can('Restore:Penjual');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, Penjual $penjual): bool
+    public function forceDelete(AuthUser $authUser, Penjual $penjual): bool
     {
-        return $user->can('force_delete_penjual');
+        return $authUser->can('ForceDelete:Penjual');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('force_delete_any_penjual');
+        return $authUser->can('ForceDeleteAny:Penjual');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, Penjual $penjual): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_penjual');
+        return $authUser->can('RestoreAny:Penjual');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function replicate(AuthUser $authUser, Penjual $penjual): bool
     {
-        return $user->can('restore_any_penjual');
+        return $authUser->can('Replicate:Penjual');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, Penjual $penjual): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('replicate_penjual');
+        return $authUser->can('Reorder:Penjual');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('reorder_penjual');
-    }
 }

@@ -6,6 +6,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\BulkAction;
 
 class PenjualTable
@@ -47,21 +48,22 @@ class PenjualTable
                 EditAction::make(),
                 ViewAction::make(),
             ])
-            ->paginated([5, 10, 25, 50, 100, 'all'])
-            ->deferLoading()
-            ->poll('30s')
-            ->persistSortInSession()
-            ->bulkActions([
-                BulkAction::make()
-                    ->requiresConfirmation()
-                    ->action(function (\Illuminate\Support\Collection $records) {
-                        $records->each(function ($record) {
-                            if ($record->hutang > 0) {
-                                throw new \Exception("Penjual {$record->nama} masih memiliki hutang. Tidak dapat dihapus.");
-                            }
-                        });
-                        $records->each->delete();
-                    }),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    BulkAction::make('delete')
+                        ->label('Hapus Terpilih')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(function (\Illuminate\Support\Collection $records) {
+                            $records->each(function ($record) {
+                                if ($record->hutang > 0) {
+                                    throw new \Exception("Penjual {$record->nama} masih memiliki hutang. Tidak dapat dihapus.");
+                                }
+                            });
+                            $records->each->delete();
+                        }),
+                ]),
             ]);
     }
 }

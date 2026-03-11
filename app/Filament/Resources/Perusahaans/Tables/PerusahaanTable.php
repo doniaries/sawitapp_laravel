@@ -8,9 +8,14 @@ use App\Enums\TipeNama;
 use App\Events\SaldoUpdated;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Actions\Action;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
@@ -63,7 +68,7 @@ class PerusahaanTable
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('tambah_saldo')
                     ->label('Tambah Saldo')
                     ->icon('heroicon-o-plus-circle')
@@ -148,12 +153,11 @@ class PerusahaanTable
                                 ->title('Berhasil Tambah Saldo')
                                 ->success()
                                 ->duration(3000)
-                                ->persistent(false)
                                 ->body(sprintf(
                                     "Saldo bertambah Rp %s\nCara bayar: %s\nSaldo akhir: Rp %s",
-                                    number_format($nominal, 0, ',', '.'),
+                                    number_format((float) $nominal, 0, ',', '.'),
                                     $data['cara_bayar'],
-                                    number_format($record->fresh()->saldo, 0, ',', '.')
+                                    number_format((float) $record->fresh()->saldo, 0, ',', '.')
                                 ))
                                 ->send();
                         } catch (\Exception $e) {
@@ -167,13 +171,13 @@ class PerusahaanTable
                     })
                     ->requiresConfirmation()
                     ->modalWidth('lg'),
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }

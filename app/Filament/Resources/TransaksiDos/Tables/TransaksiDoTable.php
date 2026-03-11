@@ -4,11 +4,11 @@ namespace App\Filament\Resources\TransaksiDos\Tables;
 
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Support\Colors\Color;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Support\Colors\Color;
 
 class TransaksiDoTable
 {
@@ -82,7 +82,7 @@ class TransaksiDoTable
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
             ])

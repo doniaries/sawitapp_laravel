@@ -3,17 +3,13 @@
 namespace App\Filament\Resources\Perusahaans\RelationManagers;
 
 use Filament\Tables;
-use App\Models\Perusahaan;
 use Filament\Tables\Table;
 use Filament\Schemas\Schema;
-use App\Models\LaporanKeuangan;
-use Illuminate\Support\Facades\DB;
-use Filament\Notifications\Notification;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Resources\RelationManagers\RelationManager;
 
 class RiwayatSaldoRelationManager extends RelationManager
 {
@@ -77,10 +73,10 @@ class RiwayatSaldoRelationManager extends RelationManager
                     ->visible(fn($record) => $record->created_at->isToday()) // Hanya bisa dibatalkan di hari yang sama
                     ->action(function ($record) {
                         try {
-                            DB::beginTransaction();
+                            \Illuminate\Support\Facades\DB::beginTransaction();
 
                             // Ambil data perusahaan
-                            $perusahaan = Perusahaan::find($record->referensi_id);
+                            $perusahaan = \App\Models\Perusahaan::find($record->referensi_id);
 
                             if (!$perusahaan) {
                                 throw new \Exception('Data perusahaan tidak ditemukan');
@@ -92,7 +88,7 @@ class RiwayatSaldoRelationManager extends RelationManager
                             }
 
                             // Tambah catatan pembatalan di laporan keuangan
-                            LaporanKeuangan::create([
+                            \App\Models\LaporanKeuangan::create([
                                 'tanggal' => now(),
                                 'jenis_transaksi' => 'Pengeluaran',
                                 'kategori' => 'Saldo',
@@ -110,15 +106,14 @@ class RiwayatSaldoRelationManager extends RelationManager
                             // Soft delete record tambah saldo
                             $record->delete();
 
-                            DB::commit();
+                            \Illuminate\Support\Facades\DB::commit();
 
                             // Refresh semua widget terkait
                             $this->dispatch('refresh-widgets');
 
-                            Notification::make()
+                            \Filament\Notifications\Notification::make()
                                 ->success()
                                 ->duration(3000) // Set durasi 3 detik
-                                ->persistent() // Notifikasi akan otomatis hilang
                                 ->title('Transaksi Dibatalkan')
                                 ->body(sprintf(
                                     "Pembatalan tambah saldo Rp %s berhasil.\nSaldo terkini: Rp %s",
@@ -127,12 +122,11 @@ class RiwayatSaldoRelationManager extends RelationManager
                                 ))
                                 ->send();
                         } catch (\Exception $e) {
-                            DB::rollBack();
+                            \Illuminate\Support\Facades\DB::rollBack();
 
-                            Notification::make()
+                            \Filament\Notifications\Notification::make()
                                 ->danger()
                                 ->duration(3000) // Set durasi 3 detik
-                                ->persistent() // Notifikasi akan otomatis hilang
                                 ->title('Gagal Membatalkan')
                                 ->body('Terjadi kesalahan: ' . $e->getMessage())
                                 ->send();
