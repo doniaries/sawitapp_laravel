@@ -14,12 +14,12 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SupirResource extends Resource
 {
-    protected static ?string $model = Supir::class;
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationGroup = 'Master Data';
+    protected static ?string $model = \App\Models\Supir::class;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-group';
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?int $navigationSort = 5;
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return SupirForm::configure($form);
     }

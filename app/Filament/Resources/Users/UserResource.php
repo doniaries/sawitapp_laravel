@@ -15,14 +15,14 @@ use Filament\Support\Icons\Heroicon;
 
 class UserResource extends Resource
 {
-    protected static ?string $model = User::class;
-    protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $navigationGroup = 'Master Data';
+    protected static ?string $model = \App\Models\User::class;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?int $navigationSort = 1;
     protected static ?string $modelLabel = 'Pengguna';
     protected static ?string $pluralModelLabel = 'Data Pengguna';
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return UserForm::configure($form);
     }

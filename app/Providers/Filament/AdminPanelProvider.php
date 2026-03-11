@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Settings\GeneralSettings;
+use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -71,6 +72,13 @@ class AdminPanelProvider extends PanelProvider
             // ])
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                FilamentDeveloperLoginsPlugin::make()
+                    ->enabled(app()->environment('local'))
+                    ->users([
+                        'Admin' => 'superadmin@gmail.com',
+                        'User' => 'user@example.com',
+                    ])
+
             ]);
     }
 }

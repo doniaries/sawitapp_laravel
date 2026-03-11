@@ -14,13 +14,13 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PekerjaResource extends Resource
 {
-    protected static ?string $model = Pekerja::class;
+    protected static ?string $model = \App\Models\Pekerja::class;
 
-    protected static ?string $navigationGroup = 'Master Data';
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
     protected static ?int $navigationSort = 4;
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return PekerjaForm::configure($form);
     }

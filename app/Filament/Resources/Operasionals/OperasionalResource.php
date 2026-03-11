@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class OperasionalResource extends Resource
 {
     protected static ?string $model = Operasional::class;
-    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Op';
     protected static ?int $navigationSort = 2;
 
@@ -26,7 +26,7 @@ class OperasionalResource extends Resource
             ->count();
     }
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return OperasionalForm::configure($form);
     }

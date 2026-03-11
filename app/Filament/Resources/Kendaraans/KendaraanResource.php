@@ -13,13 +13,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class KendaraanResource extends Resource
 {
-    protected static ?string $model = Kendaraan::class;
-    protected static ?string $navigationIcon = 'heroicon-o-truck';
+    protected static ?string $model = \App\Models\Kendaraan::class;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-truck';
     protected static ?string $navigationLabel = 'Data Kendaraan';
-    protected static ?string $navigationGroup = 'Master Data';
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?int $navigationSort = 4;
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return KendaraanForm::configure($form);
     }

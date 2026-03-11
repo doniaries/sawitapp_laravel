@@ -14,12 +14,12 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class LaporanKeuanganResource extends Resource
 {
-    protected static ?string $model = LaporanKeuangan::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static ?string $model = \App\Models\LaporanKeuangan::class;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationLabel = 'Laporan';
     protected static ?int $navigationSort = 2;
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return LaporanKeuanganForm::configure($form);
     }

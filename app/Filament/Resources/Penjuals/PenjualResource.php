@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 class PenjualResource extends Resource
 {
     protected static ?string $model = Penjual::class;
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
     protected static ?int $navigationSort = 4;
 
     public static function getRelations(): array
@@ -25,7 +25,7 @@ class PenjualResource extends Resource
         ];
     }
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return PenjualForm::configure($form);
     }

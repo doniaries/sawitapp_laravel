@@ -4,10 +4,12 @@ namespace App\Filament\Resources\LaporanKeuangans\Schemas;
 
 use Filament\Forms;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 
 class LaporanKeuanganForm
 {
-    public static function configure(\Filament\Forms\Form $schema): \Filament\Forms\Form
+    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         return $schema->schema([
             Forms\Components\DateTimePicker::make('tanggal')

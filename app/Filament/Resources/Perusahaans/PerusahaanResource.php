@@ -15,10 +15,10 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PerusahaanResource extends Resource
 {
-    protected static ?string $model = Perusahaan::class;
+    protected static ?string $model = \App\Models\Perusahaan::class;
 
-    protected static ?string $navigationGroup = 'Master Data';
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
     protected static ?int $navigationSort = 3;
 
     public static function getNavigationBadge(): ?string
@@ -31,7 +31,7 @@ class PerusahaanResource extends Resource
         return 'success';
     }
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return PerusahaanForm::configure($form);
     }

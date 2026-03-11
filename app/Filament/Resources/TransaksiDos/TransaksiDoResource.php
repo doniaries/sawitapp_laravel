@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TransaksiDoResource extends Resource
 {
-    protected static ?string $model = TransaksiDo::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $model = \App\Models\TransaksiDo::class;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Transaksi';
     protected static ?string $modelLabel = 'Transaksi DO';
     protected static ?string $pluralModelLabel = 'Transaksi DO';
@@ -42,7 +42,7 @@ class TransaksiDoResource extends Resource
         ];
     }
 
-    public static function form(\Filament\Forms\Form $form): \Filament\Forms\Form
+    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return TransaksiDoForm::configure($form);
     }

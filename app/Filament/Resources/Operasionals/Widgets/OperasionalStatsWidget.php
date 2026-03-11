@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\OperasionalResource\Widgets;
+namespace App\Filament\Resources\Operasionals\Widgets;
 
 use App\Models\Operasional;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
