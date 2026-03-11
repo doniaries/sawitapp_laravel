@@ -3,13 +3,14 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Forms;
+use Filament\Forms\Get;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Illuminate\Support\Facades\Hash;
 
 class UserForm
 {
-    public static function configure(\Filament\Forms\Form $schema): \Filament\Forms\Form
+    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         return $schema
             ->schema([

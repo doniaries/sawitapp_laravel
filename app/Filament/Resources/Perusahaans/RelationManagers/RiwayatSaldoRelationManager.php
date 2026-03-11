@@ -4,12 +4,14 @@ namespace App\Filament\Resources\Perusahaans\RelationManagers;
 
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Form;
 use App\Models\Perusahaan;
 use Filament\Tables\Table;
+use Filament\Schemas\Schema;
 use App\Models\LaporanKeuangan;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Resources\RelationManagers\RelationManager;
 
 class RiwayatSaldoRelationManager extends RelationManager
@@ -17,6 +19,16 @@ class RiwayatSaldoRelationManager extends RelationManager
     protected static string $relationship = 'riwayatSaldo';
     protected static ?string $title = 'Riwayat Tambah Saldo';
     protected static ?string $recordTitleAttribute = 'nomor_referensi';
+    protected static ?string $modelLabel = 'Tambah Saldo';
+    protected static ?string $pluralModelLabel = 'Tambah Saldo';
+
+    public function form(Schema $form): Schema
+    {
+        return $form
+            ->schema([
+                //
+            ]);
+    }
 
     public function table(Table $table): Table
     {

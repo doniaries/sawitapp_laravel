@@ -21,7 +21,7 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
     protected static ?string $modelLabel = 'Pembayaran';
     protected static ?string $pluralModelLabel = 'Pembayaran Hutang';
 
-    public function form(Form $form): Form
+    public function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
     {
         return $form
             ->schema([

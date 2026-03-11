@@ -8,6 +8,8 @@ use App\Models\Supir;
 use App\Models\TransaksiDo;
 use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
@@ -17,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 
 class TransaksiDoForm
 {
-    public static function configure(\Filament\Forms\Form $schema): \Filament\Forms\Form
+    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         return $schema->schema([
             // Header Section

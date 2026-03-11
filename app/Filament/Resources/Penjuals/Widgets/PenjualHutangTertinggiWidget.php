@@ -5,13 +5,14 @@ namespace App\Filament\Resources\Penjuals\Widgets;
 use App\Models\Penjual;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
 use Filament\Widgets\TableWidget as BaseWidget;
 
 class PenjualHutangTertinggiWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
-    protected int | string | array $columnSpan = 'full';
-    protected ?string $pollingInterval = '15s';
+    protected static int | string | array $columnSpan = 'full';
+    protected static ?string $pollingInterval = '15s';
 
     public function table(Table $table): Table
     {
