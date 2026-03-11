@@ -7,6 +7,7 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -21,7 +22,7 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
     protected static ?string $modelLabel = 'Pembayaran';
     protected static ?string $pluralModelLabel = 'Pembayaran Hutang';
 
-    public function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
+    public function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -87,10 +88,10 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
             ->headerActions([
                 // ... tambahkan action header jika diperlukan
             ])
-            ->actions([
+            ->recordActions([
                 // ... tambahkan action pada tiap record jika diperlukan
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 // ... tambahkan bulk action jika diperlukan
             ]);
     }

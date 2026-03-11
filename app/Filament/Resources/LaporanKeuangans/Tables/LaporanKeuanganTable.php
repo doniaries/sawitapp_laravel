@@ -16,7 +16,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\DatePicker;
+use Filament\Forms\Components\DatePicker;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
@@ -152,15 +152,15 @@ class LaporanKeuanganTable
                     ->label('Download PDF')
                     ->icon('heroicon-o-document-arrow-down')
                     ->form([
-                        Forms\Components\Grid::make()
+                        Grid::make()
                             ->schema([
-                                Forms\Components\DatePicker::make('start_date')
+                                DatePicker::make('start_date')
                                     ->label('Dari Tanggal')
                                     ->required()
                                     ->default(now())
                                     ->displayFormat('d/m/Y')
                                     ->native(false),
-                                Forms\Components\DatePicker::make('end_date')
+                                DatePicker::make('end_date')
                                     ->label('Sampai Tanggal')
                                     ->required()
                                     ->default(now())
@@ -205,13 +205,13 @@ class LaporanKeuanganTable
 
                 Filter::make('date_range')
                     ->form([
-                        Forms\Components\DatePicker::make('dari_tanggal')
+                        DatePicker::make('dari_tanggal')
                             ->label('Dari Tanggal')
                             ->displayFormat('d/m/Y')
                             ->format('Y-m-d')
                             ->native(false)
                             ->default(now()->startOfMonth()),
-                        Forms\Components\DatePicker::make('sampai_tanggal')
+                        DatePicker::make('sampai_tanggal')
                             ->label('Ke Tanggal')
                             ->displayFormat('d/m/Y')
                             ->format('Y-m-d')
