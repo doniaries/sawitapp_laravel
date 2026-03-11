@@ -6,12 +6,12 @@ use App\Filament\Resources\Operasionals\OperasionalResource;
 use App\Models\Operasional;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Resources\Pages\ListRecords\Tab;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Perusahaan;
 use App\Enums\KategoriOperasional;
-use App\Filament\Resources\OperasionalResource\Widgets\OperasionalStatsWidget;
+use App\Filament\Resources\Operasionals\Widgets\OperasionalStatsWidget;
 
 class ListOperasionals extends ListRecords
 {

@@ -6,7 +6,7 @@ use Filament\Actions;
 use Livewire\Attributes\On;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Resources\Pages\ListRecords\Tab;
+use Filament\Schemas\Components\Tabs\Tab;
 use App\Filament\Resources\LaporanKeuangans\LaporanKeuanganResource;
 use App\Filament\Resources\LaporanKeuangans\Widgets\LaporanKeuanganDoStatsWidget;
 use App\Services\LaporanKeuanganService;

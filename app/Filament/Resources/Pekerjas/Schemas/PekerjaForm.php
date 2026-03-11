@@ -11,7 +11,7 @@ class PekerjaForm
 {
     public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return $schema->schema([
+        return $schema->components([
             Forms\Components\TextInput::make('nama')
                 ->required()
                 ->unique(ignoreRecord: true)

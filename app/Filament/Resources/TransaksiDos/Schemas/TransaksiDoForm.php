@@ -18,12 +18,12 @@ class TransaksiDoForm
 {
     public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return $schema->schema([
+        return $schema->components([
             // Header Section
             Section::make()
-                ->schema([
+                ->components([
                     Grid::make()
-                        ->schema([
+                        ->components([
                             Forms\Components\TextInput::make('nomor')
                                 ->label('Nomor DO')
                                 ->default(fn() => TransaksiDo::generateMonthlyNumber())
@@ -45,11 +45,11 @@ class TransaksiDoForm
 
             // Detail Pengiriman Section
             Grid::make()
-                ->schema([
+                ->components([
                     Section::make()
-                        ->schema([
+                        ->components([
                             Grid::make()
-                                ->schema([
+                                ->components([
                                     Forms\Components\Select::make('penjual_id')
                                         ->label('Penjual')
                                         ->relationship('penjual', 'nama')
@@ -163,7 +163,7 @@ class TransaksiDoForm
                         ->columnSpan(2),
 
                     Section::make()
-                        ->schema([
+                        ->components([
                             Forms\Components\TextInput::make('hutang_awal')
                                 ->label('Total Hutang')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
@@ -186,11 +186,11 @@ class TransaksiDoForm
 
             // Perhitungan & Pembayaran Section
             Grid::make()
-                ->schema([
+                ->components([
                     Section::make()
-                        ->schema([
+                        ->components([
                             Grid::make()
-                                ->schema([
+                                ->components([
                                     Forms\Components\TextInput::make('upah_bongkar')
                                         ->label('Upah Bongkar')
                                         ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
@@ -243,7 +243,7 @@ class TransaksiDoForm
                                         }),
 
                                     Section::make('Informasi Saldo')
-                                        ->schema([
+                                        ->components([
                                             Forms\Components\Placeholder::make('saldo_perusahaan')
                                                 ->label('Saldo Perusahaan')
                                                 ->content(fn() => 'Rp ' . number_format(\App\Models\Perusahaan::first()->saldo ?? 0, 0, ',', '.'))
@@ -255,7 +255,7 @@ class TransaksiDoForm
                         ->columnSpan(2),
 
                     Section::make()
-                        ->schema([
+                        ->components([
                             Forms\Components\TextInput::make('sisa_hutang_penjual')
                                 ->label('Sisa Hutang')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)

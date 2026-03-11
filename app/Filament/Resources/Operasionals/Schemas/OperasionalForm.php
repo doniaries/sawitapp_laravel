@@ -15,11 +15,11 @@ class OperasionalForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->schema([
+        return $schema->components([
             Section::make()
-                ->schema([
+                ->components([
                     Grid::make()
-                        ->schema([
+                        ->components([
                             // Kolom Kiri
                             Group::make([
                                 Forms\Components\DateTimePicker::make('tanggal')

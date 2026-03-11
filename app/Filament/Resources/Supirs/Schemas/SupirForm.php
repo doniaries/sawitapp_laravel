@@ -11,11 +11,11 @@ class SupirForm
 {
     public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return $schema->schema([
+        return $schema->components([
             Section::make()
-                ->schema([
+                ->components([
                     Grid::make(4)
-                        ->schema([
+                        ->components([
                             Forms\Components\TextInput::make('nama')
                                 ->required()
                                 ->maxLength(255),

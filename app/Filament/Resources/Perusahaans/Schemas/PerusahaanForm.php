@@ -11,13 +11,13 @@ class PerusahaanForm
 {
     public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return $schema->schema([
+        return $schema->components([
             Grid::make(['default' => 1])
-                ->schema([
+                ->components([
                     Section::make('Informasi Dasar')
-                        ->schema([
+                        ->components([
                             Grid::make(2)
-                                ->schema([
+                                ->components([
                                     Forms\Components\TextInput::make('name')
                                         ->label('Nama Perusahaan')
                                         ->required()

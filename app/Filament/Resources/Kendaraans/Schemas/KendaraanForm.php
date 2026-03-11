@@ -11,11 +11,11 @@ class KendaraanForm
 {
     public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return $schema->schema([
+        return $schema->components([
             Section::make()
-                ->schema([
+                ->components([
                     Grid::make(2)
-                        ->schema([
+                        ->components([
                             Forms\Components\TextInput::make('no_polisi')
                                 ->required()
                                 ->maxLength(10),

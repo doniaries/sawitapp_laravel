@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Notifications\Notification;
-use Filament\Resources\Pages\ListRecords\Tab;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListTransaksiDos extends ListRecords

@@ -12,10 +12,10 @@ class UserForm
     public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         return $schema
-            ->schema([
+            ->components([
                 Section::make('Informasi Pengguna')
                     ->description('Kelola informasi pengguna dan akses')
-                    ->schema([
+                    ->components([
                         Forms\Components\Select::make('perusahaan_id')
                             ->label('Perusahaan')
                             ->relationship('perusahaan', 'name')

@@ -10,12 +10,12 @@ class PenjualForm
 {
     public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return $schema->schema([
+        return $schema->components([
             Section::make('Informasi Penjual')
                 ->description(fn($context) => $context === 'create' ?
                     'Input data penjual baru & hutang awal' :
                     'Edit informasi penjual')
-                ->schema([
+                ->components([
                     Forms\Components\TextInput::make('nama')
                         ->label('Nama Penjual')
                         ->unique(ignoreRecord: true)
