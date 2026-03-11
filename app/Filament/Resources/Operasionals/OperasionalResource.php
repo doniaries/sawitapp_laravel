@@ -50,6 +50,7 @@ class OperasionalResource extends Resource
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-            ]);
+            ])
+            ->with(['penjual', 'supir', 'pekerja', 'user']);
     }
 }

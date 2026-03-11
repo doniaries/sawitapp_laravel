@@ -53,7 +53,8 @@ class UserResource extends Resource
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-            ]);
+            ])
+            ->with(['perusahaan', 'roles']);
     }
 
     public static function getGlobalSearchResultDetails($record): array

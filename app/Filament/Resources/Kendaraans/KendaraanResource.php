@@ -37,4 +37,10 @@ class KendaraanResource extends Resource
             'edit' => Pages\EditKendaraan::route('/{record}/edit'),
         ];
     }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['supir']);
+    }
 }
