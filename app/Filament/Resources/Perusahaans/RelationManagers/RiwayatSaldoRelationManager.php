@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Perusahaans\RelationManagers;
 
-use Filament\Forms;
 use Filament\Tables;
 use App\Models\Perusahaan;
 use Filament\Tables\Table;
@@ -10,8 +9,10 @@ use Filament\Schemas\Schema;
 use App\Models\LaporanKeuangan;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
 
 class RiwayatSaldoRelationManager extends RelationManager
@@ -66,9 +67,9 @@ class RiwayatSaldoRelationManager extends RelationManager
             ->headerActions([
                 // No actions needed as adding is done via main resource
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('batalkan')
+            ->recordActions([
+                ViewAction::make(),
+                Action::make('batalkan')
                     ->label('Batalkan')
                     ->icon('heroicon-m-x-circle')
                     ->color('danger')
@@ -117,12 +118,12 @@ class RiwayatSaldoRelationManager extends RelationManager
                             Notification::make()
                                 ->success()
                                 ->duration(3000) // Set durasi 3 detik
-                                ->persistent(false) // Notifikasi akan otomatis hilang
+                                ->persistent() // Notifikasi akan otomatis hilang
                                 ->title('Transaksi Dibatalkan')
                                 ->body(sprintf(
                                     "Pembatalan tambah saldo Rp %s berhasil.\nSaldo terkini: Rp %s",
-                                    number_format($record->nominal, 0, ',', '.'),
-                                    number_format($perusahaan->fresh()->saldo, 0, ',', '.')
+                                    number_format((float) $record->nominal, 0, ',', '.'),
+                                    number_format((float) $perusahaan->fresh()->saldo, 0, ',', '.')
                                 ))
                                 ->send();
                         } catch (\Exception $e) {
@@ -131,15 +132,17 @@ class RiwayatSaldoRelationManager extends RelationManager
                             Notification::make()
                                 ->danger()
                                 ->duration(3000) // Set durasi 3 detik
-                                ->persistent(false) // Notifikasi akan otomatis hilang
+                                ->persistent() // Notifikasi akan otomatis hilang
                                 ->title('Gagal Membatalkan')
                                 ->body('Terjadi kesalahan: ' . $e->getMessage())
                                 ->send();
                         }
                     })
             ])
-            ->bulkActions([
-                // Optional: Add bulk actions if needed
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
             ]);
     }
 }

@@ -15,6 +15,10 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\DatePicker;
+use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
@@ -88,7 +92,7 @@ class LaporanKeuanganTable
                     ->searchable(),
             ])
             ->headerActions([
-                Tables\Actions\Action::make('cetakRekap')
+                Action::make('cetakRekap')
                     ->label(fn($livewire) => 'Cetak Rekap ' . ($livewire->activeTab === 'hari_ini' ? 'Hari Ini' : ($livewire->activeTab === 'bulan_ini' ? 'Bulan Ini' : 'Terpilih')))
                     ->icon('heroicon-o-printer')
                     ->color('success')
@@ -121,7 +125,7 @@ class LaporanKeuanganTable
                         }
                     })
                     ->hidden(fn($livewire) => $livewire->activeTab === 'semua'),
-                Tables\Actions\Action::make('syncSaldo')
+                Action::make('syncSaldo')
                     ->label('Sync Saldo')
                     ->icon('heroicon-o-arrow-path')
                     ->color('success')
@@ -144,7 +148,7 @@ class LaporanKeuanganTable
                                 ->send();
                         }
                     }),
-                Tables\Actions\Action::make('downloadPdf')
+                Action::make('downloadPdf')
                     ->label('Download PDF')
                     ->icon('heroicon-o-document-arrow-down')
                     ->form([
@@ -219,14 +223,13 @@ class LaporanKeuanganTable
                             ->when($data['dari_tanggal'], fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date))
                             ->when($data['sampai_tanggal'], fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date));
                     }),
-
                 Tables\Filters\TrashedFilter::make()
             ], layout: FiltersLayout::Modal)
-            ->filtersTriggerAction(fn(Tables\Actions\Action $action) => $action->button()->label('Filter Tanggal'))
+            ->filtersTriggerAction(fn(Action $action) => $action->button()->label('Filter Tanggal'))
             ->defaultSort('created_at', 'desc')
             ->filtersFormColumns(2)
-            ->actions([
-                Tables\Actions\ViewAction::make(),
+            ->recordActions([
+                ViewAction::make(),
             ])
             ->striped()
             ->paginated([5, 10, 25, 50, 100, 'all'])

@@ -4,6 +4,9 @@ namespace App\Filament\Resources\Penjuals\Tables;
 
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\BulkAction;
 
 class PenjualTable
 {
@@ -40,16 +43,16 @@ class PenjualTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('nama', 'asc')
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                ViewAction::make(),
             ])
             ->paginated([5, 10, 25, 50, 100, 'all'])
             ->deferLoading()
             ->poll('30s')
             ->persistSortInSession()
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()
+                BulkAction::make()
                     ->requiresConfirmation()
                     ->action(function (\Illuminate\Support\Collection $records) {
                         $records->each(function ($record) {
