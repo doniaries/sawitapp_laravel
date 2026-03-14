@@ -75,11 +75,21 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     public function getTenants(Panel $panel): Collection
     {
+        // Superadmin bisa melihat semua perusahaan
+        if ($this->hasRole('super_admin')) {
+            return Perusahaan::all();
+        }
+
         return collect([$this->perusahaan])->filter();
     }
 
     public function canAccessTenant(Model $tenant): bool
     {
+        // Superadmin bisa akses semua perusahaan
+        if ($this->hasRole('super_admin')) {
+            return true;
+        }
+
         return $this->perusahaan_id === $tenant->id;
     }
 }

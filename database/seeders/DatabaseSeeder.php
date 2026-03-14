@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Perusahaan;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -10,15 +11,16 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // First, seed the company (tenant)
+        // Seed perusahaan & shield terlebih dahulu
         $this->call([
             PerusahaanSeeder::class,
             ShieldSeeder::class,
         ]);
 
-        $perusahaan = \App\Models\Perusahaan::first();
+        $perusahaans = Perusahaan::all();
+        $perusahaanPertama = $perusahaans->first();
 
-        // Buat Super Admin tied to the perusahaan
+        // Buat Super Admin tied ke perusahaan pertama
         $superadmin = User::firstOrCreate(
             ['email' => 'superadmin@gmail.com'],
             [
@@ -26,16 +28,19 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'is_active' => true,
                 'email_verified_at' => now(),
-                'perusahaan_id' => $perusahaan?->id,
+                'perusahaan_id' => $perusahaanPertama?->id,
             ]
         );
 
-        // Berikan role superadmin menggunakan tenant id yang valid
-        setPermissionsTeamId($perusahaan->id);
-        $superadmin->syncRoles(['super_admin']);
+        // Assign role super_admin di setiap perusahaan
+        // agar semua perusahaan bisa diakses
+        foreach ($perusahaans as $perusahaan) {
+            setPermissionsTeamId($perusahaan->id);
+            $superadmin->assignRole('super_admin');
+        }
 
-        // Set back team context for other permissions
-        setPermissionsTeamId($perusahaan->id);
+        // Reset ke context perusahaan pertama
+        setPermissionsTeamId($perusahaanPertama->id);
 
         $this->call([
             UserSeeder::class,
@@ -46,3 +51,4 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 }
+

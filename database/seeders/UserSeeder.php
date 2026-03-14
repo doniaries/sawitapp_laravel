@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Perusahaan;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -10,46 +11,54 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $perusahaan = \App\Models\Perusahaan::first();
-        $perusahaanId = $perusahaan?->id;
+        $perusahaan1 = Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
+        $perusahaan2 = Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
 
-        // Admin (Yondra)
-        $yondra = User::firstOrCreate(
-            ['email' => 'yondra@gmail.com'],
-            [
-                'name' => 'Yondra',
-                'password' => Hash::make('password'),
-                'is_active' => true,
-                'email_verified_at' => now(),
-                'perusahaan_id' => $perusahaanId,
-            ]
-        );
-        $yondra->syncRoles(['admin']);
+        // ========== Perusahaan 1: CV SUCCESS MANDIRI ==========
+        if ($perusahaan1) {
+            setPermissionsTeamId($perusahaan1->id);
 
-        // Admin (Wendy)
-        $wendy = User::firstOrCreate(
-            ['email' => 'wendy@gmail.com'],
-            [
-                'name' => 'Wendy',
-                'password' => Hash::make('password'),
-                'is_active' => true,
-                'email_verified_at' => now(),
-                'perusahaan_id' => $perusahaanId,
-            ]
-        );
-        $wendy->syncRoles(['admin']);
+            $yondra = User::firstOrCreate(
+                ['email' => 'yondra@gmail.com'],
+                [
+                    'name' => 'Yondra',
+                    'password' => Hash::make('password'),
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'perusahaan_id' => $perusahaan1->id,
+                ]
+            );
+            $yondra->syncRoles(['admin']);
 
-        // Kasir
-        $kasir = User::firstOrCreate(
-            ['email' => 'kasir1@gmail.com'],
-            [
-                'name' => 'Taufik',
-                'password' => Hash::make('password'),
-                'is_active' => true,
-                'email_verified_at' => now(),
-                'perusahaan_id' => $perusahaanId,
-            ]
-        );
-        $kasir->syncRoles(['kasir']);
+            $kasir = User::firstOrCreate(
+                ['email' => 'kasir1@gmail.com'],
+                [
+                    'name' => 'Taufik',
+                    'password' => Hash::make('password'),
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'perusahaan_id' => $perusahaan1->id,
+                ]
+            );
+            $kasir->syncRoles(['kasir']);
+        }
+
+        // ========== Perusahaan 2: PT Andala Integrasi Global ==========
+        if ($perusahaan2) {
+            setPermissionsTeamId($perusahaan2->id);
+
+            $wendy = User::firstOrCreate(
+                ['email' => 'wendy@gmail.com'],
+                [
+                    'name' => 'Wendy',
+                    'password' => Hash::make('password'),
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'perusahaan_id' => $perusahaan2->id,
+                ]
+            );
+            $wendy->syncRoles(['admin']);
+        }
     }
 }
+
