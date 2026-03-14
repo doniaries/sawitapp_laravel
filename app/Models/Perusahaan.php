@@ -22,7 +22,7 @@ class Perusahaan extends Model implements HasMedia
         static::updating(fn($perusahaan) => $perusahaan->slug = Str::slug($perusahaan->name));
     }
 
-    protected $table = 'perusahaans';
+    protected $table = 'perusahaan';
 
     protected $fillable = [
         'name',

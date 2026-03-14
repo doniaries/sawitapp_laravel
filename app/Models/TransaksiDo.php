@@ -7,7 +7,7 @@ use App\Models\Penjual;
 use App\Models\Supir;
 use App\Traits\DokumentasiTrait;
 use App\Traits\GenerateMonthlyNumber;
-use App\Traits\LaporanKeuanganTrait;
+use App\Traits\JurnalKeuanganTrait;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,7 +23,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class TransaksiDo extends Model
 {
-    use HasFactory, SoftDeletes, LaporanKeuanganTrait, DokumentasiTrait, GenerateMonthlyNumber;
+    use HasFactory, SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait, GenerateMonthlyNumber;
 
     protected $table = 'transaksi_do';
     protected $with = ['penjual:id', 'supir:id', 'kendaraan:id']; // Default eager loading
@@ -116,9 +116,9 @@ class TransaksiDo extends Model
     }
 
     // Tambahkan relation ke laporan keuangan
-    public function laporanKeuangan()
+    public function jurnalKeuangan()
     {
-        return $this->hasMany(LaporanKeuangan::class, 'referensi_id')
+        return $this->hasMany(JurnalKeuangan::class, 'referensi_id')
             ->where('sumber_transaksi', 'DO');
     }
 

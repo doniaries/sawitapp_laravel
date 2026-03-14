@@ -37,7 +37,7 @@ class Pekerja extends Model
 
     public function operasional()
     {
-        return $this->hasMany(Operasional::class);
+        return $this->hasMany(TransaksiOperasional::class);
     }
 
     public function perusahaan(): BelongsTo
@@ -48,7 +48,7 @@ class Pekerja extends Model
     // Tambahkan relasi ke riwayat pembayaran
     public function riwayatPembayaran()
     {
-        return $this->hasMany(RiwayatPembayaranHutang::class)
+        return $this->hasMany(PembayaranHutang::class)
             ->where('tipe', 'pekerja')
             ->orderBy('tanggal', 'desc');
     }

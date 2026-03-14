@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaans')->cascadeOnDelete();
+            $table->foreignId('perusahaan_id')->constrained('perusahaan')->cascadeOnDelete();
             $table->string('name')->index();
             $table->string('email')->unique()->index();
             $table->boolean('is_active')->default(true);

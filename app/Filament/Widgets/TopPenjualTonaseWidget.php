@@ -20,14 +20,14 @@ class TopPenjualTonaseWidget extends BaseWidget
         return $table
             ->query(
                 Penjual::query()
-                    ->select('penjuals.*')
+                    ->select('penjual.*')
                     ->selectRaw('COALESCE(SUM(transaksi_do.tonase), 0) as total_tonase')
-                    ->join('transaksi_do', 'penjuals.id', '=', 'transaksi_do.penjual_id')
+                    ->join('transaksi_do', 'penjual.id', '=', 'transaksi_do.penjual_id')
                     ->whereNull('transaksi_do.deleted_at')
                     ->where('transaksi_do.perusahaan_id', Filament::getTenant()->id)
                     ->whereMonth('transaksi_do.tanggal', now()->month)
                     ->whereYear('transaksi_do.tanggal', now()->year)
-                    ->groupBy('penjuals.id')
+                    ->groupBy('penjual.id')
                     ->orderByDesc('total_tonase')
                     ->limit(5)
             )

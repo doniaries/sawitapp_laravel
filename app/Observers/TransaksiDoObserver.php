@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\{TransaksiDo, Penjual, Perusahaan, LaporanKeuangan};
+use App\Models\{TransaksiDo, Penjual, Perusahaan, JurnalKeuangan};
 use Illuminate\Support\Facades\{DB, Log};
 use Filament\Notifications\Notification;
 
@@ -10,7 +10,7 @@ class TransaksiDoObserver
 {
     protected $laporanObserver;
 
-    public function __construct(LaporanKeuanganObserver $laporanObserver)
+    public function __construct(JurnalKeuanganObserver $laporanObserver)
     {
         $this->laporanObserver = $laporanObserver;
     }
@@ -84,7 +84,7 @@ class TransaksiDoObserver
     public function updated(TransaksiDo $transaksiDo)
     {
         // Hapus laporan lama
-        LaporanKeuangan::where([
+        JurnalKeuangan::where([
             'sumber_transaksi' => 'DO',
             'referensi_id' => $transaksiDo->id
         ])->delete();
@@ -104,7 +104,7 @@ class TransaksiDoObserver
             }
 
             // Hapus laporan keuangan
-            LaporanKeuangan::where([
+            JurnalKeuangan::where([
                 'sumber_transaksi' => 'DO',
                 'referensi_id' => $transaksiDo->id
             ])->delete();
@@ -161,7 +161,7 @@ class TransaksiDoObserver
             $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
             if (!$perusahaan) {
                 // Jika sedang seeding atau perusahaan belum ada, mungkin abaikan atau throw khusus
-                if (app()->runningInConsole()) return; 
+                if (app()->runningInConsole()) return;
                 throw new \Exception('Data perusahaan tidak ditemukan');
             }
 
@@ -293,7 +293,7 @@ class TransaksiDoObserver
     public function forceDeleted(TransaksiDo $transaksiDo)
     {
         // Hapus permanen semua data terkait
-        LaporanKeuangan::where([
+        JurnalKeuangan::where([
             'sumber_transaksi' => 'DO',
             'referensi_id' => $transaksiDo->id
         ])->forceDelete();

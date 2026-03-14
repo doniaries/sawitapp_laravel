@@ -6,26 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('penjual', function (Blueprint $table) {
+        Schema::create('pekerja', function (Blueprint $table) {
             $table->id();
             $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaan')->cascadeOnDelete();
             $table->string('slug')->nullable()->index();
             $table->string('nama')->index();
             $table->string('alamat')->nullable();
             $table->string('telepon')->nullable()->index();
-            $table->decimal('hutang', 15, 0)->nullable();
+            $table->string('pendapatan')->default('0');
+            $table->string('hutang')->default('0');
             $table->string('riwayat_bayar')->nullable();
             $table->timestamps();
             $table->softDeletes();
-
-            
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('penjual');
+        Schema::dropIfExists('pekerja');
     }
 };

@@ -35,7 +35,7 @@ class TransaksiDoStatWidget extends BaseWidget
                         END), 0) as remaining_payments')
                     ])->first();
 
-                $operationalIncomeMonthly = DB::table('operasional')
+                $operationalIncomeMonthly = DB::table('transaksi_operasional')
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pemasukan')
                     ->whereMonth('tanggal', now()->month)
@@ -52,7 +52,7 @@ class TransaksiDoStatWidget extends BaseWidget
                     ->whereYear('tanggal', now()->year)
                     ->sum('sub_total');
 
-                $totalOperationalMonthly = DB::table('operasional')
+                $totalOperationalMonthly = DB::table('transaksi_operasional')
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pengeluaran')
                     ->whereMonth('tanggal', now()->month)
@@ -73,7 +73,7 @@ class TransaksiDoStatWidget extends BaseWidget
                         END), 0) as remaining_payments')
                     ])->first();
 
-                $operationalIncomeGlobal = DB::table('operasional')
+                $operationalIncomeGlobal = DB::table('transaksi_operasional')
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pemasukan')
                     ->sum('nominal');
@@ -86,7 +86,7 @@ class TransaksiDoStatWidget extends BaseWidget
                     ->whereNull('deleted_at')
                     ->sum('sub_total');
 
-                $totalOperationalGlobal = DB::table('operasional')
+                $totalOperationalGlobal = DB::table('transaksi_operasional')
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pengeluaran')
                     ->sum('nominal');

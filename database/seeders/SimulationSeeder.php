@@ -73,9 +73,9 @@ class SimulationSeeder extends Seeder
         // Sync TransaksiDo
         $missingDos = TransaksiDo::whereNotExists(function ($query) {
             $query->select(DB::raw(1))
-                ->from('laporan_keuangan')
-                ->whereColumn('laporan_keuangan.referensi_id', 'transaksi_do.id')
-                ->where('laporan_keuangan.sumber_transaksi', 'DO');
+                ->from('jurnal_keuangan')
+                ->whereColumn('jurnal_keuangan.referensi_id', 'transaksi_do.id')
+                ->where('jurnal_keuangan.sumber_transaksi', 'DO');
         })->get();
 
         foreach ($missingDos as $transaksi) {
@@ -100,9 +100,9 @@ class SimulationSeeder extends Seeder
         // Sync Operasional
         $missingOps = Operasional::whereNotExists(function ($query) {
             $query->select(DB::raw(1))
-                ->from('laporan_keuangan')
-                ->whereColumn('laporan_keuangan.referensi_id', 'operasional.id')
-                ->where('laporan_keuangan.sumber_transaksi', 'Operasional');
+                ->from('jurnal_keuangan')
+                ->whereColumn('jurnal_keuangan.referensi_id', 'transaksi_operasional.id')
+                ->where('jurnal_keuangan.sumber_transaksi', 'Operasional');
         })->get();
 
         foreach ($missingOps as $op) {

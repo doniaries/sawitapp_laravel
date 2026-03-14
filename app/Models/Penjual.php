@@ -15,6 +15,8 @@ class Penjual extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'penjual';
+
     protected $fillable = [
         'nama',
         'alamat',
@@ -67,7 +69,7 @@ class Penjual extends Model
     //relation ship penjual dengan operasional
     public function operasional(): HasMany
     {
-        return $this->hasMany(Operasional::class);
+        return $this->hasMany(TransaksiOperasional::class);
     }
 
     protected static function boot()
@@ -80,11 +82,11 @@ class Penjual extends Model
         // Log hutang awal saat create
         static::creating(function ($penjual) {
             if ($penjual->hutang > 0) {
-                \Log::info('Input Hutang Awal Penjual:', [
+                \Illuminate\Support\Facades\Log::info('Input Hutang Awal Penjual:', [
                     'penjual' => $penjual->nama,
                     'hutang_awal' => $penjual->hutang,
                     'tanggal' => now(),
-                    'user' => auth()->user()->name ?? 'System'
+                    'user' => auth()->user()?->name ?? 'System'
                 ]);
             }
         });
@@ -136,7 +138,7 @@ class Penjual extends Model
     // Tambahkan relasi ke riwayat pembayaran
     public function riwayatPembayaran()
     {
-        return $this->hasMany(RiwayatPembayaranHutang::class)
+        return $this->hasMany(PembayaranHutang::class)
             ->where('tipe', 'penjual')
             ->orderBy('tanggal', 'desc');
     }

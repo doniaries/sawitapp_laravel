@@ -29,7 +29,7 @@ class PerusahaanStatsWidget extends BaseWidget
                 $kasirNames = $kasir->pluck('name')->join(', ');
 
                 // Get last saldo addition
-                $lastSaldo = DB::table('laporan_keuangan')
+                $lastSaldo = DB::table('jurnal_keuangan')
                     ->whereNull('deleted_at')
                     ->where('kategori', 'Saldo')
                     ->where('sub_kategori', 'Tambah Saldo')
@@ -42,14 +42,14 @@ class PerusahaanStatsWidget extends BaseWidget
                     "Belum ada penambahan saldo";
 
                 // Calculate total pemasukan
-                $totalPemasukan = DB::table('laporan_keuangan')
+                $totalPemasukan = DB::table('jurnal_keuangan')
                     ->whereNull('deleted_at')
                     ->where('jenis_transaksi', 'Pemasukan')
                     ->where('mempengaruhi_kas', true)
                     ->sum('nominal');
 
                 // Calculate total pengeluaran
-                $totalPengeluaran = DB::table('laporan_keuangan')
+                $totalPengeluaran = DB::table('jurnal_keuangan')
                     ->whereNull('deleted_at')
                     ->where('jenis_transaksi', 'Pengeluaran')
                     ->where('mempengaruhi_kas', true)

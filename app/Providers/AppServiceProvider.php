@@ -6,10 +6,10 @@ use URL;
 use Carbon\Carbon;
 use App\Events\RefreshDashboardWidgets;
 use Illuminate\Support\ServiceProvider;
-use App\Services\LaporanKeuanganService;
+use App\Services\JurnalKeuanganService;
 use Illuminate\Support\Facades\Gate;
 use App\Models\{Operasional, TransaksiDo, LaporanKeuangan};
-use App\Observers\{OperasionalObserver, TransaksiDoObserver, LaporanKeuanganObserver};
+use App\Observers\{TransaksiOperasionalObserver, JurnalKeuanganObserver, TransaksiDoObserver};
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,8 +19,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Tambahkan binding service di sini
-        $this->app->bind(LaporanKeuanganService::class, function ($app) {
-            return new LaporanKeuanganService();
+        $this->app->bind(JurnalKeuanganService::class, function ($app) {
+            return new JurnalKeuanganService();
         });
     }
 
@@ -48,8 +48,8 @@ class AppServiceProvider extends ServiceProvider
         Carbon::setLocale('id');
 
         // Register observers dengan namespace yang benar
-        Operasional::observe(OperasionalObserver::class);
-        TransaksiDo::observe(TransaksiDoObserver::class);
-        LaporanKeuangan::observe(LaporanKeuanganObserver::class);
+        \App\Models\TransaksiOperasional::observe(TransaksiOperasionalObserver::class);
+        \App\Models\JurnalKeuangan::observe(JurnalKeuanganObserver::class);
+        \App\Models\TransaksiDo::observe(\App\Observers\TransaksiDoObserver::class);
     }
 }

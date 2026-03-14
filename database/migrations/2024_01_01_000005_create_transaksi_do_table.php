@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('transaksi_do', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaans')->cascadeOnDelete();
+            $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaan')->cascadeOnDelete();
             $table->string('nomor', 20)->unique();
             $table->dateTime('tanggal');
-            $table->foreignId('penjual_id')->constrained('penjuals');
+            $table->foreignId('penjual_id')->constrained('penjual');
             $table->foreignId('supir_id')->nullable()->constrained('supir');
             $table->foreignId('kendaraan_id')->nullable()->constrained('kendaraan');
             $table->decimal('tonase', 10, 2);

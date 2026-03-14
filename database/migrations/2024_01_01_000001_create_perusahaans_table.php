@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('perusahaans', function (Blueprint $table) {
+        Schema::create('perusahaan', function (Blueprint $table) {
             $table->id();
             $table->decimal('sisa_saldo_kemarin', 15, 2)->default(0);
             $table->date('tanggal_sisa_saldo')->nullable();
@@ -35,6 +35,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('perusahaans');
+        Schema::dropIfExists('perusahaan');
     }
 };
