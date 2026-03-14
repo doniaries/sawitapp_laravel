@@ -25,6 +25,22 @@ class PabrikSeeder extends Seeder
                 'nama' => 'PT. KPPS',
                 'alamat' => 'Muaro Takung',
             ],
+            [
+                'nama' => 'PT. Incasi Raya',
+                'alamat' => 'Pulai Lamo',
+            ],
+            [
+                'nama' => 'PT. Sago Nauli',
+                'alamat' => 'Kinali',
+            ],
+            [
+                'nama' => 'PT. Bakrie Sumatera Plantations',
+                'alamat' => 'Air Balam',
+            ],
+            [
+                'nama' => 'PT. Agrowiratama',
+                'alamat' => 'Sungai Aur',
+            ],
         ];
         $perusahaan = \App\Models\Perusahaan::first();
         $perusahaanId = $perusahaan?->id;
