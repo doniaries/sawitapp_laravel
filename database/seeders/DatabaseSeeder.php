@@ -30,8 +30,8 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Bebaskan superadmin dari shield (global role)
-        setPermissionsTeamId(null);
+        // Berikan role superadmin menggunakan tenant id yang valid
+        setPermissionsTeamId($perusahaan->id);
         $superadmin->syncRoles(['super_admin']);
 
         // Set back team context for other permissions

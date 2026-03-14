@@ -75,7 +75,7 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->searchableTenantMenu()
-            ->tenant(Perusahaan::class, slugAttribute: 'slug')
+            ->tenant(Perusahaan::class, slugAttribute: 'slug', ownershipRelationship: 'perusahaan')
             ->tenantProfile(EditTeamProfile::class)
             ->plugins([
                 FilamentShieldPlugin::make()
