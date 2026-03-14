@@ -13,44 +13,46 @@ class ShieldSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $allPermissions = [
-            "view_role", "view_any_role", "create_role", "update_role", "delete_role", "delete_any_role",
-            "view_user", "view_any_user", "create_user", "update_user", "delete_user", "restore_user", "restore_any_user", "force_delete_user", "force_delete_any_user",
-            "view_penjual", "view_any_penjual", "create_penjual", "update_penjual", "delete_penjual", "restore_penjual", "restore_any_penjual", "force_delete_penjual", "force_delete_any_penjual",
-            "view_perusahaan", "view_any_perusahaan", "create_perusahaan", "update_perusahaan", "delete_perusahaan", "restore_perusahaan", "restore_any_perusahaan", "force_delete_perusahaan", "force_delete_any_perusahaan",
-            "view_supir", "view_any_supir", "create_supir", "update_supir", "delete_supir", "restore_supir", "restore_any_supir", "force_delete_supir", "force_delete_any_supir",
-            "view_kendaraan", "view_any_kendaraan", "create_kendaraan", "update_kendaraan", "delete_kendaraan", "restore_kendaraan", "restore_any_kendaraan", "force_delete_kendaraan", "force_delete_any_kendaraan",
-            "view_operasional", "view_any_operasional", "create_operasional", "update_operasional", "delete_operasional", "restore_operasional", "restore_any_operasional", "force_delete_operasional", "force_delete_any_operasional",
-            "view_transaksi_do", "view_any_transaksi_do", "create_transaksi_do", "update_transaksi_do", "delete_transaksi_do", "restore_transaksi_do", "restore_any_transaksi_do", "force_delete_transaksi_do", "force_delete_any_transaksi_do",
-            "view_laporan_keuangan", "view_any_laporan_keuangan", "create_laporan_keuangan", "update_laporan_keuangan", "delete_laporan_keuangan", "restore_laporan_keuangan", "restore_any_laporan_keuangan", "force_delete_laporan_keuangan", "force_delete_any_laporan_keuangan",
-            "view_pekerja", "view_any_pekerja", "create_pekerja", "update_pekerja", "delete_pekerja", "restore_pekerja", "restore_any_pekerja", "force_delete_pekerja", "force_delete_any_pekerja",
-            "page_Dashboard"
+            "ViewAny:Role", "View:Role", "Create:Role", "Update:Role", "Delete:Role", "DeleteAny:Role",
+            "ViewAny:User", "View:User", "Create:User", "Update:User", "Delete:User", "Restore:User", "RestoreAny:User", "ForceDelete:User", "ForceDeleteAny:User",
+            "ViewAny:Penjual", "View:Penjual", "Create:Penjual", "Update:Penjual", "Delete:Penjual", "Restore:Penjual", "RestoreAny:Penjual", "ForceDelete:Penjual", "ForceDeleteAny:Penjual",
+            "ViewAny:Perusahaan", "View:Perusahaan", "Create:Perusahaan", "Update:Perusahaan", "Delete:Perusahaan", "Restore:Perusahaan", "RestoreAny:Perusahaan", "ForceDelete:Perusahaan", "ForceDeleteAny:Perusahaan",
+            "ViewAny:Supir", "View:Supir", "Create:Supir", "Update:Supir", "Delete:Supir", "Restore:Supir", "RestoreAny:Supir", "ForceDelete:Supir", "ForceDeleteAny:Supir",
+            "ViewAny:Kendaraan", "View:Kendaraan", "Create:Kendaraan", "Update:Kendaraan", "Delete:Kendaraan", "Restore:Kendaraan", "RestoreAny:Kendaraan", "ForceDelete:Kendaraan", "ForceDeleteAny:Kendaraan",
+            "ViewAny:Operasional", "View:Operasional", "Create:Operasional", "Update:Operasional", "Delete:Operasional", "Restore:Operasional", "RestoreAny:Operasional", "ForceDelete:Operasional", "ForceDeleteAny:Operasional",
+            "ViewAny:TransaksiDo", "View:TransaksiDo", "Create:TransaksiDo", "Update:TransaksiDo", "Delete:TransaksiDo", "Restore:TransaksiDo", "RestoreAny:TransaksiDo", "ForceDelete:TransaksiDo", "ForceDeleteAny:TransaksiDo", "Replicate:TransaksiDo", "Reorder:TransaksiDo",
+            "ViewAny:LaporanKeuangan", "View:LaporanKeuangan", "Create:LaporanKeuangan", "Update:LaporanKeuangan", "Delete:LaporanKeuangan", "Restore:LaporanKeuangan", "RestoreAny:LaporanKeuangan", "ForceDelete:LaporanKeuangan", "ForceDeleteAny:LaporanKeuangan",
+            "ViewAny:Pekerja", "View:Pekerja", "Create:Pekerja", "Update:Pekerja", "Delete:Pekerja", "Restore:Pekerja", "RestoreAny:Pekerja", "ForceDelete:Pekerja", "ForceDeleteAny:Pekerja",
+            "ViewAny:Pabrik", "View:Pabrik", "Create:Pabrik", "Update:Pabrik", "Delete:Pabrik", "Restore:Pabrik", "RestoreAny:Pabrik", "ForceDelete:Pabrik", "ForceDeleteAny:Pabrik",
+            "ViewAny:RiwayatPembayaranHutang", "View:RiwayatPembayaranHutang", "Create:RiwayatPembayaranHutang", "Update:RiwayatPembayaranHutang", "Delete:RiwayatPembayaranHutang", "Restore:RiwayatPembayaranHutang", "RestoreAny:RiwayatPembayaranHutang", "ForceDelete:RiwayatPembayaranHutang", "ForceDeleteAny:RiwayatPembayaranHutang",
+            "Page:Dashboard", "Page:Tenancy\EditPerusahaanProfile", "Page:Tenancy\RegisterPerusahaan"
         ];
 
         // Admin: Semua kecuali Role management
         $adminPermissions = collect($allPermissions)->filter(function ($permission) {
-            return !str_contains($permission, '_role');
+            return !str_contains($permission, ':Role');
         })->toArray();
 
         // Kasir: Terbatas pada Transaksi DO, Operasional, Laporan, dan Master Data (hanya Lihat)
         $kasirPermissions = [
             // Dashboard
-            "page_Dashboard",
+            "Page:Dashboard",
 
             // Transaksi DO
-            "view_transaksi_do", "view_any_transaksi_do", "create_transaksi_do", "update_transaksi_do",
+            "ViewAny:TransaksiDo", "View:TransaksiDo", "Create:TransaksiDo", "Update:TransaksiDo",
             
             // Operasional
-            "view_operasional", "view_any_operasional", "create_operasional", "update_operasional",
+            "ViewAny:Operasional", "View:Operasional", "Create:Operasional", "Update:Operasional",
 
             // Laporan Keuangan
-            "view_laporan_keuangan", "view_any_laporan_keuangan",
+            "ViewAny:LaporanKeuangan", "View:LaporanKeuangan",
 
             // Master Data (Hanya View/List)
-            "view_penjual", "view_any_penjual",
-            "view_supir", "view_any_supir",
-            "view_kendaraan", "view_any_kendaraan",
-            "view_pekerja", "view_any_pekerja",
-            "view_perusahaan", "view_any_perusahaan"
+            "ViewAny:Penjual", "View:Penjual",
+            "ViewAny:Supir", "View:Supir",
+            "ViewAny:Kendaraan", "View:Kendaraan",
+            "ViewAny:Pekerja", "View:Pekerja",
+            "ViewAny:Perusahaan", "View:Perusahaan"
         ];
 
         $rolesWithPermissions = [
