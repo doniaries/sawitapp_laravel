@@ -39,23 +39,28 @@ class UserTable
                     ->copyMessage('Email disalin')
                     ->copyMessageDuration(1500),
 
-                TextColumn::make('roles.name')
+                TextColumn::make('roles_display')
                     ->label('Peran')
                     ->badge()
                     ->state(function (\App\Models\User $record): array {
-                        // Ambil role secara langsung dari tabel pivot untuk menghindari pengabaian oleh scope tim Spatie
-                        $roles = \Illuminate\Support\Facades\DB::table('roles')
-                            ->join('model_has_roles', 'roles.id', '=', 'model_has_roles.role_id')
-                            ->where('model_has_roles.model_id', $record->id)
-                            ->where('model_has_roles.model_type', \App\Models\User::class)
-                            ->pluck('roles.name')
-                            ->toArray();
-
-                        if ($record->isSuperAdmin() && !in_array('super_admin', $roles)) {
-                            $roles[] = 'super_admin';
+                        // Cek superadmin dulu
+                        if ($record->isSuperAdmin()) {
+                            return ['super_admin'];
                         }
-                        
-                        return array_unique($roles);
+
+                        // Ambil role secara langsung dari tabel pivot untuk menghindari filter tim Spatie
+                        // Kita gunakan query yang lebih fleksibel terhadap model_type
+                        return \Illuminate\Support\Facades\DB::table('model_has_roles')
+                            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+                            ->where('model_has_roles.model_id', $record->id)
+                            ->where(function ($query) {
+                                $query->where('model_has_roles.model_type', \App\Models\User::class)
+                                      ->orWhere('model_has_roles.model_type', 'App\Models\User')
+                                      ->orWhere('model_has_roles.model_type', 'user');
+                            })
+                            ->pluck('roles.name')
+                            ->unique()
+                            ->toArray();
                     })
                     ->color(fn ($state): string => match ($state) {
                         'super_admin' => 'danger',
@@ -63,7 +68,9 @@ class UserTable
                         'kasir' => 'info',
                         default => 'gray',
                     })
-                    ->searchable(),
+                    ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder {
+                        return $query->whereHas('roles', fn ($query) => $query->where('name', 'like', "%{$search}%"));
+                    }),
 
 
                 ToggleColumn::make('is_active')

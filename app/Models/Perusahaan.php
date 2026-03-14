@@ -18,8 +18,8 @@ class Perusahaan extends Model implements HasMedia
 
     protected static function booted()
     {
-        static::creating(fn ($perusahaan) => $perusahaan->slug = Str::slug($perusahaan->name));
-        static::updating(fn ($perusahaan) => $perusahaan->slug = Str::slug($perusahaan->name));
+        static::creating(fn($perusahaan) => $perusahaan->slug = Str::slug($perusahaan->name));
+        static::updating(fn($perusahaan) => $perusahaan->slug = Str::slug($perusahaan->name));
     }
 
     protected $table = 'perusahaans';
@@ -43,6 +43,11 @@ class Perusahaan extends Model implements HasMedia
         'saldo' => 'decimal:0',
         'setting' => 'json',
     ];
+
+    public function getCurrentTenantLabel(): string
+    {
+        return 'Active team';
+    }
 
     protected function logo(): \Illuminate\Database\Eloquent\Casts\Attribute
     {

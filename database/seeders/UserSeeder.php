@@ -48,20 +48,30 @@ class UserSeeder extends Seeder
         // ========== Perusahaan 2: PT Andala Integrasi Global ==========
         if ($perusahaan2) {
             setPermissionsTeamId($perusahaan2->id);
-
-            $wendy = User::firstOrCreate(
-                ['email' => 'wendy@gmail.com'],
+            $yondra = User::firstOrCreate(
+                ['email' => 'yondra2@gmail.com'],
                 [
-                    'name' => 'Wendy',
+                    'name' => 'Yondra 2',
                     'password' => Hash::make('password'),
                     'is_active' => true,
                     'email_verified_at' => now(),
                     'perusahaan_id' => $perusahaan2->id,
                 ]
             );
-            $wendy->syncRoles(['admin']);
+            $yondra->syncRoles(['admin']);
+            $yondra->perusahaans()->syncWithoutDetaching([$perusahaan2->id]);
+            $wendy = User::firstOrCreate(
+                ['email' => 'kasir2@gmail.com'],
+                [
+                    'name' => 'Kasir 2',
+                    'password' => Hash::make('password'),
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'perusahaan_id' => $perusahaan2->id,
+                ]
+            );
+            $wendy->syncRoles(['kasir']);
             $wendy->perusahaans()->syncWithoutDetaching([$perusahaan2->id]);
         }
     }
 }
-
