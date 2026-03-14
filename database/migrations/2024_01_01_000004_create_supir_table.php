@@ -22,6 +22,11 @@ return new class extends Migration
             $table->string('riwayat_bayar')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('perusahaan_id');
+            $table->index('slug');
+            $table->index('nama');
+            $table->index('telepon');
         });
     }
 
