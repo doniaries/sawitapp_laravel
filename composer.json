@@ -23,7 +23,8 @@
         "laravel/tinker": "^2.10",
         "livewire/livewire": "^4.0",
         "simplesoftwareio/simple-qrcode": "^4.2",
-        "spatie/laravel-settings": "^3.4"
+        "spatie/laravel-settings": "^3.4",
+        "stechstudio/filament-impersonate": "*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",

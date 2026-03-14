@@ -2,17 +2,18 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
-use Filament\Tables\Table;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserTable
 {
@@ -38,10 +39,16 @@ class UserTable
                     ->copyMessageDuration(1500),
 
                 TextColumn::make('roles.name')
-                    ->label('Hak Akses')
+                    ->label('Peran')
                     ->badge()
-                    ->color('info')
+                    ->color(fn(string $state): string => match ($state) {
+                        'super_admin' => 'danger',
+                        'admin' => 'warning',
+                        'kasir' => 'info',
+                        default => 'gray',
+                    })
                     ->searchable(),
+
 
                 ToggleColumn::make('is_active')
                     ->label('Status')
@@ -70,6 +77,7 @@ class UserTable
                 TrashedFilter::make()
             ])
             ->recordActions([
+                Impersonate::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
