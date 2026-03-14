@@ -318,12 +318,30 @@ class TransaksiDoSeeder extends Seeder
             ],
         ];
 
-        $perusahaan = \App\Models\Perusahaan::first();
-        $perusahaanId = $perusahaan?->id;
+        $perusahaan1 = \App\Models\Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
+        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
+        
+        // Refresh master data to get correct IDs
+        $penjualCV = \App\Models\Penjual::where('perusahaan_id', $perusahaan1?->id)->pluck('id')->toArray();
+        $penjualPT = \App\Models\Penjual::where('perusahaan_id', $perusahaan2?->id)->pluck('id')->toArray();
+        $supirCV = \App\Models\Supir::where('perusahaan_id', $perusahaan1?->id)->pluck('id')->toArray();
+        $supirPT = \App\Models\Supir::where('perusahaan_id', $perusahaan2?->id)->pluck('id')->toArray();
 
-        foreach ($transaksiDos as $transaksiDo) {
-            $transaksiDo['perusahaan_id'] = $perusahaanId;
-            TransaksiDo::create($transaksiDo);
+        foreach ($transaksiDos as $index => $data) {
+            $isCV = ($index % 2 === 0);
+            $targetPerusahaan = $isCV ? $perusahaan1 : $perusahaan2;
+            
+            if ($targetPerusahaan) {
+                $data['perusahaan_id'] = $targetPerusahaan->id;
+                
+                // Map penjual and supir appropriately
+                $data['penjual_id'] = $isCV ? ($penjualCV[array_rand($penjualCV)] ?? 1) : ($penjualPT[array_rand($penjualPT)] ?? 2);
+                if ($data['supir_id']) {
+                    $data['supir_id'] = $isCV ? ($supirCV[array_rand($supirCV)] ?? 1) : ($supirPT[array_rand($supirPT)] ?? 2);
+                }
+                
+                TransaksiDo::create($data);
+            }
         }
     }
 }

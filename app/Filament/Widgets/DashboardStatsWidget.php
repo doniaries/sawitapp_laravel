@@ -7,6 +7,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Filament\Facades\Filament;
 
 class DashboardStatsWidget extends BaseWidget
 {
@@ -16,12 +17,16 @@ class DashboardStatsWidget extends BaseWidget
 
     public function getStats(): array
     {
+        $tenant = Filament::getTenant();
+        $tenantId = $tenant->id;
+        
         $startOfMonth = now()->startOfMonth();
         $endOfMonth = now()->endOfMonth();
 
-        // Calculate income using same logic as TransaksiDoStatWidget
+        // Calculate income (Tenant Scoped)
         $incomingFunds = DB::table('transaksi_do')
             ->whereNull('deleted_at')
+            ->where('perusahaan_id', $tenantId)
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->select([
                 DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
@@ -34,42 +39,40 @@ class DashboardStatsWidget extends BaseWidget
 
         $operationalIncome = DB::table('operasional')
             ->whereNull('deleted_at')
+            ->where('perusahaan_id', $tenantId)
             ->where('operasional', 'pemasukan')
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->sum('nominal');
 
-        // Calculate total monthly income
         $monthlyIncome = $incomingFunds->total_debt_payments +
             $incomingFunds->remaining_payments +
             $operationalIncome;
 
-        // Calculate expenses
+        // Calculate expenses (Tenant Scoped)
         $monthlyDOExpense = DB::table('transaksi_do')
             ->whereNull('deleted_at')
+            ->where('perusahaan_id', $tenantId)
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->sum('sub_total');
 
         $monthlyOperationalExpense = DB::table('operasional')
             ->whereNull('deleted_at')
+            ->where('perusahaan_id', $tenantId)
             ->where('operasional', 'pengeluaran')
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->sum('nominal');
 
         $monthlyExpense = $monthlyDOExpense + $monthlyOperationalExpense;
 
-        // Get monthly transactions count
-        $monthlyTransactions = TransaksiDo::whereBetween('tanggal', [$startOfMonth, $endOfMonth])->count();
+        // Get monthly transactions count (Tenant Scoped)
+        $monthlyTransactions = TransaksiDo::where('perusahaan_id', $tenantId)
+            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+            ->count();
 
-        // Calculate profit/loss
-        $profit = $monthlyIncome - $monthlyExpense;
-        $profitColor = $profit >= 0 ? 'success' : 'danger';
-        $profitIcon = $profit >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down';
-        $profitPrefix = $profit >= 0 ? 'Rp ' : '-Rp ';
-        $profitDescription = $profit >= 0 ? 'Keuntungan bulan ini' : 'Kerugian bulan ini';
-
-        // Get current balance using same logic
+        // Cumulative Balance (Tenant Scoped)
         $totalIncomingFunds = DB::table('transaksi_do')
             ->whereNull('deleted_at')
+            ->where('perusahaan_id', $tenantId)
             ->select([
                 DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
                 DB::raw('COALESCE(SUM(CASE
@@ -81,6 +84,7 @@ class DashboardStatsWidget extends BaseWidget
 
         $totalOperationalIncome = DB::table('operasional')
             ->whereNull('deleted_at')
+            ->where('perusahaan_id', $tenantId)
             ->where('operasional', 'pemasukan')
             ->sum('nominal');
 
@@ -90,15 +94,16 @@ class DashboardStatsWidget extends BaseWidget
 
         $totalDOExpense = DB::table('transaksi_do')
             ->whereNull('deleted_at')
+            ->where('perusahaan_id', $tenantId)
             ->sum('sub_total');
 
         $totalOperationalExpense = DB::table('operasional')
             ->whereNull('deleted_at')
+            ->where('perusahaan_id', $tenantId)
             ->where('operasional', 'pengeluaran')
             ->sum('nominal');
 
-        $totalExpense = $totalDOExpense + $totalOperationalExpense;
-        $currentBalance = $totalIncome - $totalExpense;
+        $currentBalance = $totalIncome - ($totalDOExpense + $totalOperationalExpense);
 
         // Format date range
         $dateRange = "Periode: {$startOfMonth->format('d M Y')} - {$endOfMonth->format('d M Y')}";

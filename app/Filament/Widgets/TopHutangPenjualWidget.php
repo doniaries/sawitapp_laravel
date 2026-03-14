@@ -18,7 +18,7 @@ class TopHutangPenjualWidget extends BaseWidget
     {
         return $table
             ->query(
-                Penjual::query()->where('hutang', '>', 0)->orderByDesc('hutang')->limit(5)
+                Penjual::query()->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id)->where('hutang', '>', 0)->orderByDesc('hutang')->limit(5)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('nama')

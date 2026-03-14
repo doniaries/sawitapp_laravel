@@ -137,13 +137,20 @@ class PenjualSeeder extends Seeder
             ],
         ];
 
-        $perusahaan = \App\Models\Perusahaan::first();
-        $perusahaanId = $perusahaan?->id;
+        $perusahaan1 = \App\Models\Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
+        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
 
-        // Loop through and create each penjual record
-        foreach ($penjuals as $penjual) {
-            $penjual['perusahaan_id'] = $perusahaanId;
-            Penjual::create($penjual);
+        foreach ($penjuals as $index => $penjualData) {
+            unset($penjualData['id']); // Let database handle ID
+            
+            // Alternate between companies
+            $targetPerusahaan = ($index % 2 === 0) ? $perusahaan1 : $perusahaan2;
+            
+            if ($targetPerusahaan) {
+                $penjualData['perusahaan_id'] = $targetPerusahaan->id;
+                $penjualData['nama'] .= ' (' . ($index % 2 === 0 ? 'CV' : 'PT') . ')';
+                Penjual::create($penjualData);
+            }
         }
     }
 }

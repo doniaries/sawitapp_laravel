@@ -6,6 +6,7 @@ use App\Models\{TransaksiDo, Operasional};
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 
 class DailyFinanceChartWidget extends ChartWidget
 {
@@ -15,14 +16,18 @@ class DailyFinanceChartWidget extends ChartWidget
 
     protected function getData(): array
     {
+        // $tenantId = Filament::getTenant()->id; // Moved inside the closure
+        
         $days = collect(range(1, Carbon::now()->daysInMonth))->map(function ($day) {
             return Carbon::now()->startOfMonth()->addDays($day - 1);
         });
 
         $dailyData = $days->map(function ($date) {
+            $tenantId = Filament::getTenant()->id; // Initialized inside the closure
             // Get DO income
             $doIncome = DB::table('transaksi_do')
                 ->whereNull('deleted_at')
+                ->where('perusahaan_id', $tenantId)
                 ->whereDate('tanggal', $date)
                 ->select([
                     DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as debt_payments'),
@@ -36,6 +41,7 @@ class DailyFinanceChartWidget extends ChartWidget
             // Get operational income
             $operationalIncome = DB::table('operasional')
                 ->whereNull('deleted_at')
+                ->where('perusahaan_id', $tenantId)
                 ->whereDate('tanggal', $date)
                 ->where('operasional', 'pemasukan')
                 ->sum('nominal');
@@ -43,11 +49,13 @@ class DailyFinanceChartWidget extends ChartWidget
             // Get expenses
             $doExpense = DB::table('transaksi_do')
                 ->whereNull('deleted_at')
+                ->where('perusahaan_id', $tenantId)
                 ->whereDate('tanggal', $date)
                 ->sum('sub_total');
 
             $operationalExpense = DB::table('operasional')
                 ->whereNull('deleted_at')
+                ->where('perusahaan_id', $tenantId)
                 ->whereDate('tanggal', $date)
                 ->where('operasional', 'pengeluaran')
                 ->sum('nominal');

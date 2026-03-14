@@ -164,12 +164,19 @@ class SupirSeeder extends Seeder
             ],
         ];
 
-        $perusahaan = \App\Models\Perusahaan::first();
-        $perusahaanId = $perusahaan?->id;
+        $perusahaan1 = \App\Models\Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
+        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
 
-        foreach ($supirs as $supir) {
-            $supir['perusahaan_id'] = $perusahaanId;
-            Supir::create($supir);
+        foreach ($supirs as $index => $supirData) {
+            unset($supirData['id']); // Let database handle ID
+            
+            $targetPerusahaan = ($index % 2 === 0) ? $perusahaan1 : $perusahaan2;
+            
+            if ($targetPerusahaan) {
+                $supirData['perusahaan_id'] = $targetPerusahaan->id;
+                $supirData['nama'] .= ' (' . ($index % 2 === 0 ? 'CV' : 'PT') . ')';
+                Supir::create($supirData);
+            }
         }
     }
 }

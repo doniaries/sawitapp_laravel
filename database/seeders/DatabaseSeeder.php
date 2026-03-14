@@ -45,6 +45,11 @@ class DatabaseSeeder extends Seeder
         // Reset ke context perusahaan pertama
         setPermissionsTeamId($perusahaanPertama->id);
 
+        // Disable observers during seeding to avoid tenant scoping/validation issues
+        \App\Models\TransaksiDo::unsetEventDispatcher();
+        \App\Models\LaporanKeuangan::unsetEventDispatcher();
+        \App\Models\Operasional::unsetEventDispatcher();
+
         $this->call([
             UserSeeder::class,
             PenjualSeeder::class,

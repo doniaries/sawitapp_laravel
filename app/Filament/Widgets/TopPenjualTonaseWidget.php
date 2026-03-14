@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\DB;
+use Filament\Facades\Filament;
 
 class TopPenjualTonaseWidget extends BaseWidget
 {
@@ -23,6 +24,7 @@ class TopPenjualTonaseWidget extends BaseWidget
                     ->selectRaw('COALESCE(SUM(transaksi_do.tonase), 0) as total_tonase')
                     ->join('transaksi_do', 'penjuals.id', '=', 'transaksi_do.penjual_id')
                     ->whereNull('transaksi_do.deleted_at')
+                    ->where('transaksi_do.perusahaan_id', Filament::getTenant()->id)
                     ->whereMonth('transaksi_do.tanggal', now()->month)
                     ->whereYear('transaksi_do.tanggal', now()->year)
                     ->groupBy('penjuals.id')

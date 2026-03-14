@@ -6,6 +6,7 @@ use App\Models\{TransaksiDo, Operasional};
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 
 class MonthlyFinanceChartWidget extends ChartWidget
 {
@@ -15,17 +16,20 @@ class MonthlyFinanceChartWidget extends ChartWidget
 
     protected function getData(): array
     {
+        $tenantId = Filament::getTenant()->id;
+
         $months = collect(range(1, 12))->map(function ($month) {
             return Carbon::now()->startOfYear()->addMonths($month - 1);
         });
 
-        $monthlyData = $months->map(function ($date) {
+        $monthlyData = $months->map(function ($date) use ($tenantId) {
             $startOfMonth = $date->copy()->startOfMonth();
             $endOfMonth = $date->copy()->endOfMonth();
 
             // Get DO income
             $doIncome = DB::table('transaksi_do')
                 ->whereNull('deleted_at')
+                ->where('perusahaan_id', $tenantId)
                 ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
                 ->select([
                     DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as debt_payments'),
@@ -39,6 +43,7 @@ class MonthlyFinanceChartWidget extends ChartWidget
             // Get operational income
             $operationalIncome = DB::table('operasional')
                 ->whereNull('deleted_at')
+                ->where('perusahaan_id', $tenantId)
                 ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
                 ->where('operasional', 'pemasukan')
                 ->sum('nominal');
@@ -46,11 +51,13 @@ class MonthlyFinanceChartWidget extends ChartWidget
             // Get expenses
             $doExpense = DB::table('transaksi_do')
                 ->whereNull('deleted_at')
+                ->where('perusahaan_id', $tenantId)
                 ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
                 ->sum('sub_total');
 
             $operationalExpense = DB::table('operasional')
                 ->whereNull('deleted_at')
+                ->where('perusahaan_id', $tenantId)
                 ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
                 ->where('operasional', 'pengeluaran')
                 ->sum('nominal');

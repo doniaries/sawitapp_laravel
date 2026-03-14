@@ -158,8 +158,10 @@ class TransaksiDoObserver
 
         // Validasi saldo hanya untuk transaksi tunai baru
         if ($transaksiDo->cara_bayar === 'tunai') {
-            $perusahaan = Perusahaan::lockForUpdate()->first();
+            $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
             if (!$perusahaan) {
+                // Jika sedang seeding atau perusahaan belum ada, mungkin abaikan atau throw khusus
+                if (app()->runningInConsole()) return; 
                 throw new \Exception('Data perusahaan tidak ditemukan');
             }
 
