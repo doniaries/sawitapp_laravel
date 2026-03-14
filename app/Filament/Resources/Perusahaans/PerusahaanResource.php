@@ -21,10 +21,7 @@ class PerusahaanResource extends Resource
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
     protected static ?int $navigationSort = 3;
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
+
 
     public static function getNavigationBadgeColor(): ?string
     {

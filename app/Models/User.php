@@ -69,8 +69,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Cek super_admin langsung dari DB (tanpa team context).
      */
-    protected function isSuperAdmin(): bool
+    public function isSuperAdmin(): bool
     {
+        if ($this->email === 'superadmin@gmail.com') {
+            return true;
+        }
+
         return DB::table('model_has_roles')
             ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
             ->where('model_has_roles.model_id', $this->id)

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -41,7 +42,22 @@ class UserTable
                 TextColumn::make('roles.name')
                     ->label('Peran')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->state(function (\App\Models\User $record): array {
+                        // Ambil role secara langsung dari tabel pivot untuk menghindari pengabaian oleh scope tim Spatie
+                        $roles = \Illuminate\Support\Facades\DB::table('roles')
+                            ->join('model_has_roles', 'roles.id', '=', 'model_has_roles.role_id')
+                            ->where('model_has_roles.model_id', $record->id)
+                            ->where('model_has_roles.model_type', \App\Models\User::class)
+                            ->pluck('roles.name')
+                            ->toArray();
+
+                        if ($record->isSuperAdmin() && !in_array('super_admin', $roles)) {
+                            $roles[] = 'super_admin';
+                        }
+                        
+                        return array_unique($roles);
+                    })
+                    ->color(fn ($state): string => match ($state) {
                         'super_admin' => 'danger',
                         'admin' => 'warning',
                         'kasir' => 'info',
