@@ -176,7 +176,7 @@ class PerusahaanTable
                     ->modalWidth('lg'),
                 EditAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->requiresConfirmation(),

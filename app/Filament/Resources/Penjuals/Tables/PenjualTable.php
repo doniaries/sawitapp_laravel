@@ -6,7 +6,8 @@ use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\Action as BulkAction;
 use Filament\Tables\Columns\TextColumn;
 
 class PenjualTable
