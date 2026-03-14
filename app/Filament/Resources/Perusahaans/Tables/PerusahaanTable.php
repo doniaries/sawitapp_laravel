@@ -6,7 +6,6 @@ use App\Models\Perusahaan;
 use App\Models\LaporanKeuangan;
 use App\Enums\TipeNama;
 use App\Events\SaldoUpdated;
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -21,6 +20,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 
@@ -30,43 +33,43 @@ class PerusahaanTable
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nama Perusahaan')
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('logo')
+                ImageColumn::make('logo')
                     ->label('Logo')
                     ->disk('public')
                     ->height(40)
                     ->defaultImageUrl(url('/images/default-logo.png'))
                     ->getStateUsing(fn($record) => $record->logo ?? '/images/default-logo.png'),
-                Tables\Columns\TextColumn::make('saldo')
+                TextColumn::make('saldo')
                     ->weight('5')
                     ->badge()
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->alignRight()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('alamat')
+                TextColumn::make('alamat')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('telepon')
+                TextColumn::make('telepon')
                     ->hidden()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->hidden()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pimpinan')
+                TextColumn::make('pimpinan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('npwp')
+                TextColumn::make('npwp')
                     ->hidden()
                     ->searchable(),
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 Action::make('tambah_saldo')

@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Penjuals\Schemas;
 
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 
 class PenjualForm
 {
-    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public static function configure(Schema $schema): Schema
     {
         return $schema->components([
             Section::make('Informasi Penjual')
@@ -16,21 +16,21 @@ class PenjualForm
                     'Input data penjual baru & hutang awal' :
                     'Edit informasi penjual')
                 ->components([
-                    Forms\Components\TextInput::make('nama')
+                    TextInput::make('nama')
                         ->label('Nama Penjual')
                         ->unique(ignoreRecord: true)
                         ->required()
                         ->maxLength(255),
 
-                    Forms\Components\TextInput::make('alamat')
+                    TextInput::make('alamat')
                         ->label('Alamat')
                         ->maxLength(255),
 
-                    Forms\Components\TextInput::make('telepon')
+                    TextInput::make('telepon')
                         ->tel()
                         ->label('Nomor Telepon'),
 
-                    Forms\Components\TextInput::make('hutang')
+                    TextInput::make('hutang')
                         ->label(fn($context) => $context === 'create' ?
                             'Hutang Awal' : 'Total Hutang')
                         ->helperText(fn($context) => $context === 'create' ?

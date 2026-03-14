@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Kendaraans\Tables;
 
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\TextColumn;
 
 class KendaraanTable
 {
@@ -15,15 +15,15 @@ class KendaraanTable
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('no_polisi')
+                TextColumn::make('no_polisi')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('supir.nama')
+                TextColumn::make('supir.nama')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

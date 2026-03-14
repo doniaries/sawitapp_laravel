@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Pekerjas\Tables;
 
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
@@ -10,6 +9,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 
 class PekerjaTable
 {
@@ -17,35 +18,35 @@ class PekerjaTable
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama')
+                TextColumn::make('nama')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('alamat')
+                TextColumn::make('alamat')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('telepon')
+                TextColumn::make('telepon')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pendapatan')
+                TextColumn::make('pendapatan')
                     ->money('IDR')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('total_hutang')
+                TextColumn::make('total_hutang')
                     ->money('IDR')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('nama', 'asc')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make(),

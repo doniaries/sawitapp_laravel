@@ -7,7 +7,12 @@ use App\Models\Penjual;
 use App\Models\Supir;
 use App\Models\TransaksiDo;
 use Carbon\Carbon;
-use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Section;
@@ -16,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 class TransaksiDoForm
 {
-    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public static function configure(Schema $schema): Schema
     {
         return $schema->components([
             // Header Section
@@ -24,13 +29,13 @@ class TransaksiDoForm
                 ->components([
                     Grid::make()
                         ->components([
-                            Forms\Components\TextInput::make('nomor')
+                            TextInput::make('nomor')
                                 ->label('Nomor DO')
                                 ->default(fn() => TransaksiDo::generateMonthlyNumber())
                                 ->disabled()
                                 ->dehydrated(),
 
-                            Forms\Components\DateTimePicker::make('tanggal')
+                            DateTimePicker::make('tanggal')
                                 ->label('Tanggal')
                                 ->format('Y-m-d H:i:s')
                                 ->native(false)
@@ -50,7 +55,7 @@ class TransaksiDoForm
                         ->components([
                             Grid::make()
                                 ->components([
-                                    Forms\Components\Select::make('penjual_id')
+                                    Select::make('penjual_id')
                                         ->label('Penjual')
                                         ->relationship('penjual', 'nama')
                                         ->searchable()
@@ -58,18 +63,18 @@ class TransaksiDoForm
                                         ->live()
                                         ->required()
                                         ->createOptionForm([
-                                            Forms\Components\TextInput::make('nama')
+                                            TextInput::make('nama')
                                                 ->label('Nama Penjual')
                                                 ->unique(ignoreRecord: true)
                                                 ->required()
                                                 ->maxLength(255),
-                                            Forms\Components\TextInput::make('alamat')
+                                            TextInput::make('alamat')
                                                 ->label('Alamat')
                                                 ->maxLength(255),
-                                            Forms\Components\TextInput::make('telepon')
+                                            TextInput::make('telepon')
                                                 ->tel()
                                                 ->label('Nomor Telepon'),
-                                            Forms\Components\TextInput::make('hutang')
+                                            TextInput::make('hutang')
                                                 ->label(fn($context) => $context === 'create' ? 'Hutang Awal' : 'Total Hutang')
                                                 ->dehydrated()
                                                 ->prefix('Rp')
@@ -88,7 +93,7 @@ class TransaksiDoForm
                                             }
                                         }),
 
-                                    Forms\Components\Select::make('supir_id')
+                                    Select::make('supir_id')
                                         ->label('Supir')
                                         ->relationship('supir', 'nama')
                                         ->searchable()
@@ -97,12 +102,12 @@ class TransaksiDoForm
                                         ->required()
                                         ->afterStateUpdated(fn($state, Set $set) => $set('kendaraan_id', null))
                                         ->createOptionForm([
-                                            Forms\Components\TextInput::make('nama')->required()->maxLength(255),
-                                            Forms\Components\TextInput::make('alamat')->maxLength(255),
-                                            Forms\Components\TextInput::make('telepon')->tel()->maxLength(255),
+                                            TextInput::make('nama')->required()->maxLength(255),
+                                            TextInput::make('alamat')->maxLength(255),
+                                            TextInput::make('telepon')->tel()->maxLength(255),
                                         ]),
 
-                                    Forms\Components\Select::make('kendaraan_id')
+                                    Select::make('kendaraan_id')
                                         ->label('Nomor Polisi')
                                         ->options(function (Get $get) {
                                             $supirId = $get('supir_id');
@@ -112,8 +117,8 @@ class TransaksiDoForm
                                         ->preload()
                                         ->live()
                                         ->createOptionForm([
-                                            Forms\Components\TextInput::make('no_polisi')->required()->unique(Kendaraan::class, 'no_polisi')->maxLength(10),
-                                            Forms\Components\Hidden::make('supir_id')->default(fn(Get $get) => $get('../../supir_id'))
+                                            TextInput::make('no_polisi')->required()->unique(Kendaraan::class, 'no_polisi')->maxLength(10),
+                                            Hidden::make('supir_id')->default(fn(Get $get) => $get('../../supir_id'))
                                         ])
                                         ->createOptionUsing(function (array $data, Get $get) {
                                             DB::beginTransaction();
@@ -129,7 +134,7 @@ class TransaksiDoForm
                                             }
                                         }),
 
-                                    Forms\Components\TextInput::make('tonase')
+                                    TextInput::make('tonase')
                                         ->label('Tonase (Netto)')
                                         ->required()
                                         ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
@@ -148,7 +153,7 @@ class TransaksiDoForm
                                             self::hitungTotal($state, $get, $set);
                                         }),
 
-                                    Forms\Components\TextInput::make('harga_satuan')
+                                    TextInput::make('harga_satuan')
                                         ->label('Harga Satuan')
                                         ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                         ->required()
@@ -164,7 +169,7 @@ class TransaksiDoForm
 
                     Section::make()
                         ->components([
-                            Forms\Components\TextInput::make('hutang_awal')
+                            TextInput::make('hutang_awal')
                                 ->label('Total Hutang')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
@@ -172,7 +177,7 @@ class TransaksiDoForm
                                 ->dehydrated()
                                 ->numeric()
                                 ->default(0),
-                            Forms\Components\TextInput::make('sub_total')
+                            TextInput::make('sub_total')
                                 ->label('Sub Total')
                                 ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
                                 ->prefix('Rp')
@@ -191,7 +196,7 @@ class TransaksiDoForm
                         ->components([
                             Grid::make()
                                 ->components([
-                                    Forms\Components\TextInput::make('upah_bongkar')
+                                    TextInput::make('upah_bongkar')
                                         ->label('Upah Bongkar')
                                         ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
                                         ->prefix('Rp')
@@ -199,7 +204,7 @@ class TransaksiDoForm
                                         ->live(onBlur: true)
                                         ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
 
-                                    Forms\Components\TextInput::make('biaya_lain')
+                                    TextInput::make('biaya_lain')
                                         ->label('Biaya')
                                         ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
                                         ->prefix('Rp')
@@ -207,7 +212,7 @@ class TransaksiDoForm
                                         ->live(onBlur: true)
                                         ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
 
-                                    Forms\Components\TextInput::make('pembayaran_hutang')
+                                    TextInput::make('pembayaran_hutang')
                                         ->label('Bayar Hutang')
                                         ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                         ->prefix('Rp')
@@ -225,7 +230,7 @@ class TransaksiDoForm
                                             self::hitungSisaBayar($get, $set);
                                         }),
 
-                                    Forms\Components\Select::make('cara_bayar')
+                                    Select::make('cara_bayar')
                                         ->label('Cara Bayar')
                                         ->options(TransaksiDo::CARA_BAYAR)
                                         ->default('tunai')
@@ -244,7 +249,7 @@ class TransaksiDoForm
 
                                     Section::make('Informasi Saldo')
                                         ->components([
-                                            Forms\Components\Placeholder::make('saldo_perusahaan')
+                                            Placeholder::make('saldo_perusahaan')
                                                 ->label('Saldo Perusahaan')
                                                 ->content(fn() => 'Rp ' . number_format(\App\Models\Perusahaan::first()->saldo ?? 0, 0, ',', '.'))
                                                 ->extraAttributes(['class' => 'text-lg font-semibold']),
@@ -256,7 +261,7 @@ class TransaksiDoForm
 
                     Section::make()
                         ->components([
-                            Forms\Components\TextInput::make('sisa_hutang_penjual')
+                            TextInput::make('sisa_hutang_penjual')
                                 ->label('Sisa Hutang')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
@@ -264,7 +269,7 @@ class TransaksiDoForm
                                 ->dehydrated()
                                 ->default(0),
 
-                            Forms\Components\TextInput::make('sisa_bayar')
+                            TextInput::make('sisa_bayar')
                                 ->label('Sisa Bayar')
                                 ->required()
                                 ->prefix('Rp')

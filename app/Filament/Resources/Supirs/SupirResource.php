@@ -19,7 +19,7 @@ class SupirResource extends Resource
     protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?int $navigationSort = 5;
 
-    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
+    public static function form(Schema $form): Schema
     {
         return SupirForm::configure($form);
     }

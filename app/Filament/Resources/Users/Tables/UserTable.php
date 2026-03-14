@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
@@ -10,6 +9,10 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 
 class UserTable
 {
@@ -17,52 +20,54 @@ class UserTable
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('perusahaan.name')
+                TextColumn::make('perusahaan.name')
                     ->label('Perusahaan')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->searchable()
                     ->sortable()
                     ->copyable()
                     ->copyMessage('Email disalin')
                     ->copyMessageDuration(1500),
 
-                Tables\Columns\TextColumn::make('roles.name')
+                TextColumn::make('roles.name')
                     ->label('Hak Akses')
-                    ->sortable(),
+                    ->badge()
+                    ->color('info')
+                    ->searchable(),
 
-                Tables\Columns\ToggleColumn::make('is_active')
+                ToggleColumn::make('is_active')
                     ->label('Status')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('perusahaan')
+                SelectFilter::make('perusahaan')
                     ->relationship('perusahaan', 'name')
                     ->searchable()
                     ->preload()
                     ->label('Filter Perusahaan'),
 
-                Tables\Filters\SelectFilter::make('is_active')
+                SelectFilter::make('is_active')
                     ->label('Status')
                     ->options([
                         '1' => 'Aktif',
                         '0' => 'Tidak Aktif'
                     ]),
 
-                Tables\Filters\TrashedFilter::make()
+                TrashedFilter::make()
             ])
             ->recordActions([
                 EditAction::make()

@@ -26,7 +26,7 @@ class OperasionalResource extends Resource
             ->count();
     }
 
-    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
+    public static function form(Schema $form): Schema
     {
         return OperasionalForm::configure($form);
     }

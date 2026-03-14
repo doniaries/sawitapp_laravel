@@ -20,7 +20,7 @@ class PekerjaResource extends Resource
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
     protected static ?int $navigationSort = 4;
 
-    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
+    public static function form(Schema $form): Schema
     {
         return PekerjaForm::configure($form);
     }

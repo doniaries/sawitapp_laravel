@@ -31,7 +31,7 @@ class PerusahaanResource extends Resource
         return 'success';
     }
 
-    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
+    public static function form(Schema $form): Schema
     {
         return PerusahaanForm::configure($form);
     }

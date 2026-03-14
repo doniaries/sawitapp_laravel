@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Operasionals\Schemas;
 
 use App\Enums\KategoriOperasional;
-use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -22,14 +24,14 @@ class OperasionalForm
                         ->components([
                             // Kolom Kiri
                             Group::make([
-                                Forms\Components\DateTimePicker::make('tanggal')
+                                DateTimePicker::make('tanggal')
                                     ->label('Tanggal')
                                     ->native(false)
                                     ->displayFormat('d/m/Y H:i')
                                     ->default(now())
                                     ->required(),
 
-                                Forms\Components\Select::make('operasional')
+                                Select::make('operasional')
                                     ->label('Jenis')
                                     ->options([
                                         'pemasukan' => 'Pemasukan',
@@ -39,7 +41,7 @@ class OperasionalForm
                                     ->live()
                                     ->afterStateUpdated(fn($state, Set $set) => $set('kategori', null)),
 
-                                Forms\Components\Select::make('kategori')
+                                Select::make('kategori')
                                     ->label('Kategori')
                                     ->options(function ($get) {
                                         return match ($get('operasional')) {
@@ -51,7 +53,7 @@ class OperasionalForm
                                     ->required()
                                     ->live(),
 
-                                Forms\Components\Select::make('tipe_nama')
+                                Select::make('tipe_nama')
                                     ->label('Tipe')
                                     ->options([
                                         'penjual' => 'Penjual',
@@ -71,7 +73,7 @@ class OperasionalForm
 
                             // Kolom Kanan
                             Group::make([
-                                Forms\Components\Select::make('penjual_id')
+                                Select::make('penjual_id')
                                     ->label('Pilih Pihak')
                                     ->relationship('penjual', 'nama')
                                     ->searchable()
@@ -79,28 +81,28 @@ class OperasionalForm
                                     ->live()
                                     ->visible(fn($get) => $get('tipe_nama') === 'penjual'),
 
-                                Forms\Components\Select::make('supir_id')
+                                Select::make('supir_id')
                                     ->label('Pilih Pihak')
                                     ->relationship('supir', 'nama')
                                     ->searchable()
                                     ->preload()
                                     ->visible(fn($get) => $get('tipe_nama') === 'supir'),
 
-                                Forms\Components\Select::make('pekerja_id')
+                                Select::make('pekerja_id')
                                     ->label('Pilih Pihak')
                                     ->relationship('pekerja', 'nama')
                                     ->searchable()
                                     ->preload()
                                     ->visible(fn($get) => $get('tipe_nama') === 'pekerja'),
 
-                                Forms\Components\Select::make('user_id')
+                                Select::make('user_id')
                                     ->label('Pilih Pihak')
                                     ->relationship('user', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->visible(fn($get) => $get('tipe_nama') === 'user'),
 
-                                Forms\Components\TextInput::make('nominal')
+                                TextInput::make('nominal')
                                     ->label('Nominal')
                                     ->required()
                                     ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
@@ -108,7 +110,7 @@ class OperasionalForm
                                     ->numeric()
                                     ->live(),
 
-                                Forms\Components\TextInput::make('keterangan')
+                                TextInput::make('keterangan')
                                     ->label('Keterangan')
                             ])->columnSpan(1)
                         ])

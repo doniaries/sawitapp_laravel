@@ -11,6 +11,8 @@ use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
+use Filament\Schemas\Schema;
+
 class PenjualResource extends Resource
 {
     protected static ?string $model = Penjual::class;
@@ -25,7 +27,7 @@ class PenjualResource extends Resource
         ];
     }
 
-    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
+    public static function form(Schema $form): Schema
     {
         return PenjualForm::configure($form);
     }

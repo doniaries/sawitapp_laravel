@@ -2,42 +2,44 @@
 
 namespace App\Filament\Resources\LaporanKeuangans\Schemas;
 
-use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
 
 class LaporanKeuanganForm
 {
-    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Forms\Components\DateTimePicker::make('tanggal')
+            DateTimePicker::make('tanggal')
                 ->required(),
-            Forms\Components\TextInput::make('jenis_transaksi')
+            TextInput::make('jenis_transaksi')
                 ->required(),
-            Forms\Components\TextInput::make('kategori')
+            TextInput::make('kategori')
                 ->required()
                 ->maxLength(50),
-            Forms\Components\TextInput::make('sub_kategori')
+            TextInput::make('sub_kategori')
                 ->maxLength(50),
-            Forms\Components\TextInput::make('nominal')
+            TextInput::make('nominal')
                 ->required()
                 ->numeric(),
-            Forms\Components\TextInput::make('sumber_transaksi')
+            TextInput::make('sumber_transaksi')
                 ->required()
                 ->maxLength(50),
-            Forms\Components\TextInput::make('referensi_id')
+            TextInput::make('referensi_id')
                 ->required()
                 ->numeric(),
-            Forms\Components\TextInput::make('nomor_referensi')
+            TextInput::make('nomor_referensi')
                 ->maxLength(50),
-            Forms\Components\TextInput::make('pihak_terkait')
+            TextInput::make('pihak_terkait')
                 ->maxLength(100),
-            Forms\Components\TextInput::make('tipe_pihak'),
-            Forms\Components\TextInput::make('cara_pembayaran')
+            TextInput::make('tipe_pihak'),
+            TextInput::make('cara_pembayaran')
                 ->maxLength(20),
-            Forms\Components\Textarea::make('keterangan')
+            Textarea::make('keterangan')
                 ->columnSpanFull(),
         ]);
     }

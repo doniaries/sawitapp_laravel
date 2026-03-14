@@ -2,14 +2,16 @@
 
 namespace App\Filament\Resources\Perusahaans\Schemas;
 
-use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
 
 class PerusahaanForm
 {
-    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public static function configure(Schema $schema): Schema
     {
         return $schema->components([
             Grid::make(['default' => 1])
@@ -18,24 +20,24 @@ class PerusahaanForm
                         ->components([
                             Grid::make(2)
                                 ->components([
-                                    Forms\Components\TextInput::make('name')
+                                    TextInput::make('name')
                                         ->label('Nama Perusahaan')
                                         ->required()
                                         ->maxLength(255),
-                                    Forms\Components\TextInput::make('saldo')
+                                    TextInput::make('saldo')
                                         ->required()
                                         ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
                                         ->required()
                                         ->prefix('Rp.'),
-                                    Forms\Components\TextInput::make('alamat')
+                                    TextInput::make('alamat')
                                         ->maxLength(255),
-                                    Forms\Components\TextInput::make('email')
+                                    TextInput::make('email')
                                         ->email(),
-                                    Forms\Components\TextInput::make('pimpinan')
+                                    TextInput::make('pimpinan')
                                         ->maxLength(255),
-                                    Forms\Components\TextInput::make('npwp')
+                                    TextInput::make('npwp')
                                         ->maxLength(30),
-                                    Forms\Components\FileUpload::make('logo')
+                                    FileUpload::make('logo')
                                         ->label('Logo Perusahaan')
                                         ->image()
                                         ->disk('public')
@@ -43,7 +45,7 @@ class PerusahaanForm
                                         ->maxSize(2048)
                                         ->preserveFilenames(),
 
-                                    Forms\Components\Toggle::make('is_active')
+                                    Toggle::make('is_active')
                                         ->required(),
                                 ]),
                         ]),

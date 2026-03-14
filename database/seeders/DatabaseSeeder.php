@@ -30,10 +30,12 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Set team context for permissions
-        setPermissionsTeamId($perusahaan->id);
-
+        // Bebaskan superadmin dari shield (global role)
+        setPermissionsTeamId(null);
         $superadmin->syncRoles(['super_admin']);
+
+        // Set back team context for other permissions
+        setPermissionsTeamId($perusahaan->id);
 
         $this->call([
             UserSeeder::class,

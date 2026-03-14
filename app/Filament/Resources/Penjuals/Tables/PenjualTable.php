@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Penjuals\Tables;
 
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\BulkAction;
+use Filament\Tables\Columns\TextColumn;
 
 class PenjualTable
 {
@@ -15,21 +15,21 @@ class PenjualTable
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama')
+                TextColumn::make('nama')
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('alamat')
+                TextColumn::make('alamat')
                     ->label('Alamat')
                     ->searchable()
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('telepon')
+                TextColumn::make('telepon')
                     ->label('Telepon')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('hutang')
+                TextColumn::make('hutang')
                     ->label('Total Hutang')
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->alignment('right')
@@ -37,7 +37,7 @@ class PenjualTable
                     ->color(fn($state) => $state > 0 ? 'danger' : 'success')
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Terdaftar')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()

@@ -12,6 +12,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
+use Filament\Schemas\Schema;
+
 class LaporanKeuanganResource extends Resource
 {
     protected static ?string $model = \App\Models\LaporanKeuangan::class;
@@ -19,7 +21,7 @@ class LaporanKeuanganResource extends Resource
     protected static ?string $navigationLabel = 'Laporan';
     protected static ?int $navigationSort = 2;
 
-    public static function form(\Filament\Schemas\Schema $form): \Filament\Schemas\Schema
+    public static function form(Schema $form): Schema
     {
         return LaporanKeuanganForm::configure($form);
     }

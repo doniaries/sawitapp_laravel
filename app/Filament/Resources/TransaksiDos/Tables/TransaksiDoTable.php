@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\TransaksiDos\Tables;
 
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Support\Colors\Color;
 
 class TransaksiDoTable
@@ -20,7 +22,7 @@ class TransaksiDoTable
                 'xl' => 3,
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('nomor')
+                TextColumn::make('nomor')
                     ->label('Nomor')
                     ->searchable()
                     ->sortable()
@@ -28,13 +30,13 @@ class TransaksiDoTable
                     ->badge()
                     ->color(Color::Blue),
 
-                Tables\Columns\TextColumn::make('tanggal')
+                TextColumn::make('tanggal')
                     ->label('Tanggal')
                     ->badge()
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('cara_bayar')
+                TextColumn::make('cara_bayar')
                     ->label('Cara Bayar')
                     ->searchable()
                     ->badge()
@@ -46,41 +48,41 @@ class TransaksiDoTable
                         default => 'gray',
                     }),
 
-                Tables\Columns\TextColumn::make('penjual.nama')
+                TextColumn::make('penjual.nama')
                     ->label('Penjual')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('supir.nama')
+                TextColumn::make('supir.nama')
                     ->label('Supir')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('tonase')
+                TextColumn::make('tonase')
                     ->label('Tonase')
                     ->suffix(' Kg')
                     ->numeric()
                     ->summarize([
-                        Tables\Columns\Summarizers\Sum::make()->suffix(' Kg')
+                        Sum::make()->suffix(' Kg')
                     ])
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('harga_satuan')
+                TextColumn::make('harga_satuan')
                     ->label('Harga Satuan')
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('sub_total')
+                TextColumn::make('sub_total')
                     ->label('Sub Total')
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->color(Color::Amber)
                     ->weight('bold')
                     ->summarize([
-                        Tables\Columns\Summarizers\Sum::make()->currency('IDR', true)
+                        Sum::make()->currency('IDR', true)
                     ])
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make(),

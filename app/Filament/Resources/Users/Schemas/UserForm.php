@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Section;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +18,7 @@ class UserForm
                 Section::make('Informasi Pengguna')
                     ->description('Kelola informasi pengguna dan akses')
                     ->components([
-                        Forms\Components\Select::make('perusahaan_id')
+                        Select::make('perusahaan_id')
                             ->label('Perusahaan')
                             ->relationship('perusahaan', 'name')
                             ->searchable()
@@ -24,31 +26,27 @@ class UserForm
                             ->required()
                             ->native(false),
 
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Lengkap')
                             ->unique(ignoreRecord: true)
                             ->required()
                             ->maxLength(255),
 
-                        Forms\Components\TextInput::make('email')
+                        TextInput::make('email')
                             ->label('Email')
                             ->unique(ignoreRecord: true)
                             ->email()
                             ->required()
                             ->maxLength(20),
 
-                        Forms\Components\Select::make('roles')
+                        Select::make('roles')
                             ->label('Hak Akses')
                             ->relationship('roles', 'name')
-                            ->saveRelationshipsUsing(function (\Illuminate\Database\Eloquent\Model $record, $state) {
-                                setPermissionsTeamId($record->perusahaan_id);
-                                $record->roles()->syncWithPivotValues($state, [config('permission.column_names.team_foreign_key') => getPermissionsTeamId()]);
-                            })
                             ->multiple()
                             ->preload()
                             ->searchable(),
 
-                        Forms\Components\TextInput::make('password')
+                        TextInput::make('password')
                             ->label('Password')
                             ->password()
                             ->revealable(true)
@@ -60,7 +58,7 @@ class UserForm
                             ->dehydrated(fn($state) => filled($state))
                             ->live(true),
 
-                        Forms\Components\TextInput::make('passwordConfirmation')
+                        TextInput::make('passwordConfirmation')
                             ->label('Konfirmasi Password')
                             ->password()
                             ->revealable(true)
@@ -77,7 +75,7 @@ class UserForm
                             ->maxLength(255)
                             ->dehydrated(false),
 
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
                             ->required(),

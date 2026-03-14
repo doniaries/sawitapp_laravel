@@ -74,9 +74,10 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->searchableTenantMenu()
             ->tenant(Perusahaan::class, slugAttribute: 'slug')
             ->tenantProfile(EditTeamProfile::class)
-                        ->plugins([
+            ->plugins([
                 FilamentShieldPlugin::make()
                     ->gridColumns([
                         'default' => 1,
@@ -93,10 +94,8 @@ class AdminPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ])
-                    ->scopeToTenant(true)                       // bool|Closure
-                    ->tenantRelationshipName('organization')    // string|Closure|null
-                    ->tenantOwnershipRelationshipName('owner'), // string|Closure|null,
-                \DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin::make()
+                    ->scopeToTenant(false),
+                FilamentDeveloperLoginsPlugin::make()
                     ->enabled(app()->environment('local'))
                     ->users([
                         'Admin' => 'superadmin@gmail.com',

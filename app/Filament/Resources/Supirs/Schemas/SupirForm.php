@@ -2,30 +2,30 @@
 
 namespace App\Filament\Resources\Supirs\Schemas;
 
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
 
 class SupirForm
 {
-    public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public static function configure(Schema $schema): Schema
     {
         return $schema->components([
             Section::make()
                 ->components([
                     Grid::make(4)
                         ->components([
-                            Forms\Components\TextInput::make('nama')
+                            TextInput::make('nama')
                                 ->required()
                                 ->maxLength(255),
 
-                            Forms\Components\TextInput::make('telepon')
+                            TextInput::make('telepon')
                                 ->tel(),
 
-                            Forms\Components\TextInput::make('alamat'),
+                            TextInput::make('alamat'),
 
-                            Forms\Components\TextInput::make('hutang')
+                            TextInput::make('hutang')
                                 ->prefix('Rp')
                                 ->numeric()
                                 ->default(0)

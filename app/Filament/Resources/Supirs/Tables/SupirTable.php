@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\Supirs\Tables;
 
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 
 class SupirTable
@@ -16,18 +18,18 @@ class SupirTable
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama')
+                TextColumn::make('nama')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('alamat')
+                TextColumn::make('alamat')
                     ->searchable()
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('telepon')
+                TextColumn::make('telepon')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('hutang')
+                TextColumn::make('hutang')
                     ->label('Total Hutang')
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->alignRight()
@@ -36,8 +38,8 @@ class SupirTable
             ])
             ->defaultSort('nama', 'asc')
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
-                Tables\Filters\Filter::make('has_hutang')
+                TrashedFilter::make(),
+                Filter::make('has_hutang')
                     ->query(fn(Builder $query): Builder => $query->where('hutang', '>', 0))
                     ->label('Ada Hutang')
                     ->toggle()
