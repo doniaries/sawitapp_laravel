@@ -31,6 +31,7 @@ class TransaksiDo extends Model
 
     protected $fillable = [
         'id',
+        'perusahaan_id',
         'nomor',
         'tanggal',
         'penjual_id',
@@ -107,6 +108,11 @@ class TransaksiDo extends Model
         return $this->belongsTo(Penjual::class)->withDefault([
             'nama' => 'Tidak Diketahui'
         ]);
+    }
+
+    public function perusahaan(): BelongsTo
+    {
+        return $this->belongsTo(Perusahaan::class);
     }
 
     // Tambahkan relation ke laporan keuangan

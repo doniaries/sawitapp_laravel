@@ -21,7 +21,8 @@ class RiwayatPembayaranHutang extends Model
         'pekerja_id',
         'supir_id',
         'operasional_id',
-        'keterangan'
+        'keterangan',
+        'perusahaan_id',
     ];
 
     protected $casts = [
@@ -34,6 +35,11 @@ class RiwayatPembayaranHutang extends Model
     public function penjual(): BelongsTo
     {
         return $this->belongsTo(Penjual::class);
+    }
+
+    public function perusahaan(): BelongsTo
+    {
+        return $this->belongsTo(Perusahaan::class);
     }
 
     public function supir()

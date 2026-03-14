@@ -21,49 +21,42 @@ class PerusahaanSeeder extends Seeder
 
 
         // Clear existing records
-        DB::table('users')->where('perusahaan_id', '!=', null)->delete();
-        Perusahaan::truncate();
+        // DB::table('users')->where('perusahaan_id', '!=', null)->delete();
+        // Perusahaan::truncate();
 
         // Create the main perusahaan
-        $perusahaan = Perusahaan::create([
-            'name' => 'CV SUCCESS MANDIRI',
-            'alamat' => 'Dusun Sungai Moran Nagari Kamang',
-            'telepon' => '+62 823-8921-9670',
-            'pimpinan' => 'Yondra',
-            'npwp' => '12.345.678.9-123.000',
-            'is_active' => true,
-            'sisa_saldo_kemarin' => 0,
-            'tanggal_sisa_saldo' => now(),
-            'sudah_diproses' => false,
+        $perusahaan1 = Perusahaan::firstOrCreate(
+            ['name' => 'CV SUCCESS MANDIRI'],
+            [
+                'alamat' => 'Dusun Sungai Moran Nagari Kamang',
+                'telepon' => '+62 823-8921-9670',
+                'pimpinan' => 'Yondra',
+                'npwp' => '12.345.678.9-123.000',
+                'is_active' => true,
+                'sisa_saldo_kemarin' => 0,
+                'tanggal_sisa_saldo' => now(),
+                'sudah_diproses' => false,
+            ]
+        );
 
-        ]);
-
-        // Create additional perusahaan
-        // Perusahaan::create([
-        //     'name' => 'Koperasi Success Mandiri',
-        //     'alamat' => 'Sungai Moran, Nagari Kamang',
-        //     'telepon' => '+62 852-7845-1122',
-        //     'pimpinan' => 'Yondra',
-        //     'npwp' => '12.345.678.9-124.000',
-        //     'saldo' => 150000000,
-        //     'is_active' => true,
-
-        // ]);
-
-        // Perusahaan::create([
-        //     'name' => 'CV SUCCESS',
-        //     'alamat' => 'Sungai Moran, Nagari Kamang',
-        //     'telepon' => '+62 813-6677-8899',
-        //     'pimpinan' => 'Yondra',
-        //     'npwp' => '12.345.678.9-125.000',
-        //     'saldo' => 120000000,
-        //     'is_active' => true,
-
-        // ]);
+        // Create the second perusahaan
+        $perusahaan2 = Perusahaan::firstOrCreate(
+            ['name' => 'PT MANDIRI MAJU JAYA'],
+            [
+                'alamat' => 'Jl. Lintas Sumatera No. 45',
+                'telepon' => '+62 812-3456-7890',
+                'pimpinan' => 'Budi Santoso',
+                'npwp' => '98.765.432.1-456.000',
+                'is_active' => true,
+                'sisa_saldo_kemarin' => 0,
+                'tanggal_sisa_saldo' => now(),
+                'sudah_diproses' => false,
+            ]
+        );
 
         // Re-enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        return $perusahaan;
+        return $perusahaan1;
     }
 }

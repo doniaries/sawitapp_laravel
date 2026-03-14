@@ -7,6 +7,7 @@ use App\Enums\KategoriOperasional;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Supir extends Model
@@ -20,7 +21,8 @@ class Supir extends Model
         'alamat',
         'telepon',
         'hutang',
-        'riwayat_bayar'
+        'riwayat_bayar',
+        'perusahaan_id',
     ];
 
     protected $casts = [
@@ -31,6 +33,11 @@ class Supir extends Model
     public function transaksiDo(): HasMany
     {
         return $this->hasMany(TransaksiDo::class);
+    }
+
+    public function perusahaan(): BelongsTo
+    {
+        return $this->belongsTo(Perusahaan::class);
     }
 
     public function kendaraan(): HasMany

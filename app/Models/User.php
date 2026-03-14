@@ -9,12 +9,14 @@ use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Sanctum\HasApiTokens;
+use Filament\Models\Contracts\HasTenants;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Traits\HasRoles;
 
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasTenants
 {
     use HasFactory, Notifiable, SoftDeletes, HasRoles;
 
@@ -69,5 +71,15 @@ class User extends Authenticatable implements FilamentUser
     public function perusahaan(): BelongsTo
     {
         return $this->belongsTo(Perusahaan::class, 'perusahaan_id');
+    }
+
+    public function getTenants(Panel $panel): Collection
+    {
+        return collect([$this->perusahaan])->filter();
+    }
+
+    public function canAccessTenant(Model $tenant): bool
+    {
+        return $this->perusahaan_id === $tenant->id;
     }
 }

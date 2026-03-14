@@ -137,8 +137,12 @@ class PenjualSeeder extends Seeder
             ],
         ];
 
+        $perusahaan = \App\Models\Perusahaan::first();
+        $perusahaanId = $perusahaan?->id;
+
         // Loop through and create each penjual record
         foreach ($penjuals as $penjual) {
+            $penjual['perusahaan_id'] = $perusahaanId;
             Penjual::create($penjual);
         }
     }

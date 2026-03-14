@@ -14,12 +14,18 @@ class Kendaraan extends Model
 
     protected $fillable = [
         'no_polisi',
-        'supir_id'
+        'supir_id',
+        'perusahaan_id',
     ];
 
     // Relations
     public function supir(): BelongsTo
     {
         return $this->belongsTo(Supir::class);
+    }
+
+    public function perusahaan(): BelongsTo
+    {
+        return $this->belongsTo(Perusahaan::class);
     }
 }

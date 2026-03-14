@@ -10,6 +10,9 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        $perusahaan = \App\Models\Perusahaan::first();
+        $perusahaanId = $perusahaan?->id;
+
         // Admin (Yondra)
         $yondra = User::firstOrCreate(
             ['email' => 'yondra@gmail.com'],
@@ -18,6 +21,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'is_active' => true,
                 'email_verified_at' => now(),
+                'perusahaan_id' => $perusahaanId,
             ]
         );
         $yondra->syncRoles(['admin']);
@@ -30,6 +34,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'is_active' => true,
                 'email_verified_at' => now(),
+                'perusahaan_id' => $perusahaanId,
             ]
         );
         $wendy->syncRoles(['admin']);
@@ -42,6 +47,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'is_active' => true,
                 'email_verified_at' => now(),
+                'perusahaan_id' => $perusahaanId,
             ]
         );
         $kasir->syncRoles(['kasir']);

@@ -164,7 +164,11 @@ class SupirSeeder extends Seeder
             ],
         ];
 
+        $perusahaan = \App\Models\Perusahaan::first();
+        $perusahaanId = $perusahaan?->id;
+
         foreach ($supirs as $supir) {
+            $supir['perusahaan_id'] = $perusahaanId;
             Supir::create($supir);
         }
     }

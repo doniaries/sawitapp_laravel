@@ -318,7 +318,11 @@ class TransaksiDoSeeder extends Seeder
             ],
         ];
 
+        $perusahaan = \App\Models\Perusahaan::first();
+        $perusahaanId = $perusahaan?->id;
+
         foreach ($transaksiDos as $transaksiDo) {
+            $transaksiDo['perusahaan_id'] = $perusahaanId;
             TransaksiDo::create($transaksiDo);
         }
     }

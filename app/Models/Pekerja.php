@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Pekerja extends Model
 {
@@ -17,6 +18,7 @@ class Pekerja extends Model
         'telepon',
         'pendapatan',
         'hutang',
+        'perusahaan_id',
     ];
 
     protected $casts = [
@@ -28,6 +30,11 @@ class Pekerja extends Model
     public function operasional()
     {
         return $this->hasMany(Operasional::class);
+    }
+
+    public function perusahaan(): BelongsTo
+    {
+        return $this->belongsTo(Perusahaan::class);
     }
 
     // Tambahkan relasi ke riwayat pembayaran

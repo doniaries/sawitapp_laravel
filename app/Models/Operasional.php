@@ -6,6 +6,7 @@ use App\Enums\KategoriOperasional; // [TAMBAH] Import enum
 use App\Models\{User, Penjual, Supir, Pekerja, TransaksiDo}; // [EDIT] Gabungkan import
 use Illuminate\Database\Eloquent\{Model, SoftDeletes, Factories\HasFactory}; // [EDIT] Gabungkan import
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class Operasional extends Model
 {
@@ -24,6 +25,7 @@ class Operasional extends Model
         'pekerja_id', // [TAMBAH] Sesuai dengan relasi
         'nominal',
         'keterangan',
+        'perusahaan_id',
         // 'file_bukti',
     ];
 
@@ -74,6 +76,11 @@ class Operasional extends Model
     public function transaksiDo(): BelongsTo // [EDIT] Tambah return type
     {
         return $this->belongsTo(TransaksiDo::class, 'transaksi_do_id');
+    }
+
+    public function perusahaan(): BelongsTo
+    {
+        return $this->belongsTo(Perusahaan::class);
     }
 
     // Accessors & Mutators

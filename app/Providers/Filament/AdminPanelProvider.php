@@ -36,6 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->favicon(asset('images/success.png'))
             ->login()
+            ->tenant(\App\Models\Perusahaan::class)
             ->colors([
                 'primary' => Color::Amber,
                 'secondary' => Color::Cyan,

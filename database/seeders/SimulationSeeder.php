@@ -25,6 +25,8 @@ class SimulationSeeder extends Seeder
 
         // Direct Perusahaan Balance Adjustment to avoid Observer block during seeder
         $perusahaan = \App\Models\Perusahaan::first();
+        $perusahaanId = $perusahaan?->id;
+
         if ($perusahaan) {
             $perusahaan->update(['saldo' => 1000000000]); // Set 1 Billion to be safe
         }
@@ -33,40 +35,40 @@ class SimulationSeeder extends Seeder
         TransaksiDo::unsetEventDispatcher();
 
         if (empty($penjualIds)) {
-            $penjual = Penjual::create(['nama' => 'SIMULASI PENJUAL 1', 'hutang' => 0]);
+            $penjual = Penjual::create(['nama' => 'SIMULASI PENJUAL 1', 'hutang' => 0, 'perusahaan_id' => $perusahaanId]);
             $penjualIds = [$penjual->id];
         }
 
         if (empty($supirIds)) {
-            $supir = Supir::create(['nama' => 'SIMULASI SUPIR 1']);
+            $supir = Supir::create(['nama' => 'SIMULASI SUPIR 1', 'perusahaan_id' => $perusahaanId]);
             $supirIds = [$supir->id];
         }
 
         // 1. Create 30 Transactions for Last Month
-        $this->createTransactions($lastMonth, 30, $penjualIds, $supirIds);
+        $this->createTransactions($lastMonth, 30, $penjualIds, $supirIds, $perusahaanId);
 
         // 2. Create 10 Transactions for This Month (Randomized dates)
-        $this->createTransactions($thisMonth, 10, $penjualIds, $supirIds);
+        $this->createTransactions($thisMonth, 10, $penjualIds, $supirIds, $perusahaanId);
 
         // 3. Create 5 TRANSACTIONS FOR TODAY (Flexible)
-        $this->createTransactions(now(), 5, $penjualIds, $supirIds, true);
+        $this->createTransactions(now(), 5, $penjualIds, $supirIds, $perusahaanId, true);
 
         // 4. Create Operasional data for simulation
-        $this->createOperasional($lastMonth, 'Pemasukan Saldo Awal', 500000000, 'pemasukan');
-        $this->createOperasional($lastMonth, 'Biaya Kantor Desember', 5000000, 'pengeluaran');
+        $this->createOperasional($lastMonth, 'Pemasukan Saldo Awal', 500000000, 'pemasukan', $perusahaanId);
+        $this->createOperasional($lastMonth, 'Biaya Kantor Desember', 5000000, 'pengeluaran', $perusahaanId);
 
-        $this->createOperasional($thisMonth, 'Tambah Modal Januari', 10000000, 'pemasukan');
-        $this->createOperasional($thisMonth, 'Biaya Listrik Januari', 1500000, 'pengeluaran');
+        $this->createOperasional($thisMonth, 'Tambah Modal Januari', 10000000, 'pemasukan', $perusahaanId);
+        $this->createOperasional($thisMonth, 'Biaya Listrik Januari', 1500000, 'pengeluaran', $perusahaanId);
 
-        $this->createOperasional(now(), 'Biaya Makan Hari Ini', 200000, 'pengeluaran');
-        $this->createOperasional(now(), 'Setoran Keamanan Hari Ini', 150000, 'pengeluaran');
-        $this->createOperasional(now(), 'Pemasukan Tambahan Hari Ini', 500000, 'pemasukan');
+        $this->createOperasional(now(), 'Biaya Makan Hari Ini', 200000, 'pengeluaran', $perusahaanId);
+        $this->createOperasional(now(), 'Setoran Keamanan Hari Ini', 150000, 'pengeluaran', $perusahaanId);
+        $this->createOperasional(now(), 'Pemasukan Tambahan Hari Ini', 500000, 'pemasukan', $perusahaanId);
 
         // 5. Sync any missing old data to LaporanKeuangan
-        $this->syncExistingData();
+        $this->syncExistingData($perusahaanId);
     }
 
-    private function syncExistingData()
+    private function syncExistingData($perusahaanId)
     {
         // Sync TransaksiDo
         $missingDos = TransaksiDo::whereNotExists(function ($query) {
@@ -91,6 +93,7 @@ class SimulationSeeder extends Seeder
                 'cara_pembayaran' => $transaksi->cara_bayar,
                 'keterangan' => "Sync: Transaksi Lama {$transaksi->nomor}",
                 'mempengaruhi_kas' => $transaksi->cara_bayar === 'tunai',
+                'perusahaan_id' => $transaksi->perusahaan_id ?? $perusahaanId,
             ]);
         }
 
@@ -116,11 +119,12 @@ class SimulationSeeder extends Seeder
                 'cara_pembayaran' => 'tunai',
                 'keterangan' => $op->keterangan,
                 'mempengaruhi_kas' => true,
+                'perusahaan_id' => $op->perusahaan_id ?? $perusahaanId,
             ]);
         }
     }
 
-    private function createTransactions($date, $count, $penjualIds, $supirIds, $isToday = false)
+    private function createTransactions($date, $count, $penjualIds, $supirIds, $perusahaanId, $isToday = false)
     {
         for ($i = 1; $i <= $count; $i++) {
             $tonase = rand(1000, 10000);
@@ -149,6 +153,7 @@ class SimulationSeeder extends Seeder
                 'sisa_bayar' => $subTotal,
                 'pembayaran_hutang' => 0,
                 'cara_bayar' => $caraBayar,
+                'perusahaan_id' => $perusahaanId,
             ]);
 
             // MANUALLY CREATE LAPORAN KEUANGAN since observer is disabled
@@ -166,11 +171,12 @@ class SimulationSeeder extends Seeder
                 'cara_pembayaran' => $caraBayar,
                 'keterangan' => "Simulasi Transaksi {$nomor}",
                 'mempengaruhi_kas' => $caraBayar === 'tunai',
+                'perusahaan_id' => $perusahaanId,
             ]);
         }
     }
 
-    private function createOperasional($date, $keterangan, $nominal, $jenis)
+    private function createOperasional($date, $keterangan, $nominal, $jenis, $perusahaanId)
     {
         $tanggal = Carbon::parse($date)->setDay(rand(1, 10));
 
@@ -182,6 +188,7 @@ class SimulationSeeder extends Seeder
             'user_id' => 1,
             'nominal' => $nominal,
             'keterangan' => $keterangan,
+            'perusahaan_id' => $perusahaanId,
         ]);
 
         LaporanKeuangan::create([
@@ -197,6 +204,7 @@ class SimulationSeeder extends Seeder
             'cara_pembayaran' => 'tunai',
             'keterangan' => $keterangan,
             'mempengaruhi_kas' => true,
+            'perusahaan_id' => $perusahaanId,
         ]);
     }
 }

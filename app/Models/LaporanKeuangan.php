@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo as EloquentBelongsTo;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\{Operasional, TransaksiDo};
 use App\Observers\LaporanKeuanganObserver;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 use App\Traits\{LaporanKeuanganTrait, DokumentasiTrait};
 
 class LaporanKeuangan extends Model
@@ -33,6 +35,7 @@ class LaporanKeuangan extends Model
         'tipe_pihak',
         'cara_pembayaran',
         'keterangan',
+        'perusahaan_id',
     ];
 
     protected $casts = [
@@ -86,6 +89,11 @@ class LaporanKeuangan extends Model
     public function operasional(): EloquentBelongsTo
     {
         return $this->belongsTo(Operasional::class, 'referensi_id');
+    }
+
+    public function perusahaan(): BelongsTo
+    {
+        return $this->belongsTo(Perusahaan::class);
     }
 
     public function createdBy()

@@ -77,7 +77,13 @@ class OperasionalSeeder extends Seeder
             ],
         ];
 
+        $perusahaan = \App\Models\Perusahaan::first();
+        $perusahaanId = $perusahaan?->id;
+
         foreach ($operasionals as $data) {
+            // Add perusahaan_id to operasional data
+            $data['perusahaan_id'] = $perusahaanId;
+            
             // Create Operasional entry
             $operasional = Operasional::create($data);
 
@@ -95,6 +101,7 @@ class OperasionalSeeder extends Seeder
                 'cara_pembayaran' => 'tunai',
                 'keterangan' => $data['keterangan'],
                 'mempengaruhi_kas' => true,
+                'perusahaan_id' => $perusahaanId,
             ]);
         }
     }

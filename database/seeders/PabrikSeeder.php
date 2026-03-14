@@ -26,7 +26,11 @@ class PabrikSeeder extends Seeder
                 'alamat' => 'Muaro Takung',
             ],
         ];
+        $perusahaan = \App\Models\Perusahaan::first();
+        $perusahaanId = $perusahaan?->id;
+
         foreach ($pabriks as $pabrik) {
+            $pabrik['perusahaan_id'] = $perusahaanId;
             \App\Models\Pabrik::create($pabrik);
         }
     }

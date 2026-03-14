@@ -10,7 +10,15 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Buat Super Admin
+        // First, seed the company (tenant)
+        $this->call([
+            PerusahaanSeeder::class,
+            ShieldSeeder::class,
+        ]);
+
+        $perusahaan = \App\Models\Perusahaan::first();
+
+        // Buat Super Admin tied to the perusahaan
         $superadmin = User::firstOrCreate(
             ['email' => 'superadmin@gmail.com'],
             [
@@ -18,20 +26,18 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'is_active' => true,
                 'email_verified_at' => now(),
+                'perusahaan_id' => $perusahaan?->id,
             ]
         );
 
+        $superadmin->syncRoles(['super_admin']);
+
         $this->call([
-            ShieldSeeder::class,
             UserSeeder::class,
-            PerusahaanSeeder::class,
             PenjualSeeder::class,
             SupirSeeder::class,
             OperasionalSeeder::class,
             TransaksiDoSeeder::class,
         ]);
-
-        // Assign role super_admin setelah Shield seeder berjalan
-        $superadmin->syncRoles(['super_admin']);
     }
 }
