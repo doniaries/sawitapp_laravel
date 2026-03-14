@@ -26,20 +26,31 @@ class ShieldSeeder extends Seeder
             "page_Dashboard"
         ];
 
-        // Admin: Semua kecuali yang mengandung 'role'
+        // Admin: Semua kecuali Role management
         $adminPermissions = collect($allPermissions)->filter(function ($permission) {
             return !str_contains($permission, '_role');
         })->toArray();
 
-        // Kasir: Terbatas pada Transaksi DO, Operasional, dan Laporan
+        // Kasir: Terbatas pada Transaksi DO, Operasional, Laporan, dan Master Data (hanya Lihat)
         $kasirPermissions = [
+            // Dashboard
+            "page_Dashboard",
+
+            // Transaksi DO
             "view_transaksi_do", "view_any_transaksi_do", "create_transaksi_do", "update_transaksi_do",
+            
+            // Operasional
             "view_operasional", "view_any_operasional", "create_operasional", "update_operasional",
-            "view_penjual", "view_any_penjual", // Kasir butuh lihat master data untuk transaksi
+
+            // Laporan Keuangan
+            "view_laporan_keuangan", "view_any_laporan_keuangan",
+
+            // Master Data (Hanya View/List)
+            "view_penjual", "view_any_penjual",
             "view_supir", "view_any_supir",
             "view_kendaraan", "view_any_kendaraan",
-            "view_laporan_keuangan", "view_any_laporan_keuangan",
-            "page_Dashboard"
+            "view_pekerja", "view_any_pekerja",
+            "view_perusahaan", "view_any_perusahaan"
         ];
 
         $rolesWithPermissions = [
