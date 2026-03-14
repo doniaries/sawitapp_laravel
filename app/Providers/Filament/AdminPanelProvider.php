@@ -3,9 +3,13 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
-use App\Settings\GeneralSettings;
+// use App\Filament\Pages\Settings;
+use App\Filament\Pages\Tenancy\EditTeamProfile;
+use App\Models\Perusahaan;
+// use App\Settings\GeneralSettings;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -23,6 +27,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -37,7 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->favicon(asset('images/success.png'))
             ->login()
-            ->tenant(\App\Models\Perusahaan::class)
+
             ->colors([
                 'primary' => Color::Amber,
                 'secondary' => Color::Cyan,
@@ -69,24 +74,25 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-
-            ->plugins([
+            ->tenant(Perusahaan::class, slugAttribute: 'slug')
+            ->tenantProfile(EditTeamProfile::class)
+                        ->plugins([
                 FilamentShieldPlugin::make()
-                ->gridColumns([
-        'default' => 1,
-        'sm' => 2,
-        'lg' => 3
-    ])
-    ->sectionColumnSpan(1)
-    ->checkboxListColumns([
-        'default' => 1,
-        'sm' => 2,
-        'lg' => 4,
-    ])
-    ->resourceCheckboxListColumns([
-        'default' => 1,
-        'sm' => 2,
-    ])
+                    ->gridColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                        'lg' => 3
+                    ])
+                    ->sectionColumnSpan(1)
+                    ->checkboxListColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                        'lg' => 4,
+                    ])
+                    ->resourceCheckboxListColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                    ])
                     ->scopeToTenant(true)                       // bool|Closure
                     ->tenantRelationshipName('organization')    // string|Closure|null
                     ->tenantOwnershipRelationshipName('owner'), // string|Closure|null,
