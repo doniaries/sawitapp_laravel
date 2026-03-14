@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('riwayat_pembayaran_hutangs', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaans')->cascadeOnDelete();
             $table->timestamp('tanggal');
             $table->decimal('nominal', 15, 0);
             $table->string('tipe_nama')->nullable();

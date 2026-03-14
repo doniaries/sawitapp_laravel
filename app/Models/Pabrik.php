@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -12,6 +13,7 @@ class Pabrik extends Model
         'nama',
         'alamat',
         'keterangan',
+        'slug',
     ];
 
     public function perusahaan(): BelongsTo

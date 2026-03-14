@@ -14,6 +14,7 @@ return new class extends Migration
         // Buat ulang tabel dengan struktur yang benar
         Schema::create('operasional', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaans')->cascadeOnDelete();
             $table->dateTime('tanggal');
             $table->enum('operasional', ['pemasukan', 'pengeluaran']);
             $table->string('kategori');
@@ -33,6 +34,7 @@ return new class extends Migration
             $table->index('operasional');
             $table->index('nominal');
             $table->index('tipe_nama');
+            $table->index('pekerja_id');
             $table->index(['tanggal', 'operasional']);
         });
     }

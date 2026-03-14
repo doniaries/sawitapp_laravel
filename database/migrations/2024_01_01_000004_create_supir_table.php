@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('supir', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaans')->cascadeOnDelete();
+            $table->string('slug')->nullable()->index();
             $table->string('nama')->index();
             $table->string('alamat')->nullable();
             $table->string('telepon')->nullable()->index();

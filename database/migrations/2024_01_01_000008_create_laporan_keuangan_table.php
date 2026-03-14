@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('laporan_keuangan', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaans')->cascadeOnDelete();
             $table->dateTime('tanggal');
             $table->enum('jenis_transaksi', ['Pemasukan', 'Pengeluaran']);
             $table->string('kategori', 50)->comment('Kategori transaksi (DO/Operasional)');
@@ -34,6 +35,7 @@ return new class extends Migration
             $table->index('tanggal');
             $table->index('jenis_transaksi');
             $table->index('kategori');
+            $table->index(['tanggal', 'jenis_transaksi']);
             $table->index(['sumber_transaksi', 'referensi_id']);
             $table->index('nominal');
             $table->index('created_at');

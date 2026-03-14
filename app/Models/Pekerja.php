@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,12 @@ class Pekerja extends Model
     use SoftDeletes;
     protected $table = 'pekerja';
 
+    protected static function booted()
+    {
+        static::creating(fn ($pekerja) => $pekerja->slug = Str::slug($pekerja->nama));
+        static::updating(fn ($pekerja) => $pekerja->slug = Str::slug($pekerja->nama));
+    }
+
     protected $fillable = [
         'id',
         'nama',
@@ -19,6 +26,7 @@ class Pekerja extends Model
         'pendapatan',
         'hutang',
         'perusahaan_id',
+        'slug',
     ];
 
     protected $casts = [

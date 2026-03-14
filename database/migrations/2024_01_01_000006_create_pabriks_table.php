@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('pabriks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('perusahaan_id')->constrained('perusahaans')->cascadeOnDelete();
+            $table->string('slug')->nullable()->index();
             $table->string('nama');
             $table->string('alamat')->nullable();
             $table->text('keterangan')->nullable();

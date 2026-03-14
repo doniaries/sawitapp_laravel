@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App\Events\RefreshDashboardWidgets;
 use Illuminate\Support\ServiceProvider;
 use App\Services\LaporanKeuanganService;
+use Illuminate\Support\Facades\Gate;
 use App\Models\{Operasional, TransaksiDo, LaporanKeuangan};
 use App\Observers\{OperasionalObserver, TransaksiDoObserver, LaporanKeuanganObserver};
 
@@ -28,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::guessPolicyNamesUsing(function (string $modelClass) {
+            return str_replace('Models', 'Policies', $modelClass) . 'Policy';
+        });
 
         // //---untuk perbaikan agar ngrok jalan
         // if (config('app.env') === 'local') {

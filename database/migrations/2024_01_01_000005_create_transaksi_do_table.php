@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('transaksi_do', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('perusahaan_id')->nullable()->constrained('perusahaans')->cascadeOnDelete();
             $table->string('nomor', 20)->unique();
             $table->dateTime('tanggal');
             $table->foreignId('penjual_id')->constrained('penjuals');
@@ -33,6 +34,10 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->index(['tanggal', 'penjual_id']);
+            $table->index(['tanggal', 'cara_bayar']);
+            $table->index('nomor');
+            $table->index('tanggal');
+            $table->index('penjual_id');
         });
     }
 

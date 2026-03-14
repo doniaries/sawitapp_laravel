@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +15,12 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Perusahaan extends Model implements HasMedia
 {
     use HasFactory, SoftDeletes, InteractsWithMedia;
+
+    protected static function booted()
+    {
+        static::creating(fn ($perusahaan) => $perusahaan->slug = Str::slug($perusahaan->name));
+        static::updating(fn ($perusahaan) => $perusahaan->slug = Str::slug($perusahaan->name));
+    }
 
     protected $table = 'perusahaans';
 
@@ -28,6 +35,7 @@ class Perusahaan extends Model implements HasMedia
         'npwp',
         'no_izin_usaha',
         'logo',
+        'slug',
     ];
 
     protected $casts = [

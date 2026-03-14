@@ -38,11 +38,15 @@ class UserForm
                             ->maxLength(20),
 
                         Forms\Components\Select::make('roles')
+                            ->label('Hak Akses')
                             ->relationship('roles', 'name')
+                            ->saveRelationshipsUsing(function (\Illuminate\Database\Eloquent\Model $record, $state) {
+                                setPermissionsTeamId($record->perusahaan_id);
+                                $record->roles()->syncWithPivotValues($state, [config('permission.column_names.team_foreign_key') => getPermissionsTeamId()]);
+                            })
                             ->multiple()
                             ->preload()
-                            ->required()
-                            ->label('Hak Akses'),
+                            ->searchable(),
 
                         Forms\Components\TextInput::make('password')
                             ->label('Password')

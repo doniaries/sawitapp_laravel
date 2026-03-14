@@ -30,6 +30,9 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Set team context for permissions
+        setPermissionsTeamId($perusahaan->id);
+
         $superadmin->syncRoles(['super_admin']);
 
         $this->call([

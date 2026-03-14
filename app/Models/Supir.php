@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Operasional;
 use App\Enums\KategoriOperasional;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +15,12 @@ class Supir extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected static function booted()
+    {
+        static::creating(fn ($supir) => $supir->slug = Str::slug($supir->nama));
+        static::updating(fn ($supir) => $supir->slug = Str::slug($supir->nama));
+    }
+
     protected $table = 'supir';
 
     protected $fillable = [
@@ -23,6 +30,7 @@ class Supir extends Model
         'hutang',
         'riwayat_bayar',
         'perusahaan_id',
+        'slug',
     ];
 
     protected $casts = [

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,7 @@ class Penjual extends Model
         'telepon',
         'hutang',
         'perusahaan_id',
+        'slug',
     ];
 
     protected $casts = [
@@ -71,6 +73,9 @@ class Penjual extends Model
     protected static function boot()
     {
         parent::boot();
+
+        static::creating(fn ($penjual) => $penjual->slug = Str::slug($penjual->nama));
+        static::updating(fn ($penjual) => $penjual->slug = Str::slug($penjual->nama));
 
         // Log hutang awal saat create
         static::creating(function ($penjual) {

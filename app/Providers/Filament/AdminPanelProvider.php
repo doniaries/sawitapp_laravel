@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Settings\GeneralSettings;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -70,14 +71,31 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-                FilamentDeveloperLoginsPlugin::make()
+                FilamentShieldPlugin::make()
+                ->gridColumns([
+        'default' => 1,
+        'sm' => 2,
+        'lg' => 3
+    ])
+    ->sectionColumnSpan(1)
+    ->checkboxListColumns([
+        'default' => 1,
+        'sm' => 2,
+        'lg' => 4,
+    ])
+    ->resourceCheckboxListColumns([
+        'default' => 1,
+        'sm' => 2,
+    ])
+                    ->scopeToTenant(true)                       // bool|Closure
+                    ->tenantRelationshipName('organization')    // string|Closure|null
+                    ->tenantOwnershipRelationshipName('owner'), // string|Closure|null,
+                \DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin::make()
                     ->enabled(app()->environment('local'))
                     ->users([
                         'Admin' => 'superadmin@gmail.com',
                         'User' => 'user@example.com',
                     ])
-
             ]);
     }
 }

@@ -10,6 +10,10 @@ return new class extends Migration
     {
         Schema::create('perusahaans', function (Blueprint $table) {
             $table->id();
+            $table->decimal('sisa_saldo_kemarin', 15, 2)->default(0);
+            $table->date('tanggal_sisa_saldo')->nullable();
+            $table->boolean('sudah_diproses')->default(false);
+            $table->string('slug')->nullable()->index();
             $table->string('name')->unique();
             $table->decimal('saldo', 15, 0)->default(0);
             $table->string('alamat')->nullable();
