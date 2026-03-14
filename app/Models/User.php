@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Traits\HasRoles;
 
 
@@ -84,17 +85,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function getTenants(Panel $panel): Collection
     {
-        $isSa = $this->isSuperAdmin();
-        $tenants = $isSa ? Perusahaan::all() : $this->perusahaans;
-        
-        \Log::info('Filament Tenancy Debug', [
-            'user' => $this->email,
-            'is_super_admin' => $isSa,
-            'tenant_count' => $tenants->count(),
-            'tenant_names' => $tenants->pluck('name')->toArray(),
-        ]);
+        if ($this->isSuperAdmin()) {
+            return Perusahaan::withoutGlobalScopes()->get();
+        }
 
-        return $tenants;
+        return $this->perusahaans;
     }
 
     /**
