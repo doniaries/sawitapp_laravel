@@ -29,6 +29,7 @@ class UserSeeder extends Seeder
                 ]
             );
             $yondra->syncRoles(['admin']);
+            $yondra->perusahaans()->syncWithoutDetaching([$perusahaan1->id]);
 
             $kasir = User::firstOrCreate(
                 ['email' => 'kasir1@gmail.com'],
@@ -41,6 +42,7 @@ class UserSeeder extends Seeder
                 ]
             );
             $kasir->syncRoles(['kasir']);
+            $kasir->perusahaans()->syncWithoutDetaching([$perusahaan1->id]);
         }
 
         // ========== Perusahaan 2: PT Andala Integrasi Global ==========
@@ -58,6 +60,7 @@ class UserSeeder extends Seeder
                 ]
             );
             $wendy->syncRoles(['admin']);
+            $wendy->perusahaans()->syncWithoutDetaching([$perusahaan2->id]);
         }
     }
 }

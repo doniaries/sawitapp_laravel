@@ -39,10 +39,10 @@ class AdminPanelProvider extends PanelProvider
             // ->topNavigation()
             ->maxContentWidth('full')
             ->id('admin')
+            ->sidebarCollapsibleOnDesktop()
             ->path('admin')
             ->favicon(asset('images/success.png'))
             ->login()
-
             ->colors([
                 'primary' => Color::Amber,
                 'secondary' => Color::Cyan,
@@ -76,7 +76,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->searchableTenantMenu()
             ->tenant(Perusahaan::class, slugAttribute: 'slug', ownershipRelationship: 'perusahaan')
-            ->tenantProfile(EditTeamProfile::class)
+            // ->tenantProfile(EditTeamProfile::class)
             ->plugins([
                 FilamentShieldPlugin::make()
                     ->gridColumns([

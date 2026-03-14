@@ -12,7 +12,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Filament\Models\Contracts\HasTenants;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 
 
@@ -20,11 +22,6 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 {
     use HasFactory, Notifiable, SoftDeletes, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -33,22 +30,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'is_active',
     ];
 
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
@@ -56,40 +42,70 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     ];
 
     /**
-     * Determine if the user can access the Filament panel.
-     *
-     * @param \Filament\Panel $panel
-     * @return bool
+     * Akses ke panel Filament.
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // Verifikasi akses ke panel admin
-        return $this->is_active && $this->email; // Pastikan user aktif dan memiliki email
+        return $this->is_active && $this->email;
     }
 
-    // Definisikan relasi dengan type hinting yang benar
+    /**
+     * Relasi BelongsTo (untuk backward compatibility & kolom perusahaan_id default).
+     */
     public function perusahaan(): BelongsTo
     {
         return $this->belongsTo(Perusahaan::class, 'perusahaan_id');
     }
 
-    public function getTenants(Panel $panel): Collection
+    /**
+     * Relasi BelongsToMany (digunakan Filament HasTenants).
+     */
+    public function perusahaans(): BelongsToMany
     {
-        // Superadmin bisa melihat semua perusahaan
-        if ($this->hasRole('super_admin')) {
-            return Perusahaan::all();
-        }
-
-        return collect([$this->perusahaan])->filter();
+        return $this->belongsToMany(Perusahaan::class, 'perusahaan_user');
     }
 
+    /**
+     * Cek super_admin langsung dari DB (tanpa team context).
+     */
+    protected function isSuperAdmin(): bool
+    {
+        return DB::table('model_has_roles')
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->where('model_has_roles.model_id', $this->id)
+            ->where('model_has_roles.model_type', static::class)
+            ->where('roles.name', 'super_admin')
+            ->exists();
+    }
+
+    /**
+     * Filament: daftar tenant yang bisa diakses.
+     * Superadmin → semua perusahaan, user biasa → dari pivot.
+     */
+    public function getTenants(Panel $panel): Collection
+    {
+        $isSa = $this->isSuperAdmin();
+        $tenants = $isSa ? Perusahaan::all() : $this->perusahaans;
+        
+        \Log::info('Filament Tenancy Debug', [
+            'user' => $this->email,
+            'is_super_admin' => $isSa,
+            'tenant_count' => $tenants->count(),
+            'tenant_names' => $tenants->pluck('name')->toArray(),
+        ]);
+
+        return $tenants;
+    }
+
+    /**
+     * Filament: apakah user boleh akses tenant tertentu.
+     */
     public function canAccessTenant(Model $tenant): bool
     {
-        // Superadmin bisa akses semua perusahaan
-        if ($this->hasRole('super_admin')) {
+        if ($this->isSuperAdmin()) {
             return true;
         }
 
-        return $this->perusahaan_id === $tenant->id;
+        return $this->perusahaans()->whereKey($tenant)->exists();
     }
 }

@@ -39,6 +39,9 @@ class DatabaseSeeder extends Seeder
             $superadmin->assignRole('super_admin');
         }
 
+        // Daftarkan superadmin ke semua perusahaan via pivot (untuk HasTenants Filament)
+        $superadmin->perusahaans()->sync($perusahaans->pluck('id'));
+
         // Reset ke context perusahaan pertama
         setPermissionsTeamId($perusahaanPertama->id);
 

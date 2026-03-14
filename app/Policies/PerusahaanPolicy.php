@@ -14,58 +14,57 @@ class PerusahaanPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return true;
-        // return $authUser->can('view_any_perusahaan');
+        return $authUser->can('ViewAny:Perusahaan');
     }
 
     public function view(AuthUser $authUser, Perusahaan $perusahaan): bool
     {
-        return $authUser->can('view_perusahaan');
+        return $authUser->can('View:Perusahaan');
     }
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('create_perusahaan');
+        return $authUser->can('Create:Perusahaan');
     }
 
     public function update(AuthUser $authUser, Perusahaan $perusahaan): bool
     {
-        return $authUser->can('update_perusahaan');
+        return $authUser->can('Update:Perusahaan');
     }
 
     public function delete(AuthUser $authUser, Perusahaan $perusahaan): bool
     {
-        return $authUser->can('delete_perusahaan');
+        return $authUser->can('Delete:Perusahaan');
     }
 
     public function restore(AuthUser $authUser, Perusahaan $perusahaan): bool
     {
-        return $authUser->can('restore_perusahaan');
+        return $authUser->can('Restore:Perusahaan');
     }
 
     public function forceDelete(AuthUser $authUser, Perusahaan $perusahaan): bool
     {
-        return $authUser->can('force_delete_perusahaan');
+        return $authUser->can('ForceDelete:Perusahaan');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('force_delete_any_perusahaan');
+        return $authUser->can('ForceDeleteAny:Perusahaan');
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('restore_any_perusahaan');
+        return $authUser->can('RestoreAny:Perusahaan');
     }
 
     public function replicate(AuthUser $authUser, Perusahaan $perusahaan): bool
     {
-        return $authUser->can('replicate_perusahaan');
+        return $authUser->can('Replicate:Perusahaan');
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('reorder_perusahaan');
+        return $authUser->can('Reorder:Perusahaan');
     }
 
 }

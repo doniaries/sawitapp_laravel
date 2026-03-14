@@ -14,58 +14,57 @@ class LaporanKeuanganPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return true;
-        // return $authUser->can('view_any_laporan_keuangan');
+        return $authUser->can('ViewAny:LaporanKeuangan');
     }
 
     public function view(AuthUser $authUser, LaporanKeuangan $laporanKeuangan): bool
     {
-        return $authUser->can('view_laporan_keuangan');
+        return $authUser->can('View:LaporanKeuangan');
     }
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('create_laporan_keuangan');
+        return $authUser->can('Create:LaporanKeuangan');
     }
 
     public function update(AuthUser $authUser, LaporanKeuangan $laporanKeuangan): bool
     {
-        return $authUser->can('update_laporan_keuangan');
+        return $authUser->can('Update:LaporanKeuangan');
     }
 
     public function delete(AuthUser $authUser, LaporanKeuangan $laporanKeuangan): bool
     {
-        return $authUser->can('delete_laporan_keuangan');
+        return $authUser->can('Delete:LaporanKeuangan');
     }
 
     public function restore(AuthUser $authUser, LaporanKeuangan $laporanKeuangan): bool
     {
-        return $authUser->can('restore_laporan_keuangan');
+        return $authUser->can('Restore:LaporanKeuangan');
     }
 
     public function forceDelete(AuthUser $authUser, LaporanKeuangan $laporanKeuangan): bool
     {
-        return $authUser->can('force_delete_laporan_keuangan');
+        return $authUser->can('ForceDelete:LaporanKeuangan');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('force_delete_any_laporan_keuangan');
+        return $authUser->can('ForceDeleteAny:LaporanKeuangan');
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('restore_any_laporan_keuangan');
+        return $authUser->can('RestoreAny:LaporanKeuangan');
     }
 
     public function replicate(AuthUser $authUser, LaporanKeuangan $laporanKeuangan): bool
     {
-        return $authUser->can('replicate_laporan_keuangan');
+        return $authUser->can('Replicate:LaporanKeuangan');
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('reorder_laporan_keuangan');
+        return $authUser->can('Reorder:LaporanKeuangan');
     }
 
 }

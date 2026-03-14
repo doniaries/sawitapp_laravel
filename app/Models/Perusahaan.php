@@ -52,14 +52,6 @@ class Perusahaan extends Model implements HasMedia
                     return url('/images/default-logo.png');
                 }
 
-                // Debugging: Log full path
-                \Log::info('Logo Path Debug', [
-                    'original_value' => $value,
-                    'storage_url' => Storage::disk('public')->url($value),
-                    'full_path' => public_path('storage/' . $value),
-                    'file_exists' => file_exists(public_path('storage/' . $value))
-                ]);
-
                 return Storage::disk('public')->url($value);
             },
         );
