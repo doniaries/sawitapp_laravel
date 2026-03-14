@@ -1,0 +1,45 @@
+
+   INFO  Seeding database.  
+
+  Database\Seeders\PerusahaanSeeder  RUNNING  
+  Database\Seeders\PerusahaanSeeder  17 ms DONE  
+
+  Database\Seeders\ShieldSeeder  RUNNING  
+Shield Seeder Completed.
+  Database\Seeders\ShieldSeeder  281 ms DONE  
+
+  Database\Seeders\UserSeeder .. RUNNING  
+  Database\Seeders\UserSeeder  1,521 ms DONE  
+
+  Database\Seeders\PenjualSeeder  RUNNING  
+  Database\Seeders\PenjualSeeder  51 ms DONE  
+
+  Database\Seeders\SupirSeeder . RUNNING  
+  Database\Seeders\SupirSeeder  53 ms DONE  
+
+  Database\Seeders\OperasionalSeeder  RUNNING  
+  Database\Seeders\OperasionalSeeder  59 ms DONE  
+
+  Database\Seeders\TransaksiDoSeeder  RUNNING  
+
+   Illuminate\Database\UniqueConstraintViolationException 
+
+  SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'DO-20241203-0001' for key 'transaksi_do.transaksi_do_nomor_unique' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: successmandiri-update, SQL: insert into `transaksi_do` (`sub_total`, `upah_bongkar`, `biaya_lain`, `hutang_awal`, `pembayaran_hutang`, `sisa_hutang_penjual`, `sisa_bayar`, `nomor`, `tanggal`, `penjual_id`, `supir_id`, `kendaraan_id`, `tonase`, `harga_satuan`, `keterangan_biaya_lain`, `cara_bayar`, `perusahaan_id`, `updated_at`, `created_at`) values (13809510, 0, 0, 0, 0, 0, 13809510, DO-20241203-0001, 2024-12-03 15:22:10, 60, 7, ?, 4329, 3190, ?, tunai, 1, 2026-03-15 04:59:09, 2026-03-15 04:59:09))
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:838
+    834▕             $exceptionType = $this->isUniqueConstraintError($e)
+    835▕                 ? UniqueConstraintViolationException::class
+    836▕                 : QueryException::class;
+    837▕ 
+  ➜ 838▕             throw new $exceptionType(
+    839▕                 $this->getNameWithReadWriteType(),
+    840▕                 $query,
+    841▕                 $this->prepareBindings($bindings),
+    842▕                 $e,
+
+  1   vendor\laravel\framework\src\Illuminate\Database\MySqlConnection.php:53
+      PDOException::("SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'DO-20241203-0001' for key 'transaksi_do.transaksi_do_nomor_unique'")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\MySqlConnection.php:53
+      PDOStatement::execute()
+

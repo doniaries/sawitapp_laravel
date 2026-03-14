@@ -57,7 +57,9 @@ class Perusahaan extends Model implements HasMedia
                     return url('/images/default-logo.png');
                 }
 
-                return Storage::disk('public')->url($value);
+                /** @var \Illuminate\Contracts\Filesystem\Filesystem $disk */
+                $disk = Storage::disk('public');
+                return $disk->url($value);
             },
         );
     }
@@ -78,7 +80,7 @@ class Perusahaan extends Model implements HasMedia
 
     public function riwayatSaldo()
     {
-        return $this->hasMany(LaporanKeuangan::class, 'referensi_id')
+        return $this->hasMany(JurnalKeuangan::class, 'referensi_id')
             ->where('kategori', 'Saldo')
             ->where('sub_kategori', 'Tambah Saldo')
             ->orderBy('tanggal', 'desc');

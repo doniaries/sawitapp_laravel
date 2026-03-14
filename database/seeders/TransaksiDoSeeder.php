@@ -340,7 +340,10 @@ class TransaksiDoSeeder extends Seeder
                     $data['supir_id'] = $isCV ? ($supirCV[array_rand($supirCV)] ?? 1) : ($supirPT[array_rand($supirPT)] ?? 2);
                 }
                 
-                TransaksiDo::create($data);
+                TransaksiDo::updateOrCreate(
+                    ['nomor' => $data['nomor']],
+                    $data
+                );
             }
         }
     }

@@ -6,8 +6,8 @@ use Illuminate\Database\Seeder;
 use App\Models\TransaksiDo;
 use App\Models\Penjual;
 use App\Models\Supir;
-use App\Models\Operasional;
-use App\Models\LaporanKeuangan;
+use App\Models\TransaksiOperasional;
+use App\Models\JurnalKeuangan;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -79,7 +79,7 @@ class SimulationSeeder extends Seeder
         })->get();
 
         foreach ($missingDos as $transaksi) {
-            LaporanKeuangan::create([
+            JurnalKeuangan::create([
                 'tanggal' => $transaksi->tanggal,
                 'jenis_transaksi' => 'Pengeluaran',
                 'kategori' => 'DO',
@@ -97,8 +97,8 @@ class SimulationSeeder extends Seeder
             ]);
         }
 
-        // Sync Operasional
-        $missingOps = Operasional::whereNotExists(function ($query) {
+        // Sync TransaksiOperasional
+        $missingOps = TransaksiOperasional::whereNotExists(function ($query) {
             $query->select(DB::raw(1))
                 ->from('jurnal_keuangan')
                 ->whereColumn('jurnal_keuangan.referensi_id', 'transaksi_operasional.id')
@@ -106,7 +106,7 @@ class SimulationSeeder extends Seeder
         })->get();
 
         foreach ($missingOps as $op) {
-            LaporanKeuangan::create([
+            JurnalKeuangan::create([
                 'tanggal' => $op->tanggal,
                 'jenis_transaksi' => ucfirst($op->operasional),
                 'kategori' => 'Operasional',
@@ -156,8 +156,8 @@ class SimulationSeeder extends Seeder
                 'perusahaan_id' => $perusahaanId,
             ]);
 
-            // MANUALLY CREATE LAPORAN KEUANGAN since observer is disabled
-            LaporanKeuangan::create([
+            // MANUALLY CREATE JURNAL KEUANGAN since observer is disabled
+            JurnalKeuangan::create([
                 'tanggal' => $tanggal,
                 'jenis_transaksi' => 'Pengeluaran',
                 'kategori' => 'DO',
@@ -180,7 +180,7 @@ class SimulationSeeder extends Seeder
     {
         $tanggal = Carbon::parse($date)->setDay(rand(1, 10));
 
-        $op = Operasional::create([
+        $op = TransaksiOperasional::create([
             'tanggal' => $tanggal,
             'operasional' => $jenis,
             'kategori' => $jenis === 'pemasukan' ? 'tambah_saldo' : 'lain_lain',
@@ -191,7 +191,7 @@ class SimulationSeeder extends Seeder
             'perusahaan_id' => $perusahaanId,
         ]);
 
-        LaporanKeuangan::create([
+        JurnalKeuangan::create([
             'tanggal' => $tanggal,
             'jenis_transaksi' => ucfirst($jenis),
             'kategori' => 'Operasional',

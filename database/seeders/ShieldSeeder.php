@@ -19,9 +19,9 @@ class ShieldSeeder extends Seeder
             "ViewAny:Perusahaan", "View:Perusahaan", "Create:Perusahaan", "Update:Perusahaan", "Delete:Perusahaan", "Restore:Perusahaan", "RestoreAny:Perusahaan", "ForceDelete:Perusahaan", "ForceDeleteAny:Perusahaan",
             "ViewAny:Supir", "View:Supir", "Create:Supir", "Update:Supir", "Delete:Supir", "Restore:Supir", "RestoreAny:Supir", "ForceDelete:Supir", "ForceDeleteAny:Supir",
             "ViewAny:Kendaraan", "View:Kendaraan", "Create:Kendaraan", "Update:Kendaraan", "Delete:Kendaraan", "Restore:Kendaraan", "RestoreAny:Kendaraan", "ForceDelete:Kendaraan", "ForceDeleteAny:Kendaraan",
-            "ViewAny:Operasional", "View:Operasional", "Create:Operasional", "Update:Operasional", "Delete:Operasional", "Restore:Operasional", "RestoreAny:Operasional", "ForceDelete:Operasional", "ForceDeleteAny:Operasional",
+            "ViewAny:TransaksiOperasional", "View:TransaksiOperasional", "Create:TransaksiOperasional", "Update:TransaksiOperasional", "Delete:TransaksiOperasional", "Restore:TransaksiOperasional", "RestoreAny:TransaksiOperasional", "ForceDelete:TransaksiOperasional", "ForceDeleteAny:TransaksiOperasional",
             "ViewAny:TransaksiDo", "View:TransaksiDo", "Create:TransaksiDo", "Update:TransaksiDo", "Delete:TransaksiDo", "Restore:TransaksiDo", "RestoreAny:TransaksiDo", "ForceDelete:TransaksiDo", "ForceDeleteAny:TransaksiDo", "Replicate:TransaksiDo", "Reorder:TransaksiDo",
-            "ViewAny:LaporanKeuangan", "View:LaporanKeuangan", "Create:LaporanKeuangan", "Update:LaporanKeuangan", "Delete:LaporanKeuangan", "Restore:LaporanKeuangan", "RestoreAny:LaporanKeuangan", "ForceDelete:LaporanKeuangan", "ForceDeleteAny:LaporanKeuangan",
+            "ViewAny:JurnalKeuangan", "View:JurnalKeuangan", "Create:JurnalKeuangan", "Update:JurnalKeuangan", "Delete:JurnalKeuangan", "Restore:JurnalKeuangan", "RestoreAny:JurnalKeuangan", "ForceDelete:JurnalKeuangan", "ForceDeleteAny:JurnalKeuangan",
             "ViewAny:Pekerja", "View:Pekerja", "Create:Pekerja", "Update:Pekerja", "Delete:Pekerja", "Restore:Pekerja", "RestoreAny:Pekerja", "ForceDelete:Pekerja", "ForceDeleteAny:Pekerja",
             "ViewAny:Pabrik", "View:Pabrik", "Create:Pabrik", "Update:Pabrik", "Delete:Pabrik", "Restore:Pabrik", "RestoreAny:Pabrik", "ForceDelete:Pabrik", "ForceDeleteAny:Pabrik",
             "ViewAny:RiwayatPembayaranHutang", "View:RiwayatPembayaranHutang", "Create:RiwayatPembayaranHutang", "Update:RiwayatPembayaranHutang", "Delete:RiwayatPembayaranHutang", "Restore:RiwayatPembayaranHutang", "RestoreAny:RiwayatPembayaranHutang", "ForceDelete:RiwayatPembayaranHutang", "ForceDeleteAny:RiwayatPembayaranHutang",
@@ -41,11 +41,11 @@ class ShieldSeeder extends Seeder
             // Transaksi DO
             "ViewAny:TransaksiDo", "View:TransaksiDo", "Create:TransaksiDo", "Update:TransaksiDo",
             
-            // Operasional
-            "ViewAny:Operasional", "View:Operasional", "Create:Operasional", "Update:Operasional",
+            // Transaksi Operasional
+            "ViewAny:TransaksiOperasional", "View:TransaksiOperasional", "Create:TransaksiOperasional", "Update:TransaksiOperasional",
 
-            // Laporan Keuangan
-            "ViewAny:LaporanKeuangan", "View:LaporanKeuangan",
+            // Jurnal Keuangan
+            "ViewAny:JurnalKeuangan", "View:JurnalKeuangan",
 
             // Master Data (Hanya View/List)
             "ViewAny:Penjual", "View:Penjual",

@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Operasional;
-use App\Models\LaporanKeuangan;
+use App\Models\TransaksiOperasional;
+use App\Models\JurnalKeuangan;
 use Carbon\Carbon;
 
 class OperasionalSeeder extends Seeder
@@ -100,11 +100,11 @@ class OperasionalSeeder extends Seeder
                     $data['supir_id'] = $isCV ? ($supirCV?->id ?? 1) : ($supirPT?->id ?? 2);
                 }
                 
-                // Create Operasional entry
-                $operasional = Operasional::create($data);
+                // Create TransaksiOperasional entry
+                $operasional = TransaksiOperasional::create($data);
 
-                // Create corresponding LaporanKeuangan entry
-                LaporanKeuangan::create([
+                // Create corresponding JurnalKeuangan entry
+                JurnalKeuangan::create([
                     'tanggal' => $data['tanggal'],
                     'jenis_transaksi' => ucfirst($data['operasional']),
                     'kategori' => 'Operasional',

@@ -17,8 +17,18 @@ class TransaksiOperasionalResource extends Resource
 {
     protected static ?string $model = TransaksiOperasional::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-banknotes';
-    protected static ?string $navigationLabel = 'Operasional';
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationLabel = 'Transaksi Operasional';
+    protected static ?int $navigationSort = 3;
+
+    public static function getModelLabel(): string
+    {
+        return 'Transaksi Operasional';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Transaksi Operasional';
+    }
 
     public static function getNavigationBadge(): ?string
     {
