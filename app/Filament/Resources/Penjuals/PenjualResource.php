@@ -51,4 +51,10 @@ class PenjualResource extends Resource
     {
         return static::getModel()::count();
     }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withSum('riwayatPembayaran as total_pembayaran_sum', 'nominal');
+    }
 }
