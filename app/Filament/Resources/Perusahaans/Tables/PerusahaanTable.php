@@ -176,12 +176,17 @@ class PerusahaanTable
                     ->modalWidth('lg'),
                 EditAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->requiresConfirmation(),
+                    ForceDeleteBulkAction::make()
+                        ->requiresConfirmation(),
                     RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->striped()
+            ->paginated([10, 25, 50, 100])
+            ->poll('30s');
     }
 }

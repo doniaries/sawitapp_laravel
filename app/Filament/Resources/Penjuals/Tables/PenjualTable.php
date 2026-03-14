@@ -64,6 +64,9 @@ class PenjualTable
                             $records->each->delete();
                         }),
                 ]),
-            ]);
+            ])
+            ->striped()
+            ->paginated([10, 25, 50, 100])
+            ->poll('30s');
     }
 }

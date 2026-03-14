@@ -233,8 +233,7 @@ class LaporanKeuanganTable
                 ViewAction::make(),
             ])
             ->striped()
-            ->paginated([5, 10, 25, 50, 100, 'all'])
-            ->deferLoading()
-            ->poll('15s');
+            ->paginated([10, 25, 50, 100])
+            ->poll('30s');
     }
 }
