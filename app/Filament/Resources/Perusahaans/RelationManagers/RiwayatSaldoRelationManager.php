@@ -63,7 +63,7 @@ class RiwayatSaldoRelationManager extends RelationManager
             ->headerActions([
                 // No actions needed as adding is done via main resource
             ])
-            ->recordActions([
+            ->actions([
                 ViewAction::make(),
                 Action::make('batalkan')
                     ->label('Batalkan')
@@ -133,7 +133,7 @@ class RiwayatSaldoRelationManager extends RelationManager
                         }
                     })
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

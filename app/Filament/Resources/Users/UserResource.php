@@ -10,15 +10,15 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Support\Icons\Heroicon;
 
 class UserResource extends Resource
 {
-    protected static ?string $model = \App\Models\User::class;
+    protected static ?string $model = User::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
     protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?int $navigationSort = 1;
     protected static ?string $modelLabel = 'Pengguna';
+    protected static ?string $navigationLabel = 'Pengguna';
     protected static ?string $pluralModelLabel = 'Pengguna';
 
     public static function form(Schema $form): Schema

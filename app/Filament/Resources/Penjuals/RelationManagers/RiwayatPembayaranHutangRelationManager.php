@@ -88,10 +88,10 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
             ->headerActions([
                 // ... tambahkan action header jika diperlukan
             ])
-            ->recordActions([
+            ->actions([
                 // ... tambahkan action pada tiap record jika diperlukan
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 // ... tambahkan bulk action jika diperlukan
             ]);
     }

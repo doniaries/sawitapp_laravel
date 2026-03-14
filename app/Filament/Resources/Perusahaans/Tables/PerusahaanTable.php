@@ -71,7 +71,7 @@ class PerusahaanTable
             ->filters([
                 TrashedFilter::make(),
             ])
-            ->recordActions([
+            ->actions([
                 Action::make('tambah_saldo')
                     ->label('Tambah Saldo')
                     ->icon('heroicon-o-plus-circle')
@@ -176,7 +176,7 @@ class PerusahaanTable
                     ->modalWidth('lg'),
                 EditAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->requiresConfirmation(),

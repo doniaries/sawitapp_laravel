@@ -16,8 +16,8 @@ class EditUser extends EditRecord
     {
         return [
             DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            //     ForceDeleteAction::make(),
+            //     RestoreAction::make(),
         ];
     }
 

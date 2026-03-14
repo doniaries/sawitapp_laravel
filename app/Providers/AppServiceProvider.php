@@ -33,6 +33,11 @@ class AppServiceProvider extends ServiceProvider
             return str_replace('Models', 'Policies', $modelClass) . 'Policy';
         });
 
+        // Implicitly grant "Super Admin" role all permissions
+        Gate::before(function ($user, $ability) {
+            return $user->email === 'superadmin@gmail.com' ? true : null;
+        });
+
         // //---untuk perbaikan agar ngrok jalan
         // if (config('app.env') === 'local') {
         //     URL::forceScheme('https');

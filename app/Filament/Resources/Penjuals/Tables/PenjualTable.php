@@ -45,11 +45,11 @@ class PenjualTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('nama', 'asc')
-            ->recordActions([
+            ->actions([
                 EditAction::make(),
                 ViewAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     BulkAction::make('delete')
                         ->label('Hapus Terpilih')

@@ -12,57 +12,57 @@ class UserPolicy
     public function viewAny(AuthUser $authUser): bool
     {
         return true;
-        // return $authUser->can('view_any_user');
+        // return true;
     }
 
     public function view(AuthUser $authUser): bool
     {
-        return $authUser->can('view_user');
+        return true;
     }
 
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('create_user');
+        return true;
     }
 
     public function update(AuthUser $authUser): bool
     {
-        return $authUser->can('update_user');
+        return true;
     }
 
     public function delete(AuthUser $authUser): bool
     {
-        return $authUser->can('delete_user');
+        return true;
     }
 
     public function restore(AuthUser $authUser): bool
     {
-        return $authUser->can('restore_user');
+        return true;
     }
 
     public function forceDelete(AuthUser $authUser): bool
     {
-        return $authUser->can('force_delete_user');
+        return true;
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('force_delete_any_user');
+        return true;
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('restore_any_user');
+        return true;
     }
 
     public function replicate(AuthUser $authUser): bool
     {
-        return $authUser->can('replicate_user');
+        return true;
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('reorder_user');
+        return true;
     }
 
 }

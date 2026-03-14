@@ -50,8 +50,8 @@ class RiwayatHutangPinjamanRelationManager extends RelationManager
             ])
             ->filters([])
             ->headerActions([])
-            ->recordActions([])
-            ->toolbarActions([])
+            ->actions([])
+            ->bulkActions([])
             ->defaultSort('tanggal', 'desc');
     }
 }

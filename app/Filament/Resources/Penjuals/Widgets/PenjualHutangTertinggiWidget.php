@@ -50,7 +50,7 @@ class PenjualHutangTertinggiWidget extends BaseWidget
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
             ])
-            ->recordActions([
+            ->actions([
                 Action::make('view')
                     ->url(fn(Penjual $record): string => route('filament.admin.resources.penjuals.view', $record))
                     ->icon('heroicon-m-eye'),
