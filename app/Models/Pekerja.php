@@ -49,7 +49,7 @@ class Pekerja extends Model
     public function riwayatPembayaran()
     {
         return $this->hasMany(PembayaranHutang::class)
-            ->where('tipe', 'pekerja')
+            ->where('tipe_nama', 'pekerja')
             ->orderBy('tanggal', 'desc');
     }
 

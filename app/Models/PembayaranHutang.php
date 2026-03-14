@@ -66,7 +66,7 @@ class PembayaranHutang extends Model
     // Helper untuk ambil nama pembayar
     public function getNamaPembayarAttribute(): string
     {
-        return match ($this->tipe) {
+        return match ($this->tipe_nama?->value) {
             'penjual' => $this->penjual?->nama ?? '-',
             'pekerja' => $this->pekerja?->nama ?? '-',
             'supir' => $this->supir?->nama ?? '-',

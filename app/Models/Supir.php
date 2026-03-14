@@ -82,14 +82,14 @@ class Supir extends Model
     // Add relationship to RiwayatPembayaranHutang
     public function riwayatHutang()
     {
-        return $this->hasMany(RiwayatPembayaranHutang::class);
+        return $this->hasMany(PembayaranHutang::class);
     }
 
     // Add total pinjaman accessor
     public function getTotalPinjamanAttribute()
     {
         return $this->riwayatHutang()
-            ->where('tipe', 'supir')
+            ->where('tipe_nama', 'supir')
             ->sum('nominal');
     }
 

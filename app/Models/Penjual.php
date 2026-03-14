@@ -139,7 +139,7 @@ class Penjual extends Model
     public function riwayatPembayaran()
     {
         return $this->hasMany(PembayaranHutang::class)
-            ->where('tipe', 'penjual')
+            ->where('tipe_nama', 'penjual')
             ->orderBy('tanggal', 'desc');
     }
 
