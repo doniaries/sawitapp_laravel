@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use App\Models\User;
+use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -98,6 +99,11 @@ class UserTable
                     ]),
 
                 TrashedFilter::make()
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah User'),
             ])
             ->recordActions([
                 Impersonate::make(),

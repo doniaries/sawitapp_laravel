@@ -13,6 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Support\Colors\Color;
+use Filament\Actions\CreateAction;
 use Filament\Actions\Action as TablesAction;
 use App\Models\TransaksiDo;
 
@@ -87,6 +88,11 @@ class TransaksiDoTable
             ])
             ->filters([
                 TrashedFilter::make(),
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah Transaksi'),
             ])
             ->recordActions([
                 TablesAction::make('cetak_do')

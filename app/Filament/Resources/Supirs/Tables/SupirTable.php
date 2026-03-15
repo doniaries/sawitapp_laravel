@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Supirs\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -45,6 +46,11 @@ class SupirTable
                     ->query(fn(Builder $query): Builder => $query->where('hutang', '>', 0))
                     ->label('Ada Hutang')
                     ->toggle()
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah Supir'),
             ])
             ->recordActions([
                 EditAction::make(),

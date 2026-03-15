@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TransaksiOperasionals\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -58,6 +59,11 @@ class TransaksiOperasionalTable
                         'pengeluaran' => 'Pengeluaran',
                     ]),
                 TrashedFilter::make()
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah Operasional'),
             ])
             ->recordActions([
                 EditAction::make(),

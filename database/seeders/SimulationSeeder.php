@@ -8,6 +8,8 @@ use App\Models\Penjual;
 use App\Models\Supir;
 use App\Models\TransaksiOperasional;
 use App\Models\JurnalKeuangan;
+use App\Models\Perusahaan;
+use App\Enums\KategoriOperasional;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -16,174 +18,153 @@ class SimulationSeeder extends Seeder
 {
     public function run(): void
     {
-        $lastMonth = now()->subMonth();
-        $thisMonth = now();
+        // 1. Setup Perusahaan
+        $perusahaan = Perusahaan::first();
+        if (!$perusahaan) {
+            $perusahaan = Perusahaan::create([
+                'name' => 'SUKSES MANDIRI',
+                'alamat' => 'Jl. Lintas Sumatera',
+                'telepon' => '08123456789',
+                'saldo' => 1000000000,
+            ]);
+        } else {
+            $perusahaan->update(['saldo' => 1000000000]);
+        }
+        $perusahaanId = $perusahaan->id;
 
-        // Ensure we have some penjual and supir
+        // 2. Ensure we have data
         $penjualIds = Penjual::pluck('id')->toArray();
         $supirIds = Supir::pluck('id')->toArray();
 
-        // Direct Perusahaan Balance Adjustment to avoid Observer block during seeder
-        $perusahaan = \App\Models\Perusahaan::first();
-        $perusahaanId = $perusahaan?->id;
-
-        if ($perusahaan) {
-            $perusahaan->update(['saldo' => 1000000000]); // Set 1 Billion to be safe
-        }
-
-        // Disable Observers for simulation
+        // 3. Disable Observers for speed and consistency
         TransaksiDo::unsetEventDispatcher();
+        TransaksiOperasional::unsetEventDispatcher();
+        JurnalKeuangan::unsetEventDispatcher();
 
-        if (empty($penjualIds)) {
-            $penjual = Penjual::create(['nama' => 'SIMULASI PENJUAL 1', 'hutang' => 0, 'perusahaan_id' => $perusahaanId]);
-            $penjualIds = [$penjual->id];
-        }
+        // 4. Clean existing simulation data safely (optional but recommended for fresh start)
+        // JurnalKeuangan::truncate();
+        // TransaksiDo::truncate();
+        // TransaksiOperasional::truncate();
 
-        if (empty($supirIds)) {
-            $supir = Supir::create(['nama' => 'SIMULASI SUPIR 1', 'perusahaan_id' => $perusahaanId]);
-            $supirIds = [$supir->id];
-        }
+        // 5. Generate data for the last 6 months
+        $startDate = now()->subMonths(6)->startOfMonth();
+        $endDate = now();
 
-        // 1. Create 30 Transactions for Last Month
-        $this->createTransactions($lastMonth, 30, $penjualIds, $supirIds, $perusahaanId);
+        $currentDate = clone $startDate;
 
-        // 2. Create 10 Transactions for This Month (Randomized dates)
-        $this->createTransactions($thisMonth, 10, $penjualIds, $supirIds, $perusahaanId);
+        while ($currentDate <= $endDate) {
+            $monthName = $currentDate->format('F Y');
+            $this->command->info("Generating data for {$monthName}...");
 
-        // 3. Create 5 TRANSACTIONS FOR TODAY (Flexible)
-        $this->createTransactions(now(), 5, $penjualIds, $supirIds, $perusahaanId, true);
-
-        // 4. Create Operasional data for simulation
-        $this->createOperasional($lastMonth, 'Pemasukan Saldo Awal', 500000000, 'pemasukan', $perusahaanId);
-        $this->createOperasional($lastMonth, 'Biaya Kantor Desember', 5000000, 'pengeluaran', $perusahaanId);
-
-        $this->createOperasional($thisMonth, 'Tambah Modal Januari', 10000000, 'pemasukan', $perusahaanId);
-        $this->createOperasional($thisMonth, 'Biaya Listrik Januari', 1500000, 'pengeluaran', $perusahaanId);
-
-        $this->createOperasional(now(), 'Biaya Makan Hari Ini', 200000, 'pengeluaran', $perusahaanId);
-        $this->createOperasional(now(), 'Setoran Keamanan Hari Ini', 150000, 'pengeluaran', $perusahaanId);
-        $this->createOperasional(now(), 'Pemasukan Tambahan Hari Ini', 500000, 'pemasukan', $perusahaanId);
-
-        // 5. Sync any missing old data to LaporanKeuangan
-        $this->syncExistingData($perusahaanId);
-    }
-
-    private function syncExistingData($perusahaanId)
-    {
-        // Sync TransaksiDo
-        $missingDos = TransaksiDo::whereNotExists(function ($query) {
-            $query->select(DB::raw(1))
-                ->from('jurnal_keuangan')
-                ->whereColumn('jurnal_keuangan.referensi_id', 'transaksi_do.id')
-                ->where('jurnal_keuangan.sumber_transaksi', 'DO');
-        })->get();
-
-        foreach ($missingDos as $transaksi) {
-            JurnalKeuangan::create([
-                'tanggal' => $transaksi->tanggal,
-                'jenis_transaksi' => 'Pengeluaran',
-                'kategori' => 'DO',
-                'sub_kategori' => 'Pembayaran DO',
-                'nominal' => $transaksi->sub_total,
-                'sumber_transaksi' => 'DO',
-                'referensi_id' => $transaksi->id,
-                'nomor_referensi' => $transaksi->nomor,
-                'pihak_terkait' => $transaksi->penjual?->nama ?? 'Penjual Lama',
-                'tipe_pihak' => 'penjual',
-                'cara_pembayaran' => $transaksi->cara_bayar,
-                'keterangan' => "Sync: Transaksi Lama {$transaksi->nomor}",
-                'mempengaruhi_kas' => $transaksi->cara_bayar === 'tunai',
-                'perusahaan_id' => $transaksi->perusahaan_id ?? $perusahaanId,
-            ]);
-        }
-
-        // Sync TransaksiOperasional
-        $missingOps = TransaksiOperasional::whereNotExists(function ($query) {
-            $query->select(DB::raw(1))
-                ->from('jurnal_keuangan')
-                ->whereColumn('jurnal_keuangan.referensi_id', 'transaksi_operasional.id')
-                ->where('jurnal_keuangan.sumber_transaksi', 'Operasional');
-        })->get();
-
-        foreach ($missingOps as $op) {
-            JurnalKeuangan::create([
-                'tanggal' => $op->tanggal,
-                'jenis_transaksi' => ucfirst($op->operasional),
-                'kategori' => 'Operasional',
-                'sub_kategori' => $op->kategori,
-                'nominal' => $op->nominal,
-                'sumber_transaksi' => 'Operasional',
-                'referensi_id' => $op->id,
-                'pihak_terkait' => 'Legacy Op Sync',
-                'tipe_pihak' => $op->tipe_nama,
-                'cara_pembayaran' => 'tunai',
-                'keterangan' => $op->keterangan,
-                'mempengaruhi_kas' => true,
-                'perusahaan_id' => $op->perusahaan_id ?? $perusahaanId,
-            ]);
-        }
-    }
-
-    private function createTransactions($date, $count, $penjualIds, $supirIds, $perusahaanId, $isToday = false)
-    {
-        for ($i = 1; $i <= $count; $i++) {
-            $tonase = rand(1000, 10000);
-            $harga = rand(3000, 3500);
-            $subTotal = $tonase * $harga;
-            $caraBayar = ['tunai', 'transfer', 'cair di luar', 'belum dibayar'][rand(0, 3)];
-
-            if ($isToday) {
-                $tanggal = Carbon::parse($date)->setHour(rand(8, 17))->setMinute(rand(0, 59));
+            // Determine number of transactions per month (random but reasonable)
+            $count = rand(20, 50);
+            
+            // If it's the current month, only generate up to today
+            if ($currentDate->format('Y-m') === now()->format('Y-m')) {
+                $daysInMonth = now()->day;
             } else {
-                $tanggal = Carbon::parse($date)->setDay(rand(1, 28))->setHour(rand(8, 17));
+                $daysInMonth = $currentDate->daysInMonth;
             }
 
-            $nomor = 'DO-' . $tanggal->format('Ymd') . '-' . Str::padLeft($i, 4, '0') . '-' . rand(100, 999);
+            for ($i = 1; $i <= $count; $i++) {
+                $targetDay = rand(1, $daysInMonth);
+                $tanggal = (clone $currentDate)->setDay($targetDay)->setHour(rand(8, 17))->setMinute(rand(0, 59));
+                
+                $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
+            }
 
-            $transaksi = TransaksiDo::create([
-                'nomor' => $nomor,
-                'tanggal' => $tanggal,
-                'penjual_id' => $penjualIds[array_rand($penjualIds)],
-                'supir_id' => $supirIds[array_rand($supirIds)],
-                'tonase' => $tonase,
-                'harga_satuan' => $harga,
-                'sub_total' => $subTotal,
-                'upah_bongkar' => 0,
-                'biaya_lain' => 0,
-                'sisa_bayar' => $subTotal,
-                'pembayaran_hutang' => 0,
-                'cara_bayar' => $caraBayar,
-                'perusahaan_id' => $perusahaanId,
-            ]);
+            // Create some Operational data for this month
+            $this->createMonthlyOperasional($currentDate, $perusahaanId, $daysInMonth);
 
-            // MANUALLY CREATE JURNAL KEUANGAN since observer is disabled
-            JurnalKeuangan::create([
-                'tanggal' => $tanggal,
-                'jenis_transaksi' => 'Pengeluaran',
-                'kategori' => 'DO',
-                'sub_kategori' => 'Pembayaran DO',
-                'nominal' => $subTotal,
-                'sumber_transaksi' => 'DO',
-                'referensi_id' => $transaksi->id,
-                'nomor_referensi' => $transaksi->nomor,
-                'pihak_terkait' => $transaksi->penjual?->nama ?? 'Penjual Simulasi',
-                'tipe_pihak' => 'penjual',
-                'cara_pembayaran' => $caraBayar,
-                'keterangan' => "Simulasi Transaksi {$nomor}",
-                'mempengaruhi_kas' => $caraBayar === 'tunai',
-                'perusahaan_id' => $perusahaanId,
-            ]);
+            $currentDate->addMonth();
+        }
+
+        $this->command->info("Simulasi data berhasil dibuat!");
+    }
+
+    private function createMonthlyTransaction($tanggal, $index, $penjualIds, $supirIds, $perusahaanId)
+    {
+        $tonase = rand(1000, 10000);
+        $harga = rand(3000, 3500);
+        $subTotal = $tonase * $harga;
+        $caraBayar = ['tunai', 'transfer', 'cair di luar', 'belum dibayar'][rand(0, 3)];
+        
+        $penjualId = $penjualIds[array_rand($penjualIds)];
+        $supirId = $supirIds[array_rand($supirIds)];
+
+        $nomor = 'DO-' . $tanggal->format('Ymd') . '-' . Str::padLeft($index, 4, '0');
+
+        $transaksi = TransaksiDo::create([
+            'nomor' => $nomor,
+            'tanggal' => $tanggal,
+            'penjual_id' => $penjualId,
+            'supir_id' => $supirId,
+            'tonase' => $tonase,
+            'harga_satuan' => $harga,
+            'sub_total' => $subTotal,
+            'upah_bongkar' => 50000,
+            'biaya_lain' => 0,
+            'sisa_bayar' => $subTotal,
+            'pembayaran_hutang' => rand(0, 1) ? rand(100000, 500000) : 0,
+            'cara_bayar' => $caraBayar,
+            'perusahaan_id' => $perusahaanId,
+        ]);
+
+        JurnalKeuangan::create([
+            'tanggal' => $tanggal,
+            'jenis_transaksi' => 'Pengeluaran',
+            'kategori' => 'DO',
+            'sub_kategori' => 'Pembayaran DO',
+            'nominal' => $subTotal,
+            'sumber_transaksi' => 'DO',
+            'referensi_id' => $transaksi->id,
+            'nomor_referensi' => $transaksi->nomor,
+            'pihak_terkait' => $transaksi->penjual?->nama ?? 'Penjual Simulasi',
+            'tipe_pihak' => 'penjual',
+            'cara_pembayaran' => $caraBayar,
+            'keterangan' => "Simulasi Transaksi {$nomor}",
+            'mempengaruhi_kas' => $caraBayar === 'tunai',
+            'perusahaan_id' => $perusahaanId,
+        ]);
+    }
+
+    private function createMonthlyOperasional($monthDate, $perusahaanId, $daysInMonth)
+    {
+        // 1. Pemasukan Bulanan (e.g., Setoran Modal or others)
+        $pemasukanCount = rand(1, 3);
+        for ($i = 0; $i < $pemasukanCount; $i++) {
+            $day = rand(1, $daysInMonth);
+            $tanggal = (clone $monthDate)->setDay($day);
+            
+            $this->seedOp($tanggal, 'Pemasukan Bulanan ' . $monthDate->format('F'), rand(5000000, 20000000), KategoriOperasional::TAMBAH_SALDO, $perusahaanId);
+        }
+
+        // 2. Pengeluaran Bulanan (e.g., Listrik, Gaji, etc)
+        $pengeluaranCount = rand(3, 8);
+        $kategoriPengeluaran = [
+            KategoriOperasional::BAHAN_BAKAR,
+            KategoriOperasional::PERAWATAN,
+            KategoriOperasional::LAIN_LAIN,
+            KategoriOperasional::UANG_JALAN,
+        ];
+
+        for ($i = 0; $i < $pengeluaranCount; $i++) {
+            $day = rand(1, $daysInMonth);
+            $tanggal = (clone $monthDate)->setDay($day);
+            $kat = $kategoriPengeluaran[array_rand($kategoriPengeluaran)];
+            
+            $this->seedOp($tanggal, "Operasional {$kat->label()} " . $monthDate->format('F'), rand(200000, 2000000), $kat, $perusahaanId);
         }
     }
 
-    private function createOperasional($date, $keterangan, $nominal, $jenis, $perusahaanId)
+    private function seedOp($tanggal, $keterangan, $nominal, KategoriOperasional $kategori, $perusahaanId)
     {
-        $tanggal = Carbon::parse($date)->setDay(rand(1, 10));
+        $jenis = $kategori->getJenisOperasional();
 
         $op = TransaksiOperasional::create([
             'tanggal' => $tanggal,
             'operasional' => $jenis,
-            'kategori' => $jenis === 'pemasukan' ? 'tambah_saldo' : 'lain_lain',
+            'kategori' => $kategori,
             'tipe_nama' => 'user',
             'user_id' => 1,
             'nominal' => $nominal,
@@ -195,7 +176,7 @@ class SimulationSeeder extends Seeder
             'tanggal' => $tanggal,
             'jenis_transaksi' => ucfirst($jenis),
             'kategori' => 'Operasional',
-            'sub_kategori' => $op->kategori,
+            'sub_kategori' => $kategori->label(),
             'nominal' => $nominal,
             'sumber_transaksi' => 'Operasional',
             'referensi_id' => $op->id,

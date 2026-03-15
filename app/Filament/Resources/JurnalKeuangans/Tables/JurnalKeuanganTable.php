@@ -17,6 +17,10 @@ use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
@@ -229,6 +233,13 @@ class JurnalKeuanganTable
             ->filtersFormColumns(2)
             ->recordActions([
                 ViewAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                ]),
             ])
             ->striped()
             ->paginated([10, 25, 50, 100]);

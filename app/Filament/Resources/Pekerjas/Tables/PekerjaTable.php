@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Pekerjas\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -47,6 +48,11 @@ class PekerjaTable
             ->defaultSort('nama', 'asc')
             ->filters([
                 TrashedFilter::make(),
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah Pekerja'),
             ])
             ->recordActions([
                 EditAction::make(),

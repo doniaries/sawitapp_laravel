@@ -12,6 +12,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\CreateAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -70,6 +71,11 @@ class PerusahaanTable
             ])
             ->filters([
                 TrashedFilter::make(),
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah Perusahaan'),
             ])
             ->recordActions([
                 Action::make('tambah_saldo')

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\{TransaksiDo, TransaksiOperasional};
+use App\Models\{TransaksiDo, TransaksiOperasional, JurnalKeuangan};
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -31,50 +31,24 @@ class MonthlyFinanceChartWidget extends ChartWidget
             $startOfMonth = $date->copy()->startOfMonth();
             $endOfMonth = $date->copy()->endOfMonth();
 
-            // Get DO income
-            $doIncome = DB::table('transaksi_do')
-                ->whereNull('deleted_at')
+            $stats = JurnalKeuangan::query()
                 ->where('perusahaan_id', $tenantId)
                 ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
                 ->select([
-                    DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as debt_payments'),
-                    DB::raw('COALESCE(SUM(CASE
-                        WHEN cara_bayar IN ("transfer", "cair di luar", "belum dibayar")
-                        THEN sisa_bayar
-                        ELSE 0
-                    END), 0) as remaining_payments')
-                ])->first();
+                    'jenis_transaksi',
+                    DB::raw('SUM(nominal) as total')
+                ])
+                ->groupBy('jenis_transaksi')
+                ->get();
 
-            // Get operational income
-            $operationalIncome = DB::table('transaksi_operasional')
-                ->whereNull('deleted_at')
-                ->where('perusahaan_id', $tenantId)
-                ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-                ->where('operasional', 'pemasukan')
-                ->sum('nominal');
-
-            // Get expenses
-            $doExpense = DB::table('transaksi_do')
-                ->whereNull('deleted_at')
-                ->where('perusahaan_id', $tenantId)
-                ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-                ->sum('sub_total');
-
-            $operationalExpense = DB::table('transaksi_operasional')
-                ->whereNull('deleted_at')
-                ->where('perusahaan_id', $tenantId)
-                ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-                ->where('operasional', 'pengeluaran')
-                ->sum('nominal');
-
-            $totalIncome = $doIncome->debt_payments + $doIncome->remaining_payments + $operationalIncome;
-            $totalExpense = $doExpense + $operationalExpense;
-            $profit = $totalIncome - $totalExpense;
+            $income = (float) $stats->where('jenis_transaksi', 'Pemasukan')->first()?->total ?? 0;
+            $expense = (float) $stats->where('jenis_transaksi', 'Pengeluaran')->first()?->total ?? 0;
+            $profit = $income - $expense;
 
             return [
                 'date' => $date->format('M Y'),
-                'income' => $totalIncome,
-                'expense' => $totalExpense,
+                'income' => $income,
+                'expense' => $expense,
                 'profit' => $profit,
             ];
         });

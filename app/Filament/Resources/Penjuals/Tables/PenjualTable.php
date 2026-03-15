@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Penjuals\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\Action as BulkAction;
@@ -45,6 +46,11 @@ class PenjualTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('nama', 'asc')
+            ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah Penjual'),
+            ])
             ->recordActions([
                 EditAction::make(),
                 ViewAction::make(),

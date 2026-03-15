@@ -19,6 +19,14 @@ class TransaksiOperasional extends Model
         'perusahaan_id',
         'pihak_id',
         'pihak_type',
+        'tanggal',
+        'operasional',
+        'kategori',
+        'nominal',
+        'keterangan',
+        'tipe_nama',
+        'user_id',
+        'is_from_transaksi',
         // 'file_bukti',
     ];
 
