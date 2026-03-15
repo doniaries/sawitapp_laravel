@@ -111,6 +111,7 @@ class TransaksiOperasionalForm
                             ->components([
                                 DateTimePicker::make('tanggal')
                                     ->label('Tanggal')
+                                    ->readOnly()
                                     ->native(false)
                                     ->displayFormat('d/m/Y H:i')
                                     ->default(now())

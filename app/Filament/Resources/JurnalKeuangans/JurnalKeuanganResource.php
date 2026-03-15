@@ -18,6 +18,8 @@ class JurnalKeuanganResource extends Resource
     protected static ?string $model = JurnalKeuangan::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationLabel = 'Jurnal Keuangan';
+    protected static ?string $modelLabel = 'Jurnal Keuangan';
+    protected static ?string $pluralModelLabel = 'Jurnal Keuangan';
     protected static ?int $navigationSort = 4;
 
     public static function getModelLabel(): string

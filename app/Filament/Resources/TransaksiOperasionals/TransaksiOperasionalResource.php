@@ -19,23 +19,10 @@ class TransaksiOperasionalResource extends Resource
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Transaksi Operasional';
     protected static ?int $navigationSort = 3;
+    protected static ?string $modelLabel = 'Transaksi Operasional';
+    protected static ?string $pluralModelLabel = 'Transaksi Operasional';
 
-    public static function getModelLabel(): string
-    {
-        return 'Transaksi Operasional';
-    }
 
-    public static function getPluralModelLabel(): string
-    {
-        return 'Transaksi Operasional';
-    }
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getEloquentQuery()
-            ->whereDate('created_at', today())
-            ->count();
-    }
 
     public static function form(Schema $schema): Schema
     {

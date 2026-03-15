@@ -35,10 +35,10 @@ class AdminPanelProvider extends PanelProvider
      */
     public static array $dashboardWidgets = [
         'stats' => true,
-        'daily_chart' => true,
-        'monthly_chart' => true,
-        'top_hutang' => true,
-        'top_tonase' => true,
+        'daily_chart' => false,
+        'monthly_chart' => false,
+        'top_hutang' => false,
+        'top_tonase' => false,
     ];
 
     public function panel(Panel $panel): Panel

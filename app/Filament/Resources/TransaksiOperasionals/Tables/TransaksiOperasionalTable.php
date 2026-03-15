@@ -63,13 +63,12 @@ class TransaksiOperasionalTable
                 TextColumn::make('nominal')
                     ->label('Nominal')
                     ->numeric()
-                    ->prefix('Rp ')
+                    // ->money('IDR')
+                    ->currency('IDR')
+                    // ->prefix('Rp ')
                     ->alignRight()
                     ->sortable()
-                    ->summarize([
-                        Sum::make()
-                            ->money('IDR')
-                    ]),
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Average::make()->currency()),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
