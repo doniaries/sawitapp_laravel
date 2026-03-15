@@ -12,6 +12,7 @@ use App\Filament\Resources\Roles\Pages\ViewRole;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
 use BezhanSalleh\PluginEssentials\Concerns\Resource as Essentials;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -116,6 +117,11 @@ class RoleResource extends Resource
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label(__('Tambah Peran')),
             ])
             ->recordActions([
                 EditAction::make(),

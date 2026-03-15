@@ -33,6 +33,29 @@ class SimulationSeeder extends Seeder
         $perusahaanId = $perusahaan->id;
 
         // 2. Ensure we have data
+        if (Penjual::count() === 0) {
+            $this->command->info("Creating sample Penjual...");
+            for ($i = 0; $i < 5; $i++) {
+                Penjual::create([
+                    'nama' => 'Penjual ' . ($i + 1),
+                    'alamat' => 'Alamat Penjual ' . ($i + 1),
+                    'telepon' => '081234567' . $i,
+                    'is_active' => true,
+                ]);
+            }
+        }
+
+        if (Supir::count() === 0) {
+            $this->command->info("Creating sample Supir...");
+            for ($i = 0; $i < 3; $i++) {
+                Supir::create([
+                    'nama' => 'Supir ' . ($i + 1),
+                    'alamat' => 'Alamat Supir ' . ($i + 1),
+                    'telepon' => '089876543' . $i,
+                ]);
+            }
+        }
+
         $penjualIds = Penjual::pluck('id')->toArray();
         $supirIds = Supir::pluck('id')->toArray();
 
@@ -52,24 +75,21 @@ class SimulationSeeder extends Seeder
 
         $currentDate = clone $startDate;
 
-        while ($currentDate <= $endDate) {
+        while ($currentDate < now()->startOfDay()) {
             $monthName = $currentDate->format('F Y');
-            $this->command->info("Generating data for {$monthName}...");
+            $this->command->info("Generating historical data for {$monthName}...");
 
             // Determine number of transactions per month (random but reasonable)
-            $count = rand(20, 50);
-            
-            // If it's the current month, only generate up to today
-            if ($currentDate->format('Y-m') === now()->format('Y-m')) {
-                $daysInMonth = now()->day;
-            } else {
-                $daysInMonth = $currentDate->daysInMonth;
-            }
+            $count = rand(15, 30);
+            $daysInMonth = $currentDate->daysInMonth;
 
             for ($i = 1; $i <= $count; $i++) {
                 $targetDay = rand(1, $daysInMonth);
                 $tanggal = (clone $currentDate)->setDay($targetDay)->setHour(rand(8, 17))->setMinute(rand(0, 59));
                 
+                // Don't seed future or today/yesterday here, we'll do it specifically
+                if ($tanggal >= now()->subDays(2)->startOfDay()) continue;
+
                 $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
             }
 
@@ -77,6 +97,22 @@ class SimulationSeeder extends Seeder
             $this->createMonthlyOperasional($currentDate, $perusahaanId, $daysInMonth);
 
             $currentDate->addMonth();
+        }
+
+        // 6. Generate data for Yesterday specifically
+        $this->command->info("Generating data for Yesterday...");
+        $yesterday = now()->subDay();
+        for ($i = 1; $i <= 5; $i++) {
+            $tanggal = (clone $yesterday)->setHour(8 + $i)->setMinute(rand(0, 59));
+            $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
+        }
+
+        // 7. Generate data for Today specifically
+        $this->command->info("Generating data for Today...");
+        $today = now();
+        for ($i = 1; $i <= 3; $i++) {
+            $tanggal = (clone $today)->setHour(8 + $i)->setMinute(rand(0, 59));
+            $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
         }
 
         $this->command->info("Simulasi data berhasil dibuat!");
