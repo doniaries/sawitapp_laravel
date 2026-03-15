@@ -1,9 +1,7 @@
 var staticCacheName = "pwa-v" + new Date().getTime();
 var filesToCache = [
-    '/offline',
-    '/css/app.css',
-    '/js/app.js',
-"
+    '/offline.html',
+    '/favicon.ico',
 ];
 
 // Cache on install
@@ -39,7 +37,7 @@ self.addEventListener("fetch", event => {
                 return response || fetch(event.request);
             })
             .catch(() => {
-                return caches.match('offline');
+                return caches.match('/offline.html');
             })
     )
 });
