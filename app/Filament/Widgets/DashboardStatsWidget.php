@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\{Perusahaan, Penjual, TransaksiDo, LaporanKeuangan};
+use App\Models\{Perusahaan, Penjual, TransaksiDo, LaporanKeuangan, JurnalKeuangan};
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Carbon\Carbon;
@@ -27,89 +27,49 @@ class DashboardStatsWidget extends BaseWidget
         $startOfMonth = now()->startOfMonth();
         $endOfMonth = now()->endOfMonth();
 
-        // Calculate income (Tenant Scoped)
-        $incomingFunds = DB::table('transaksi_do')
-            ->whereNull('deleted_at')
+        // 1. Current Balance (Tenant Scoped)
+        $currentBalance = (float) $tenant->saldo;
+
+        // 2. Monthly Income Breakdown
+        $monthlyIncomeQuery = JurnalKeuangan::query()
             ->where('perusahaan_id', $tenantId)
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-            ->select([
-                DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
-                DB::raw('COALESCE(SUM(CASE
-                    WHEN cara_bayar IN ("transfer", "cair di luar", "belum dibayar")
-                    THEN sisa_bayar
-                    ELSE 0
-                END), 0) as remaining_payments')
-            ])->first();
+            ->where('jenis_transaksi', 'Pemasukan');
 
-        $operationalIncome = DB::table('transaksi_operasional')
-            ->whereNull('deleted_at')
-            ->where('perusahaan_id', $tenantId)
-            ->where('operasional', 'pemasukan')
-            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-            ->sum('nominal');
+        $totalIncomeMonthly = (float) $monthlyIncomeQuery->sum('nominal');
+        
+        $incomeStats = $monthlyIncomeQuery->select([
+            'kategori',
+            'sub_kategori',
+            DB::raw('SUM(nominal) as total')
+        ])->groupBy('kategori', 'sub_kategori')->get();
 
-        $monthlyIncome = $incomingFunds->total_debt_payments +
-            $incomingFunds->remaining_payments +
-            $operationalIncome;
+        $hutangIncome = $incomeStats->where('sub_kategori', 'Bayar Hutang')->sum('total');
+        $sisaIncome = $incomeStats->where('sub_kategori', 'Pembayaran DO')->sum('total');
+        $operasionalIncome = $incomeStats->where('kategori', 'Operasional')->sum('total');
 
-        // Calculate expenses (Tenant Scoped)
-        $monthlyDOExpense = DB::table('transaksi_do')
-            ->whereNull('deleted_at')
+        // 3. Monthly Expense Breakdown
+        $monthlyExpenseQuery = JurnalKeuangan::query()
             ->where('perusahaan_id', $tenantId)
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-            ->sum('sub_total');
+            ->where('jenis_transaksi', 'Pengeluaran');
 
-        $monthlyOperationalExpense = DB::table('transaksi_operasional')
-            ->whereNull('deleted_at')
-            ->where('perusahaan_id', $tenantId)
-            ->where('operasional', 'pengeluaran')
-            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-            ->sum('nominal');
+        $totalExpenseMonthly = (float) $monthlyExpenseQuery->sum('nominal');
 
-        $monthlyExpense = $monthlyDOExpense + $monthlyOperationalExpense;
+        $expenseStats = $monthlyExpenseQuery->select([
+            'kategori',
+            DB::raw('SUM(nominal) as total')
+        ])->groupBy('kategori')->get();
 
-        // Get monthly transactions count (Tenant Scoped)
-        $monthlyTransactions = TransaksiDo::where('perusahaan_id', $tenantId)
+        $doExpense = $expenseStats->where('kategori', 'DO')->sum('total');
+        $operasionalExpense = $expenseStats->where('kategori', 'Operasional')->sum('total');
+
+        // 4. Transaction Count
+        $monthlyTransactions = JurnalKeuangan::where('perusahaan_id', $tenantId)
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->count();
 
-        // Cumulative Balance (Tenant Scoped)
-        $totalIncomingFunds = DB::table('transaksi_do')
-            ->whereNull('deleted_at')
-            ->where('perusahaan_id', $tenantId)
-            ->select([
-                DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
-                DB::raw('COALESCE(SUM(CASE
-                    WHEN cara_bayar IN ("transfer", "cair di luar", "belum dibayar")
-                    THEN sisa_bayar
-                    ELSE 0
-                END), 0) as remaining_payments')
-            ])->first();
-
-        $totalOperationalIncome = DB::table('transaksi_operasional')
-            ->whereNull('deleted_at')
-            ->where('perusahaan_id', $tenantId)
-            ->where('operasional', 'pemasukan')
-            ->sum('nominal');
-
-        $totalIncome = $totalIncomingFunds->total_debt_payments +
-            $totalIncomingFunds->remaining_payments +
-            $totalOperationalIncome;
-
-        $totalDOExpense = DB::table('transaksi_do')
-            ->whereNull('deleted_at')
-            ->where('perusahaan_id', $tenantId)
-            ->sum('sub_total');
-
-        $totalOperationalExpense = DB::table('transaksi_operasional')
-            ->whereNull('deleted_at')
-            ->where('perusahaan_id', $tenantId)
-            ->where('operasional', 'pengeluaran')
-            ->sum('nominal');
-
-        $currentBalance = $totalIncome - ($totalDOExpense + $totalOperationalExpense);
-
-        // Format date range
+        // Format date range for display
         $dateRange = "Periode: {$startOfMonth->format('d M Y')} - {$endOfMonth->format('d M Y')}";
 
         return [
@@ -118,21 +78,21 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-banknotes')
                 ->color($currentBalance >= 0 ? 'success' : 'danger'),
 
-            Stat::make('Pemasukan Bulan Ini', 'Rp ' . number_format($monthlyIncome, 0, ',', '.'))
+            Stat::make('Pemasukan Bulan Ini', 'Rp ' . number_format($totalIncomeMonthly, 0, ',', '.'))
                 ->description(sprintf(
-                    "Hutang: Rp %s\nSisa: Rp %s\nOperasional: Rp %s",
-                    number_format($incomingFunds->total_debt_payments, 0, ',', '.'),
-                    number_format($incomingFunds->remaining_payments, 0, ',', '.'),
-                    number_format($operationalIncome, 0, ',', '.')
+                    "Hutang: Rp %s Sisa: Rp %s\nOperasional: Rp %s",
+                    number_format($hutangIncome, 0, ',', '.'),
+                    number_format($sisaIncome, 0, ',', '.'),
+                    number_format($operasionalIncome, 0, ',', '.')
                 ))
                 ->icon('heroicon-m-arrow-trending-up')
                 ->color('success'),
 
-            Stat::make('Pengeluaran Bulan Ini', 'Rp ' . number_format($monthlyExpense, 0, ',', '.'))
+            Stat::make('Pengeluaran Bulan Ini', 'Rp ' . number_format($totalExpenseMonthly, 0, ',', '.'))
                 ->description(sprintf(
-                    "DO: Rp %s\nOperasional: Rp %s",
-                    number_format($monthlyDOExpense, 0, ',', '.'),
-                    number_format($monthlyOperationalExpense, 0, ',', '.')
+                    "DO: Rp %s Operasional: Rp %s",
+                    number_format($doExpense, 0, ',', '.'),
+                    number_format($operasionalExpense, 0, ',', '.')
                 ))
                 ->icon('heroicon-m-arrow-trending-down')
                 ->color('danger'),
