@@ -54,8 +54,8 @@ class PenjualForm
                                     ->numeric()
                                     ->default(0)
                                     ->currencyMask(
-                                        thousandSeparator: ',',
-                                        decimalSeparator: '.',
+                                        thousandSeparator: '.',
+                                        decimalSeparator: ',',
                                         precision: 0
                                     ),
                             ]),

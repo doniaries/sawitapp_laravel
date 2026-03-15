@@ -50,7 +50,7 @@ class TransaksiOperasionalForm
                                 TextInput::make('nominal')
                                     ->label('Nominal')
                                     ->required()
-                                    ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
                                     ->numeric()
                                     ->live(),

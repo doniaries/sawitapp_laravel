@@ -70,16 +70,16 @@ class TransaksiDoTable
 
                 TextColumn::make('harga_satuan')
                     ->label('Harga Satuan')
-                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->currency('IDR')
                     ->sortable(),
 
                 TextColumn::make('sub_total')
                     ->label('Sub Total')
-                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->currency('IDR')
                     ->color(Color::Amber)
                     ->weight('bold')
                     ->summarize([
-                        Sum::make()->currency('IDR', true)
+                        Sum::make()->currency('IDR')
                     ])
                     ->sortable(),
             ])

@@ -78,7 +78,7 @@ class TransaksiDoForm
                                             ->prefix('Rp')
                                             ->numeric()
                                             ->default(0)
-                                            ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0),
+                                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0),
                                     ])
                                     ->afterStateUpdated(function ($state, Set $set) {
                                         if ($state) {
@@ -169,7 +169,7 @@ class TransaksiDoForm
 
                                 TextInput::make('upah_bongkar')
                                     ->label('Upah Bongkar')
-                                    ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
                                     ->default(0)
                                     ->live(onBlur: true)
@@ -177,7 +177,7 @@ class TransaksiDoForm
 
                                 TextInput::make('biaya_lain')
                                     ->label('Biaya Lain')
-                                    ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
                                     ->default(0)
                                     ->live(onBlur: true)
@@ -193,7 +193,7 @@ class TransaksiDoForm
                             ->components([
                                 TextInput::make('sub_total')
                                     ->label('Sub Total')
-                                    ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
                                     ->disabled()
                                     ->dehydrated(),
@@ -237,7 +237,7 @@ class TransaksiDoForm
                                     ->label('Sisa Yang Dibayar')
                                     ->required()
                                     ->prefix('Rp')
-                                    ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->disabled()
                                     ->dehydrated()
                                     ->extraInputAttributes(['class' => 'font-bold text-lg leading-loose'])

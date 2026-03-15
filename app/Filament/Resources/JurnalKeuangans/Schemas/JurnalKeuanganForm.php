@@ -26,6 +26,8 @@ class JurnalKeuanganForm
                             ->components([
                                 TextInput::make('nominal')
                                     ->required()
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
+                                    ->prefix('Rp')
                                     ->numeric(),
                                 TextInput::make('kategori')
                                     ->required()

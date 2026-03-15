@@ -46,11 +46,10 @@ class JurnalKeuanganTable
                 TextColumn::make('sub_kategori')
                     ->searchable(),
                 TextColumn::make('nominal')
-                    ->numeric()
-                    ->prefix('Rp. ')
+                    ->currency('IDR')
                     ->summarize([
                         Sum::make()
-                            ->prefix('Rp. ')
+                            ->currency('IDR')
                     ])
                     ->sortable(),
                 TextColumn::make('sumber_transaksi')
