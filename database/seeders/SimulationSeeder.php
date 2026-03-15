@@ -18,104 +18,97 @@ class SimulationSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Setup Perusahaan
-        $perusahaan = Perusahaan::first();
-        if (!$perusahaan) {
-            $perusahaan = Perusahaan::create([
+        // 1. Get all Perusahaan
+        $perusahaans = Perusahaan::all();
+        
+        if ($perusahaans->isEmpty()) {
+            $this->command->warn("No Perusahaan found! Creating a default one...");
+            $perusahaans = collect([Perusahaan::create([
                 'name' => 'SUKSES MANDIRI',
                 'alamat' => 'Jl. Lintas Sumatera',
                 'telepon' => '08123456789',
                 'saldo' => 1000000000,
-            ]);
-        } else {
+            ])]);
+        }
+
+        foreach ($perusahaans as $perusahaan) {
+            $this->command->info("Starting simulation for company: {$perusahaan->name}");
             $perusahaan->update(['saldo' => 1000000000]);
-        }
-        $perusahaanId = $perusahaan->id;
+            $perusahaanId = $perusahaan->id;
 
-        // 2. Ensure we have data
-        if (Penjual::count() === 0) {
-            $this->command->info("Creating sample Penjual...");
-            for ($i = 0; $i < 5; $i++) {
-                Penjual::create([
-                    'nama' => 'Penjual ' . ($i + 1),
-                    'alamat' => 'Alamat Penjual ' . ($i + 1),
-                    'telepon' => '081234567' . $i,
-                    'is_active' => true,
-                ]);
+            // 2. Ensure we have data for this tenant
+            if (Penjual::where('perusahaan_id', $perusahaanId)->count() === 0) {
+                $this->command->info("Creating sample Penjual for {$perusahaan->name}...");
+                for ($i = 0; $i < 5; $i++) {
+                    Penjual::create([
+                        'nama' => "Penjual {$perusahaanId}-" . ($i + 1),
+                        'alamat' => 'Alamat Penjual ' . ($i + 1),
+                        'telepon' => '081234567' . $i,
+                        'is_active' => true,
+                        'perusahaan_id' => $perusahaanId,
+                    ]);
+                }
             }
-        }
 
-        if (Supir::count() === 0) {
-            $this->command->info("Creating sample Supir...");
-            for ($i = 0; $i < 3; $i++) {
-                Supir::create([
-                    'nama' => 'Supir ' . ($i + 1),
-                    'alamat' => 'Alamat Supir ' . ($i + 1),
-                    'telepon' => '089876543' . $i,
-                ]);
+            if (Supir::where('perusahaan_id', $perusahaanId)->count() === 0) {
+                $this->command->info("Creating sample Supir for {$perusahaan->name}...");
+                for ($i = 0; $i < 3; $i++) {
+                    Supir::create([
+                        'nama' => "Supir {$perusahaanId}-" . ($i + 1),
+                        'alamat' => 'Alamat Supir ' . ($i + 1),
+                        'telepon' => '089876543' . $i,
+                        'perusahaan_id' => $perusahaanId,
+                    ]);
+                }
             }
-        }
 
-        $penjualIds = Penjual::pluck('id')->toArray();
-        $supirIds = Supir::pluck('id')->toArray();
+            $penjualIds = Penjual::where('perusahaan_id', $perusahaanId)->pluck('id')->toArray();
+            $supirIds = Supir::where('perusahaan_id', $perusahaanId)->pluck('id')->toArray();
 
-        // 3. Disable Observers for speed and consistency
-        TransaksiDo::unsetEventDispatcher();
-        TransaksiOperasional::unsetEventDispatcher();
-        JurnalKeuangan::unsetEventDispatcher();
+            // 3. Disable Observers
+            TransaksiDo::unsetEventDispatcher();
+            TransaksiOperasional::unsetEventDispatcher();
+            JurnalKeuangan::unsetEventDispatcher();
 
-        // 4. Clean existing simulation data safely (optional but recommended for fresh start)
-        // JurnalKeuangan::truncate();
-        // TransaksiDo::truncate();
-        // TransaksiOperasional::truncate();
+            // 4. Generate data for the last 6 months
+            $startDate = now()->subMonths(6)->startOfMonth();
+            $currentDate = clone $startDate;
 
-        // 5. Generate data for the last 6 months
-        $startDate = now()->subMonths(6)->startOfMonth();
-        $endDate = now();
+            while ($currentDate < now()->startOfDay()) {
+                $count = rand(15, 30);
+                $daysInMonth = $currentDate->daysInMonth;
 
-        $currentDate = clone $startDate;
+                for ($i = 1; $i <= $count; $i++) {
+                    $targetDay = rand(1, $daysInMonth);
+                    $tanggal = (clone $currentDate)->setDay($targetDay)->setHour(rand(8, 17))->setMinute(rand(0, 59));
+                    
+                    if ($tanggal >= now()->subDays(2)->startOfDay()) continue;
 
-        while ($currentDate < now()->startOfDay()) {
-            $monthName = $currentDate->format('F Y');
-            $this->command->info("Generating historical data for {$monthName}...");
+                    $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
+                }
 
-            // Determine number of transactions per month (random but reasonable)
-            $count = rand(15, 30);
-            $daysInMonth = $currentDate->daysInMonth;
+                $this->createMonthlyOperasional($currentDate, $perusahaanId, $daysInMonth);
+                $currentDate->addMonth();
+            }
 
-            for ($i = 1; $i <= $count; $i++) {
-                $targetDay = rand(1, $daysInMonth);
-                $tanggal = (clone $currentDate)->setDay($targetDay)->setHour(rand(8, 17))->setMinute(rand(0, 59));
-                
-                // Don't seed future or today/yesterday here, we'll do it specifically
-                if ($tanggal >= now()->subDays(2)->startOfDay()) continue;
-
+            // 5. Generate data for Yesterday specifically
+            $this->command->info("Generating data for Yesterday for {$perusahaan->name}...");
+            $yesterday = now()->subDay();
+            for ($i = 1; $i <= 5; $i++) {
+                $tanggal = (clone $yesterday)->setHour(8 + $i)->setMinute(rand(0, 59));
                 $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
             }
 
-            // Create some Operational data for this month
-            $this->createMonthlyOperasional($currentDate, $perusahaanId, $daysInMonth);
-
-            $currentDate->addMonth();
+            // 6. Generate data for Today specifically
+            $this->command->info("Generating data for Today for {$perusahaan->name}...");
+            $today = now();
+            for ($i = 1; $i <= 3; $i++) {
+                $tanggal = (clone $today)->setHour(8 + $i)->setMinute(rand(0, 59));
+                $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
+            }
         }
 
-        // 6. Generate data for Yesterday specifically
-        $this->command->info("Generating data for Yesterday...");
-        $yesterday = now()->subDay();
-        for ($i = 1; $i <= 5; $i++) {
-            $tanggal = (clone $yesterday)->setHour(8 + $i)->setMinute(rand(0, 59));
-            $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
-        }
-
-        // 7. Generate data for Today specifically
-        $this->command->info("Generating data for Today...");
-        $today = now();
-        for ($i = 1; $i <= 3; $i++) {
-            $tanggal = (clone $today)->setHour(8 + $i)->setMinute(rand(0, 59));
-            $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
-        }
-
-        $this->command->info("Simulasi data berhasil dibuat!");
+        $this->command->info("Simulasi data berhasil dibuat untuk semua perusahaan!");
     }
 
     private function createMonthlyTransaction($tanggal, $index, $penjualIds, $supirIds, $perusahaanId)
@@ -128,13 +121,16 @@ class SimulationSeeder extends Seeder
         $penjualId = $penjualIds[array_rand($penjualIds)];
         $supirId = $supirIds[array_rand($supirIds)];
 
-        $nomor = 'DO-' . $tanggal->format('Ymd') . '-' . Str::padLeft($index, 4, '0');
+        $nomor = 'DO-' . $perusahaanId . '-' . $tanggal->format('Ymd') . '-' . Str::padLeft($index, 4, '0');
+
+        $noPolisi = ['B ' . rand(1000, 9999) . ' ABC', 'A ' . rand(1000, 9999) . ' XYZ', 'D ' . rand(1000, 4999) . ' DEF'][rand(0, 2)];
 
         $transaksi = TransaksiDo::create([
             'nomor' => $nomor,
             'tanggal' => $tanggal,
             'penjual_id' => $penjualId,
             'supir_id' => $supirId,
+            'no_polisi' => $noPolisi,
             'tonase' => $tonase,
             'harga_satuan' => $harga,
             'sub_total' => $subTotal,

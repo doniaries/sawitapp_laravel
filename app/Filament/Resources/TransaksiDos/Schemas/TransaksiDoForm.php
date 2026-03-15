@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\TransaksiDos\Schemas;
 
-use App\Models\Kendaraan;
+
 use App\Models\Penjual;
 use App\Models\Supir;
 use App\Models\TransaksiDo;
@@ -104,40 +104,17 @@ class TransaksiDoForm
                                     ->searchable()
                                     ->live()
                                     ->required()
-                                    ->afterStateUpdated(fn($state, Set $set) => $set('kendaraan_id', null))
                                     ->createOptionForm([
                                         TextInput::make('nama')->required()->maxLength(255),
                                         TextInput::make('alamat')->maxLength(255),
                                         TextInput::make('telepon')->tel()->maxLength(255),
                                     ]),
 
-                                Select::make('kendaraan_id')
+                                TextInput::make('no_polisi')
                                     ->label('Nomor Polisi')
-                                    ->options(function (Get $get) {
-                                        $supirId = $get('supir_id');
-                                        return $supirId ? Kendaraan::query()
-                                            ->where('supir_id', $supirId)
-                                            ->pluck('no_polisi', 'id') : [];
-                                    })
-                                    ->searchable()
-                                    ->live()
-                                    ->createOptionForm([
-                                        TextInput::make('no_polisi')->required()->unique(Kendaraan::class, 'no_polisi')->maxLength(10),
-                                        Hidden::make('supir_id')->default(fn(Get $get) => $get('../../supir_id'))
-                                    ])
-                                    ->createOptionUsing(function (array $data, Get $get) {
-                                        DB::beginTransaction();
-                                        try {
-                                            $noPolisi = strtoupper(trim($data['no_polisi']));
-                                            $supirId = $data['supir_id'] ?? $get('supir_id');
-                                            $kendaraan = Kendaraan::create(['no_polisi' => $noPolisi, 'supir_id' => $supirId]);
-                                            DB::commit();
-                                            return $kendaraan->id;
-                                        } catch (\Exception $e) {
-                                            DB::rollBack();
-                                            throw $e;
-                                        }
-                                    }),
+                                    ->required()
+                                    ->maxLength(10)
+                                    ->placeholder('B 1234 ABC'),
                             ])->columns(3),
 
                         // Perhitungan

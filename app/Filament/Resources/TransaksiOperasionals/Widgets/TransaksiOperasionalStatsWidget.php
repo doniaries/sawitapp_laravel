@@ -10,18 +10,45 @@ class TransaksiOperasionalStatsWidget extends BaseWidget
 {
     protected function getStats(): array
     {
-        // Hitung total pemasukan dan pengeluaran bulan ini
+        $tenantId = \Filament\Facades\Filament::getTenant()->id;
+        $yesterday = now()->subDay();
         $bulanIni = now()->startOfMonth();
-        
-        $totalPemasukan = TransaksiOperasional::where('operasional', 'pemasukan')
+
+        // Yesterday Stats
+        $yesterdayPemasukan = TransaksiOperasional::where('perusahaan_id', $tenantId)
+            ->where('operasional', 'pemasukan')
+            ->whereDate('tanggal', $yesterday)
+            ->sum('nominal');
+
+        $yesterdayPengeluaran = TransaksiOperasional::where('perusahaan_id', $tenantId)
+            ->where('operasional', 'pengeluaran')
+            ->whereDate('tanggal', $yesterday)
+            ->sum('nominal');
+
+        // Monthly Stats
+        $totalPemasukan = TransaksiOperasional::where('perusahaan_id', $tenantId)
+            ->where('operasional', 'pemasukan')
             ->where('tanggal', '>=', $bulanIni)
             ->sum('nominal');
 
-        $totalPengeluaran = TransaksiOperasional::where('operasional', 'pengeluaran')
+        $totalPengeluaran = TransaksiOperasional::where('perusahaan_id', $tenantId)
+            ->where('operasional', 'pengeluaran')
             ->where('tanggal', '>=', $bulanIni)
             ->sum('nominal');
 
         return [
+            Stat::make('Operasional Kemarin (Masuk)', 'Rp ' . number_format($yesterdayPemasukan, 0, ',', '.'))
+                ->description('Pemasukan operasional kemarin')
+                ->descriptionIcon('heroicon-m-arrow-trending-up')
+                ->color('success')
+                ->icon('heroicon-o-arrow-up-circle'),
+
+            Stat::make('Operasional Kemarin (Keluar)', 'Rp ' . number_format($yesterdayPengeluaran, 0, ',', '.'))
+                ->description('Pengeluaran operasional kemarin')
+                ->descriptionIcon('heroicon-m-arrow-trending-down')
+                ->color('danger')
+                ->icon('heroicon-o-arrow-down-circle'),
+
             Stat::make('Total Pemasukan', 'Rp ' . number_format($totalPemasukan, 0, ',', '.'))
                 ->description('Bulan ' . now()->format('F Y'))
                 ->descriptionIcon('heroicon-m-arrow-trending-up')

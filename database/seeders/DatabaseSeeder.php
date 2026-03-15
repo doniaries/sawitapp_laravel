@@ -56,8 +56,7 @@ class DatabaseSeeder extends Seeder
             SupirSeeder::class,
             PekerjaSeeder::class,
             OperasionalSeeder::class,
-            TransaksiDoSeeder::class,
+            SimulationSeeder::class,
         ]);
     }
 }
-

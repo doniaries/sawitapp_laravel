@@ -44,10 +44,7 @@ class Supir extends Model
         return $this->hasMany(TransaksiDo::class);
     }
 
-    public function kendaraan(): HasMany
-    {
-        return $this->hasMany(Kendaraan::class);
-    }
+
 
     // Helpers
     public function getFormattedHutangAttribute(): string

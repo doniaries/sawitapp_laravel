@@ -21,8 +21,22 @@ class TransaksiDoStatWidget extends BaseWidget
         try {
             // Get stats from cache or calculate
             return Cache::remember('transaksi-stats', 60, function () {
-                // --- MONTHLY CALCULATIONS (For display in specific widgets) ---
+                $tenantId = \Filament\Facades\Filament::getTenant()->id;
+                $yesterday = now()->subDay();
+
+                // --- YESTERDAY CALCULATIONS ---
+                $yesterdayStats = DB::table('transaksi_do')
+                    ->where('perusahaan_id', $tenantId)
+                    ->whereNull('deleted_at')
+                    ->whereDate('tanggal', $yesterday)
+                    ->select([
+                        DB::raw('COUNT(*) as count'),
+                        DB::raw('SUM(sub_total) as total')
+                    ])->first();
+
+                // --- MONTHLY CALCULATIONS (Tenant Scoped) ---
                 $incomingFundsMonthly = DB::table('transaksi_do')
+                    ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->whereMonth('tanggal', now()->month)
                     ->whereYear('tanggal', now()->year)
@@ -36,6 +50,7 @@ class TransaksiDoStatWidget extends BaseWidget
                     ])->first();
 
                 $operationalIncomeMonthly = DB::table('transaksi_operasional')
+                    ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pemasukan')
                     ->whereMonth('tanggal', now()->month)
@@ -47,12 +62,14 @@ class TransaksiDoStatWidget extends BaseWidget
                     $operationalIncomeMonthly;
 
                 $totalDOMonthly = DB::table('transaksi_do')
+                    ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->whereMonth('tanggal', now()->month)
                     ->whereYear('tanggal', now()->year)
                     ->sum('sub_total');
 
                 $totalOperationalMonthly = DB::table('transaksi_operasional')
+                    ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pengeluaran')
                     ->whereMonth('tanggal', now()->month)
@@ -61,8 +78,9 @@ class TransaksiDoStatWidget extends BaseWidget
 
                 $totalExpenditureMonthly = $totalDOMonthly + $totalOperationalMonthly;
 
-                // --- GLOBAL CALCULATIONS (Cumulative - For Sisa Saldo) ---
+                // --- GLOBAL CALCULATIONS (Cumulative - Scoped) ---
                 $incomingFundsGlobal = DB::table('transaksi_do')
+                    ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->select([
                         DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
@@ -74,6 +92,7 @@ class TransaksiDoStatWidget extends BaseWidget
                     ])->first();
 
                 $operationalIncomeGlobal = DB::table('transaksi_operasional')
+                    ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pemasukan')
                     ->sum('nominal');
@@ -83,10 +102,12 @@ class TransaksiDoStatWidget extends BaseWidget
                     $operationalIncomeGlobal;
 
                 $totalDOGlobal = DB::table('transaksi_do')
+                    ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->sum('sub_total');
 
                 $totalOperationalGlobal = DB::table('transaksi_operasional')
+                    ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pengeluaran')
                     ->sum('nominal');
@@ -95,6 +116,11 @@ class TransaksiDoStatWidget extends BaseWidget
                 $remainingBalanceGlobal = $totalIncomingGlobal - $totalExpenditureGlobal;
 
                 return [
+                    Stat::make('DO Kemarin', $yesterdayStats->count ?? 0)
+                        ->description('Total: Rp ' . number_format($yesterdayStats->total ?? 0, 0, ',', '.'))
+                        ->descriptionIcon('heroicon-m-clock')
+                        ->color('info'),
+
                     // Remaining Balance (Global/Cumulative)
                     Stat::make('Sisa Saldo', 'Rp ' . number_format($remainingBalanceGlobal, 0, ',', '.'))
                         ->description('Total saldo (Kumulatif)')
@@ -122,13 +148,13 @@ class TransaksiDoStatWidget extends BaseWidget
                         ->descriptionIcon('heroicon-m-arrow-trending-down')
                         ->color('danger'),
 
-                    Stat::make('Transaksi (Bulan Ini)', TransaksiDo::currentMonth()->count())
+                    Stat::make('Transaksi (Bulan Ini)', TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->count())
                         ->description(sprintf(
                             "tunai: %d | transfer: %d\ncair: %d | belum: %d",
-                            TransaksiDo::currentMonth()->where('cara_bayar', 'tunai')->count(),
-                            TransaksiDo::currentMonth()->where('cara_bayar', 'transfer')->count(),
-                            TransaksiDo::currentMonth()->where('cara_bayar', 'cair di luar')->count(),
-                            TransaksiDo::currentMonth()->where('cara_bayar', 'belum dibayar')->count()
+                            TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->where('cara_bayar', 'tunai')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->where('cara_bayar', 'transfer')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->where('cara_bayar', 'cair di luar')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->where('cara_bayar', 'belum dibayar')->count()
                         ))
                         ->descriptionIcon('heroicon-m-document-text')
                         ->color('primary'),

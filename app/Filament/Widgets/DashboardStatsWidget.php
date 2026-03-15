@@ -69,18 +69,6 @@ class DashboardStatsWidget extends BaseWidget
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->count();
 
-        // 5. Yesterday's Transactions
-        $yesterdayStart = now()->subDay()->startOfDay();
-        $yesterdayEnd = now()->subDay()->endOfDay();
-        
-        $yesterdayTransactionsCount = JurnalKeuangan::where('perusahaan_id', $tenantId)
-            ->whereBetween('tanggal', [$yesterdayStart, $yesterdayEnd])
-            ->count();
-            
-        $yesterdayTotalNominal = JurnalKeuangan::where('perusahaan_id', $tenantId)
-            ->whereBetween('tanggal', [$yesterdayStart, $yesterdayEnd])
-            ->sum('nominal');
-
         // Format date range for display
         $dateRange = "Periode: {$startOfMonth->format('d M Y')} - {$endOfMonth->format('d M Y')}";
 
@@ -113,11 +101,6 @@ class DashboardStatsWidget extends BaseWidget
                 ->description($dateRange)
                 ->icon('heroicon-m-document-text')
                 ->color('primary'),
-
-            Stat::make('Transaksi Kemarin', $yesterdayTransactionsCount)
-                ->description('Total: Rp ' . number_format($yesterdayTotalNominal, 0, ',', '.'))
-                ->icon('heroicon-m-clock')
-                ->color('info'),
         ];
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->dateTime('tanggal');
             $table->foreignId('penjual_id')->constrained('penjual');
             $table->foreignId('supir_id')->nullable()->constrained('supir');
-            $table->foreignId('kendaraan_id')->nullable()->constrained('kendaraan');
+            $table->string('no_polisi', 15)->nullable()->index();
             $table->decimal('tonase', 10, 2);
             $table->decimal('harga_satuan', 15, 0);
             $table->decimal('sub_total', 15, 0);

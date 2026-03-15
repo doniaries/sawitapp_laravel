@@ -58,8 +58,8 @@ class TransaksiDoTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('supir.nama')
-                    ->label('Supir')
+                TextColumn::make('no_polisi')
+                    ->label('No Polisi')
                     ->searchable(),
 
                 TextColumn::make('tonase')

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Kendaraan;
+
 use App\Models\Penjual;
 use App\Models\Supir;
 use App\Traits\DokumentasiTrait;
@@ -27,7 +27,7 @@ class TransaksiDo extends Model
     use HasFactory, SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait, GenerateMonthlyNumber, BelongsToTenant;
 
     protected $table = 'transaksi_do';
-    protected $with = ['penjual:id', 'supir:id', 'kendaraan:id']; // Default eager loading
+    protected $with = ['penjual:id', 'supir:id']; // Default eager loading
 
 
     protected $fillable = [
@@ -37,7 +37,7 @@ class TransaksiDo extends Model
         'tanggal',
         'penjual_id',
         'supir_id',
-        'kendaraan_id',
+        'no_polisi',
         'tonase',
         'harga_satuan',
         'sub_total',
@@ -161,10 +161,7 @@ class TransaksiDo extends Model
         return $this->belongsTo(Supir::class);
     }
 
-    public function kendaraan(): BelongsTo
-    {
-        return $this->belongsTo(Kendaraan::class);
-    }
+
 
     public function getTotalAttribute()
     {
@@ -189,7 +186,7 @@ class TransaksiDo extends Model
                     'tanggal' => $this->tanggal->format('d/m/Y H:i'),
                     'penjual' => $this->penjual ? $this->penjual->nama : 'N/A',
                     'supir' => $this->supir ? $this->supir->nama : 'N/A',
-                    'kendaraan' => $this->kendaraan ? $this->kendaraan->no_polisi : 'N/A',
+                    'no_polisi' => $this->no_polisi ?? 'N/A',
                 ]))
         );
     }
