@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\LogistikController;
 use App\Http\Controllers\Api\OperasionalController;
 use App\Http\Controllers\Api\PenjualController;
 use App\Http\Controllers\Api\TransaksiDoController;
+use App\Http\Controllers\Api\PengajuanDanaController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Transaksi DO
     Route::get('/transaksi-do', [TransaksiDoController::class, 'index']);
     Route::get('/transaksi-do/{id}', [TransaksiDoController::class, 'show']);
+
+    // Pengajuan Dana
+    Route::get('/pengajuan-dana', [PengajuanDanaController::class, 'index']);
+    Route::get('/pengajuan-dana/{id}', [PengajuanDanaController::class, 'show']);
+    Route::post('/pengajuan-dana', [PengajuanDanaController::class, 'store']);
 
     // Penjual
     Route::get('/penjual', [PenjualController::class, 'index']);
