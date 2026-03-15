@@ -41,12 +41,12 @@ class PekerjaForm
                                 TextInput::make('pendapatan')
                                     ->disabled()
                                     ->prefix('Rp. ')
-                                    ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->default(0),
                                 TextInput::make('total_hutang')
                                     ->disabled()
                                     ->prefix('Rp. ')
-                                    ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->default(0),
                             ]),
                     ]),

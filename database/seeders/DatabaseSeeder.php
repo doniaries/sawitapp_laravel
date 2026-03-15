@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             PenjualSeeder::class,
             SupirSeeder::class,
+            PekerjaSeeder::class,
             OperasionalSeeder::class,
             TransaksiDoSeeder::class,
         ]);

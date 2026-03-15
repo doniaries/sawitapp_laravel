@@ -5,7 +5,6 @@ namespace App\Filament\Resources\TransaksiOperasionals;
 use App\Filament\Resources\TransaksiOperasionals\Pages;
 use App\Filament\Resources\TransaksiOperasionals\Schemas;
 use App\Filament\Resources\TransaksiOperasionals\Tables;
-use App\Filament\Resources\TransaksiOperasionals\Widgets;
 use App\Models\TransaksiOperasional;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

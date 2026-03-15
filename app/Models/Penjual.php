@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Log;
 use App\Enums\KategoriOperasional;
+use App\Traits\BelongsToTenant;
 
 class Penjual extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToTenant;
 
     protected $table = 'penjual';
 
@@ -41,11 +42,6 @@ class Penjual extends Model
     {
         return $this->hasMany(TransaksiDo::class)
             ->latest();
-    }
-
-    public function perusahaan(): BelongsTo
-    {
-        return $this->belongsTo(Perusahaan::class);
     }
 
 

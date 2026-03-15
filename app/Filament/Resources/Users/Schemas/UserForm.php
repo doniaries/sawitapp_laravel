@@ -76,9 +76,12 @@ class UserForm
                             ->components([
                                 Select::make('perusahaan_id')
                                     ->label('Perusahaan')
-                                    ->relationship('perusahaan', 'name')
+                                    ->relationship(
+                                        'perusahaan',
+                                        'name',
+                                        fn($query) => auth()->user()->isSuperAdmin() ? $query : $query->where('id', \Filament\Facades\Filament::getTenant()->id)
+                                    )
                                     ->searchable()
-                                    ->preload()
                                     ->required()
                                     ->native(false),
 

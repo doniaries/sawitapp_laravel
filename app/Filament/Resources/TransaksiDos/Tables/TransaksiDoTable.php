@@ -101,7 +101,6 @@ class TransaksiDoTable
             ])
             ->defaultSort('created_at', 'desc')
             ->striped()
-            ->paginated([10, 25, 50, 100])
-            ->poll('30s');
+            ->paginated([10, 25, 50, 100]);
     }
 }

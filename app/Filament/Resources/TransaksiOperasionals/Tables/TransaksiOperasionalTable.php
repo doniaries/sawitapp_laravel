@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\TransaksiOperasionals\Tables;
 
-use App\Models\TransaksiOperasional;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
@@ -11,7 +10,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 
@@ -90,7 +88,6 @@ class TransaksiOperasionalTable
                 ]),
             ])
             ->striped()
-            ->paginated([10, 25, 50, 100])
-            ->poll('30s');
+            ->paginated([10, 25, 50, 100]);
     }
 }

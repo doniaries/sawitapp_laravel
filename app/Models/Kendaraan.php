@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use App\Traits\BelongsToTenant;
+
 class Kendaraan extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $table = 'kendaraan';
 
@@ -22,10 +24,5 @@ class Kendaraan extends Model
     public function supir(): BelongsTo
     {
         return $this->belongsTo(Supir::class);
-    }
-
-    public function perusahaan(): BelongsTo
-    {
-        return $this->belongsTo(Perusahaan::class);
     }
 }

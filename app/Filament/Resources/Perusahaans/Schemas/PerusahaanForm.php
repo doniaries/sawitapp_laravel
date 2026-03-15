@@ -48,7 +48,7 @@ class PerusahaanForm
                             ->components([
                                 TextInput::make('saldo')
                                     ->required()
-                                    ->currencyMask(thousandSeparator: ',', decimalSeparator: '.', precision: 0)
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp.'),
                                 TextInput::make('email')
                                     ->email(),

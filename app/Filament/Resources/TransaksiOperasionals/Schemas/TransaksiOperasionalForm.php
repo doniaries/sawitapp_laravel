@@ -44,16 +44,14 @@ class TransaksiOperasionalForm
                                             default => []
                                         };
                                     })
-                                    ->required()
-                                    ->live(),
+                                    ->required(),
 
                                 TextInput::make('nominal')
                                     ->label('Nominal')
                                     ->required()
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
-                                    ->numeric()
-                                    ->live(),
+                                    ->numeric(),
 
                                 Select::make('tipe_nama')
                                     ->label('Tipe Profil')
@@ -73,32 +71,31 @@ class TransaksiOperasionalForm
                                     ]),
 
                                 Select::make('penjual_id')
-                                    ->label('Pilih Pihak (Penjual)')
+                                    ->label('Penjual')
                                     ->relationship('penjual', 'nama')
                                     ->searchable()
-                                    ->preload()
-                                    ->live()
+                                    ->required()
                                     ->visible(fn(Get $get) => $get('tipe_nama') === 'penjual'),
 
                                 Select::make('supir_id')
-                                    ->label('Pilih Pihak (Supir)')
+                                    ->label('Supir')
                                     ->relationship('supir', 'nama')
                                     ->searchable()
-                                    ->preload()
+                                    ->required()
                                     ->visible(fn(Get $get) => $get('tipe_nama') === 'supir'),
 
                                 Select::make('pekerja_id')
-                                    ->label('Pilih Pihak (Pekerja)')
+                                    ->label('Pekerja')
                                     ->relationship('pekerja', 'nama')
                                     ->searchable()
-                                    ->preload()
+                                    ->required()
                                     ->visible(fn(Get $get) => $get('tipe_nama') === 'pekerja'),
 
                                 Select::make('user_id')
-                                    ->label('Pilih Pihak (Karyawan)')
+                                    ->label('Karyawan')
                                     ->relationship('user', 'name')
                                     ->searchable()
-                                    ->preload()
+                                    ->required()
                                     ->visible(fn(Get $get) => $get('tipe_nama') === 'user'),
                             ])->columns(2),
                     ]),

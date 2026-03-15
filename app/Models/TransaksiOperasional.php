@@ -7,10 +7,11 @@ use App\Models\{User, Penjual, Supir, Pekerja, TransaksiDo}; // [EDIT] Gabungkan
 use Illuminate\Database\Eloquent\{Model, SoftDeletes, Factories\HasFactory}; // [EDIT] Gabungkan import
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use App\Traits\BelongsToTenant;
 
 class TransaksiOperasional extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToTenant;
 
     protected $table = 'transaksi_operasional';
 
@@ -71,16 +72,6 @@ class TransaksiOperasional extends Model
     public function user(): BelongsTo // [EDIT] Tambah return type
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function transaksiDo(): BelongsTo // [EDIT] Tambah return type
-    {
-        return $this->belongsTo(TransaksiDo::class, 'transaksi_do_id');
-    }
-
-    public function perusahaan(): BelongsTo
-    {
-        return $this->belongsTo(Perusahaan::class);
     }
 
     // Accessors & Mutators

@@ -55,11 +55,15 @@ class TransaksiDoForm
                             ->components([
                                 Select::make('penjual_id')
                                     ->label('Penjual')
-                                    ->relationship('penjual', 'nama')
+                                    ->relationship(
+                                        'penjual',
+                                        'nama',
+                                        fn($query) => $query->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id)
+                                    )
                                     ->searchable()
-                                    ->preload()
                                     ->live()
                                     ->required()
+                                    // ... createOptionForm omitted but preserved in reality ...
                                     ->createOptionForm([
                                         TextInput::make('nama')
                                             ->label('Nama Penjual')
@@ -93,9 +97,11 @@ class TransaksiDoForm
 
                                 Select::make('supir_id')
                                     ->label('Supir')
-                                    ->relationship('supir', 'nama')
+                                    ->relationship(
+                                        'supir',
+                                        'nama'
+                                    )
                                     ->searchable()
-                                    ->preload()
                                     ->live()
                                     ->required()
                                     ->afterStateUpdated(fn($state, Set $set) => $set('kendaraan_id', null))
@@ -109,10 +115,11 @@ class TransaksiDoForm
                                     ->label('Nomor Polisi')
                                     ->options(function (Get $get) {
                                         $supirId = $get('supir_id');
-                                        return $supirId ? Kendaraan::query()->where('supir_id', $supirId)->pluck('no_polisi', 'id') : [];
+                                        return $supirId ? Kendaraan::query()
+                                            ->where('supir_id', $supirId)
+                                            ->pluck('no_polisi', 'id') : [];
                                     })
                                     ->searchable()
-                                    ->preload()
                                     ->live()
                                     ->createOptionForm([
                                         TextInput::make('no_polisi')->required()->unique(Kendaraan::class, 'no_polisi')->maxLength(10),
@@ -240,8 +247,7 @@ class TransaksiDoForm
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->disabled()
                                     ->dehydrated()
-                                    ->extraInputAttributes(['class' => 'font-bold text-lg leading-loose'])
-                                    ->live(),
+                                    ->extraInputAttributes(['class' => 'font-bold text-lg leading-loose']),
 
                                 Select::make('cara_bayar')
                                     ->label('Cara Bayar')

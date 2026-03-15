@@ -231,7 +231,6 @@ class JurnalKeuanganTable
                 ViewAction::make(),
             ])
             ->striped()
-            ->paginated([10, 25, 50, 100])
-            ->poll('30s');
+            ->paginated([10, 25, 50, 100]);
     }
 }

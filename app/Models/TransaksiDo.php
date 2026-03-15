@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{HasMany, BelongsTo};
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\BelongsToTenant;
 use Illuminate\Support\Facades\{DB, Log, Cache};
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 // use BaconQrCode\Renderer\ImageRenderer;
@@ -23,7 +24,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class TransaksiDo extends Model
 {
-    use HasFactory, SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait, GenerateMonthlyNumber;
+    use HasFactory, SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait, GenerateMonthlyNumber, BelongsToTenant;
 
     protected $table = 'transaksi_do';
     protected $with = ['penjual:id', 'supir:id', 'kendaraan:id']; // Default eager loading
@@ -108,11 +109,6 @@ class TransaksiDo extends Model
         return $this->belongsTo(Penjual::class)->withDefault([
             'nama' => 'Tidak Diketahui'
         ]);
-    }
-
-    public function perusahaan(): BelongsTo
-    {
-        return $this->belongsTo(Perusahaan::class);
     }
 
     // Tambahkan relation ke laporan keuangan

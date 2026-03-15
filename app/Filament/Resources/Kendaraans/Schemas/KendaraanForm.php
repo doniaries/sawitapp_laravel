@@ -36,7 +36,6 @@ class KendaraanForm
                                 Select::make('supir_id')
                                     ->relationship('supir', 'nama')
                                     ->searchable()
-                                    ->preload()
                                     ->required(),
                             ]),
                     ]),

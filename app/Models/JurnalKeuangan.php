@@ -14,11 +14,11 @@ use App\Observers\JurnalKeuanganObserver;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Log;
-use App\Traits\{JurnalKeuanganTrait, DokumentasiTrait};
+use App\Traits\{JurnalKeuanganTrait, DokumentasiTrait, BelongsToTenant};
 
 class JurnalKeuangan extends Model
 {
-    use SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait;
+    use SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait, BelongsToTenant;
 
     protected $table = 'jurnal_keuangan';
 
@@ -89,11 +89,6 @@ class JurnalKeuangan extends Model
     public function operasional(): EloquentBelongsTo
     {
         return $this->belongsTo(TransaksiOperasional::class, 'referensi_id');
-    }
-
-    public function perusahaan(): BelongsTo
-    {
-        return $this->belongsTo(Perusahaan::class);
     }
 
     public function createdBy()

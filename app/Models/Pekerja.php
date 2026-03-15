@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Traits\BelongsToTenant;
+
 class Pekerja extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, BelongsToTenant;
     protected $table = 'pekerja';
 
     protected static function booted()
@@ -38,11 +40,6 @@ class Pekerja extends Model
     public function operasional()
     {
         return $this->hasMany(TransaksiOperasional::class);
-    }
-
-    public function perusahaan(): BelongsTo
-    {
-        return $this->belongsTo(Perusahaan::class);
     }
 
     // Tambahkan relasi ke riwayat pembayaran
