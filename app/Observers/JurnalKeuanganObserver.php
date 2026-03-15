@@ -256,7 +256,7 @@ class JurnalKeuanganObserver
                 ->sum('sub_total'); // Rp 296,694,980
 
             // 2. Total operational expenses
-            $pengeluaranOperasional = DB::table('operasional')
+            $pengeluaranOperasional = DB::table('transaksi_operasional')
                 ->whereNull('deleted_at')
                 ->where('operasional', 'pengeluaran')
                 ->sum('nominal'); // Rp 204,000
