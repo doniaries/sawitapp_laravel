@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Route;
  * Public Routes
  */
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/login', function () {
+    return response()->json([
+        'message' => 'Silakan gunakan metode POST untuk login.',
+        'status' => 'error'
+    ], 405);
+});
 
 /**
  * Protected Routes (Requires Sanctum Token)
@@ -29,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Transaksi DO
     Route::get('/transaksi-do', [TransaksiDoController::class, 'index']);
     Route::get('/transaksi-do/{id}', [TransaksiDoController::class, 'show']);
+    Route::post('/transaksi-do', [TransaksiDoController::class, 'store']);
 
     // Pengajuan Dana
     Route::get('/pengajuan-dana', [PengajuanDanaController::class, 'index']);
