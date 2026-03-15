@@ -24,7 +24,7 @@ class TransaksiDoResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['penjual', 'supir', 'kendaraan'])
+            ->with(['penjual', 'supir'])
             ->currentMonth()
             ->latest('tanggal');
     }

@@ -8,6 +8,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class TransaksiOperasionalStatsWidget extends BaseWidget
 {
+    protected ?string $pollingInterval = '10s';
     protected function getStats(): array
     {
         $tenantId = \Filament\Facades\Filament::getTenant()->id;

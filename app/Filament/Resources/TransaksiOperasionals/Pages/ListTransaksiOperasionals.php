@@ -24,13 +24,9 @@ class ListTransaksiOperasionals extends ListRecords
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make('Semua')
+            'semua' => Tab::make('Semua')
                 ->icon('heroicon-o-list-bullet')
-                ->badge(fn() => TransaksiOperasional::count())
-                ->modifyQueryUsing(
-                    fn(Builder $query) =>
-                    $query->whereDate('tanggal', '>=', now()->subDays(30))
-                ),
+                ->badge(fn() => TransaksiOperasional::count()),
 
             'pemasukan' => Tab::make('Pemasukan')
                 ->modifyQueryUsing(

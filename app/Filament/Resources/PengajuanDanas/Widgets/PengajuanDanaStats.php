@@ -9,7 +9,7 @@ use Illuminate\Support\Number;
 
 class PengajuanDanaStats extends StatsOverviewWidget
 {
-    protected static ?string $pollingInterval = '3s'; // Update setiap 3 detik
+    protected ?string $pollingInterval = '10s'; // Update setiap 10 detik
 
     protected function getStats(): array
     {

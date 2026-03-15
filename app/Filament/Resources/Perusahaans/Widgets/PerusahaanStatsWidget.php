@@ -10,7 +10,7 @@ use Livewire\Attributes\On;
 
 class PerusahaanStatsWidget extends BaseWidget
 {
-    protected ?string $pollingInterval = '30s';
+    protected ?string $pollingInterval = '10s';
     protected static bool $isLazy = true;
     protected int | string | array $columnSpan = 'full';
 

@@ -21,7 +21,10 @@ class PengajuanDanaResource extends Resource
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-banknotes';
 
-    protected static ?string $recordTitleAttribute = 'keperluan';
+    protected static ?string $navigationLabel = 'Pengajuan Dana';
+    protected static ?int $navigationSort = 4;
+    protected static ?string $modelLabel = 'Pengajuan Dana';
+    protected static ?string $pluralModelLabel = 'Pengajuan Dana';
 
     public static function form(Schema $schema): Schema
     {

@@ -61,9 +61,26 @@ class ListTransaksiDos extends ListRecords
         ];
     }
 
+    public function getDefaultActiveTab(): string | int | null
+    {
+        return 'hari_ini';
+    }
+
     public function getTabs(): array
     {
         return [
+            'hari_ini' => Tab::make('Hari Ini')
+                ->icon('heroicon-o-calendar')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', today()))
+                ->badge(fn() => TransaksiDo::whereDate('tanggal', today())->count())
+                ->badgeColor('success'),
+
+            'kemarin' => Tab::make('Kemarin')
+                ->icon('heroicon-o-calendar-days')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', now()->subDay()->toDateString()))
+                ->badge(fn() => TransaksiDo::whereDate('tanggal', now()->subDay()->toDateString())->count())
+                ->badgeColor('warning'),
+
             'semua' => Tab::make('Semua Transaksi')
                 ->icon('heroicon-o-clipboard-document-list')
                 ->badge(fn() => TransaksiDo::query()
