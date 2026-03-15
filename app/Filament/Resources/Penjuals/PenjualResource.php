@@ -17,6 +17,7 @@ class PenjualResource extends Resource
 {
     protected static ?string $model = Penjual::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
+    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?int $navigationSort = 4;
     protected static ?string $modelLabel = 'Pemasok';
     protected static ?string $navigationLabel = 'Pemasok';

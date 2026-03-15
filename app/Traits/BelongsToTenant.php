@@ -13,7 +13,7 @@ trait BelongsToTenant
     {
         static::addGlobalScope('perusahaan_id', function (Builder $builder) {
             if (Filament::hasTenancy() && Filament::getTenant()) {
-                $builder->where('perusahaan_id', Filament::getTenant()->id);
+                $builder->where($builder->qualifyColumn('perusahaan_id'), Filament::getTenant()->id);
             }
         });
 
