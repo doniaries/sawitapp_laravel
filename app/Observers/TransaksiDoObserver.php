@@ -5,9 +5,12 @@ namespace App\Observers;
 use App\Models\{TransaksiDo, Penjual, Perusahaan, JurnalKeuangan};
 use Illuminate\Support\Facades\{DB, Log};
 use Filament\Notifications\Notification;
+use App\Traits\HasNotificationRecipients;
 
 class TransaksiDoObserver
 {
+    use HasNotificationRecipients;
+
     protected $laporanObserver;
 
     public function __construct(JurnalKeuanganObserver $laporanObserver)
@@ -218,7 +221,8 @@ class TransaksiDoObserver
             ->title('Transaksi DO Dibatalkan')
             ->warning()
             ->body($message)
-            ->send();
+            ->send()
+            ->sendToDatabase($this->getNotificationRecipients($transaksiDo->perusahaan_id));
     }
 
     protected function prepareForSave(TransaksiDo $transaksiDo)
@@ -282,7 +286,8 @@ class TransaksiDoObserver
                 ->title('Transaksi DO Dipulihkan')
                 ->success()
                 ->body("DO #{$transaksiDo->nomor} berhasil dipulihkan")
-                ->send();
+                ->send()
+                ->sendToDatabase($this->getNotificationRecipients($transaksiDo->perusahaan_id));
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -300,8 +305,9 @@ class TransaksiDoObserver
 
         Notification::make()
             ->title('Transaksi DO Dihapus Permanen')
-            ->warning()
-            ->body("DO #{$transaksiDo->nomor} telah dihapus secara permanen")
-            ->send();
+                ->warning()
+                ->body("DO #{$transaksiDo->nomor} telah dihapus secara permanen")
+                ->send()
+                ->sendToDatabase($this->getNotificationRecipients($transaksiDo->perusahaan_id));
     }
 }

@@ -8,10 +8,13 @@ use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\{DB, Log};
 use Filament\Actions\Action;
 use App\Models\{TransaksiOperasional, Penjual, Perusahaan, JurnalKeuangan, PembayaranHutang};
+use App\Traits\HasNotificationRecipients;
 
 
 class TransaksiOperasionalObserver
 {
+    use HasNotificationRecipients;
+
     protected $financeAction;
 
     public function __construct(\App\Actions\Finance\RecordFinanceTransactionAction $financeAction)
@@ -138,7 +141,8 @@ class TransaksiOperasionalObserver
                 ])
                 ->success()
                 ->duration(3000)
-                ->send();
+                ->send()
+                ->sendToDatabase($this->getNotificationRecipients($operasional->perusahaan_id));
         } catch (\Exception $e) {
             DB::rollBack();
             $this->logAndNotifyError('restored', $e, $operasional);
@@ -179,7 +183,8 @@ class TransaksiOperasionalObserver
                 )
                 ->warning()
                 ->duration(3000)
-                ->send();
+                ->send()
+                ->sendToDatabase($this->getNotificationRecipients($operasional->perusahaan_id));
         } catch (\Exception $e) {
             DB::rollBack();
             $this->logAndNotifyError('force deleted', $e, $operasional);
@@ -368,7 +373,8 @@ class TransaksiOperasionalObserver
                     ($operasional->keterangan ? "\n• Keterangan: {$operasional->keterangan}" : "")
             )
             ->duration(5000)
-            ->send();
+            ->send()
+            ->sendToDatabase($this->getNotificationRecipients($operasional->perusahaan_id));
     }
 
 
