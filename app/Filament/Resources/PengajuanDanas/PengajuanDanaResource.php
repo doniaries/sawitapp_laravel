@@ -7,11 +7,10 @@ use App\Filament\Resources\PengajuanDanas\Pages\EditPengajuanDana;
 use App\Filament\Resources\PengajuanDanas\Pages\ListPengajuanDanas;
 use App\Filament\Resources\PengajuanDanas\Schemas\PengajuanDanaForm;
 use App\Filament\Resources\PengajuanDanas\Tables\PengajuanDanasTable;
+use App\Filament\Resources\PengajuanDanas\Widgets\PengajuanDanaStats;
 use App\Models\PengajuanDana;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -20,7 +19,7 @@ class PengajuanDanaResource extends Resource
 {
     protected static ?string $model = PengajuanDana::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-banknotes';
 
     protected static ?string $recordTitleAttribute = 'keperluan';
 
@@ -38,6 +37,13 @@ class PengajuanDanaResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            PengajuanDanaStats::class,
         ];
     }
 
