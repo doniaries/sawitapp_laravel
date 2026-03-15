@@ -55,12 +55,14 @@ class JurnalKeuangan extends Model
     const KATEGORI_TRANSAKSI = [
         'DO' => 'DO',
         'OPERASIONAL' => 'Operasional',
-        'SALDO' => 'Saldo'
+        'SALDO' => 'Saldo',
+        'PENGAJUAN' => 'Pengajuan Dana'
     ];
 
     const SUB_KATEGORI_SALDO = [
         'TAMBAH' => 'Tambah Saldo',
-        'KOREKSI' => 'Koreksi Saldo'
+        'KOREKSI' => 'Koreksi Saldo',
+        'CAIR_DANA' => 'Pencairan Dana Pengajuan'
     ];
 
     // Relations
@@ -93,6 +95,11 @@ class JurnalKeuangan extends Model
     public function operasional(): EloquentBelongsTo
     {
         return $this->belongsTo(TransaksiOperasional::class, 'referensi_id');
+    }
+
+    public function pengajuanDana(): EloquentBelongsTo
+    {
+        return $this->belongsTo(PengajuanDana::class, 'referensi_id');
     }
 
     public function createdBy()
