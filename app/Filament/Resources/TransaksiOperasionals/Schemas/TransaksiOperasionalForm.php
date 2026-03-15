@@ -53,50 +53,34 @@ class TransaksiOperasionalForm
                                     ->prefix('Rp')
                                     ->numeric(),
 
-                                Select::make('tipe_nama')
+                                Select::make('pihak_type')
                                     ->label('Tipe Profil')
                                     ->options([
-                                        'penjual' => 'Penjual',
-                                        'supir' => 'Supir',
-                                        'pekerja' => 'Pekerja',
-                                        'user' => 'Karyawan'
+                                        'App\Models\Penjual' => 'Penjual',
+                                        'App\Models\Supir' => 'Supir',
+                                        'App\Models\Pekerja' => 'Pekerja',
+                                        'App\Models\User' => 'Karyawan'
                                     ])
                                     ->required()
                                     ->live()
-                                    ->afterStateUpdated(fn($state, Set $set) => [
-                                        $set('penjual_id', null),
-                                        $set('supir_id', null),
-                                        $set('pekerja_id', null),
-                                        $set('user_id', null)
-                                    ]),
+                                    ->afterStateUpdated(fn(Set $set) => $set('pihak_id', null)),
 
-                                Select::make('penjual_id')
-                                    ->label('Penjual')
-                                    ->relationship('penjual', 'nama')
+                                Select::make('pihak_id')
+                                    ->label('Pihak Terkait')
+                                    ->options(function (Get $get) {
+                                        $type = $get('pihak_type');
+                                        if (!$type) return [];
+                                        
+                                        // Gunakan query builder untuk efisiensi dan auto-scoping via Trait
+                                        return $type::query()
+                                            ->when($type === 'App\Models\User', 
+                                                fn($q) => $q->pluck('name', 'id'),
+                                                fn($q) => $q->pluck('nama', 'id')
+                                            );
+                                    })
                                     ->searchable()
                                     ->required()
-                                    ->visible(fn(Get $get) => $get('tipe_nama') === 'penjual'),
-
-                                Select::make('supir_id')
-                                    ->label('Supir')
-                                    ->relationship('supir', 'nama')
-                                    ->searchable()
-                                    ->required()
-                                    ->visible(fn(Get $get) => $get('tipe_nama') === 'supir'),
-
-                                Select::make('pekerja_id')
-                                    ->label('Pekerja')
-                                    ->relationship('pekerja', 'nama')
-                                    ->searchable()
-                                    ->required()
-                                    ->visible(fn(Get $get) => $get('tipe_nama') === 'pekerja'),
-
-                                Select::make('user_id')
-                                    ->label('Karyawan')
-                                    ->relationship('user', 'name')
-                                    ->searchable()
-                                    ->required()
-                                    ->visible(fn(Get $get) => $get('tipe_nama') === 'user'),
+                                    ->visible(fn(Get $get) => !!$get('pihak_type')),
                             ])->columns(2),
                     ]),
 

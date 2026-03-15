@@ -38,25 +38,10 @@ class TransaksiOperasionalTable
                     ->formatStateUsing(fn($record) => $record->kategoriLabel)
                     ->searchable(),
 
-                TextColumn::make('user.name')
-                    ->label('Karyawan')
+                TextColumn::make('nama')
+                    ->label('Pihak Terkait')
                     ->placeholder('-')
-                    ->searchable(),
-
-                TextColumn::make('penjual.nama')
-                    ->label('Penjual')
-                    ->placeholder('-')
-                    ->searchable(),
-
-                TextColumn::make('supir.nama')
-                    ->label('Supir')
-                    ->placeholder('-')
-                    ->searchable(),
-
-                TextColumn::make('pekerja.nama')
-                    ->label('Pekerja')
-                    ->placeholder('-')
-                    ->searchable(),
+                    ->searchable(['pihak_id', 'pihak_type']),
 
                 TextColumn::make('nominal')
                     ->label('Nominal')

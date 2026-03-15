@@ -12,11 +12,11 @@ use App\Models\{TransaksiOperasional, Penjual, Perusahaan, JurnalKeuangan, Pemba
 
 class TransaksiOperasionalObserver
 {
-    protected $laporanObserver;
+    protected $financeAction;
 
-    public function __construct(JurnalKeuanganObserver $laporanObserver)
+    public function __construct(\App\Actions\Finance\RecordFinanceTransactionAction $financeAction)
     {
-        $this->laporanObserver = $laporanObserver;
+        $this->financeAction = $financeAction;
     }
 
 
@@ -31,10 +31,7 @@ class TransaksiOperasionalObserver
             // Process loan/debt if applicable
             $this->processHutang($operasional);
 
-            // Update company balance
-            $this->updateSaldoPerusahaan($operasional);
-
-            // Create financial report entry
+            // Create financial report entry & update balance via Action (Best Practice)
             $this->createLaporanKeuangan($operasional);
 
             DB::commit();
@@ -59,17 +56,14 @@ class TransaksiOperasionalObserver
                 'referensi_id' => $operasional->id
             ])->delete();
 
-            // 2. Buat laporan keuangan baru
+            // 2. Buat laporan keuangan baru & update saldo via Action
             $this->createLaporanKeuangan($operasional);
 
             // 3. Proses perubahan hutang jika ada
             if ($operasional->isDirty(['nominal', 'kategori'])) {
-                $this->rollbackHutang($operasional); // Use current model for metadata
+                $this->rollbackHutang($operasional); 
                 $this->processHutang($operasional);
             }
-
-            // 4. Update saldo perusahaan
-            $this->updateSaldoPerusahaan($operasional);
 
             DB::commit();
 
@@ -380,16 +374,8 @@ class TransaksiOperasionalObserver
 
     private function createLaporanKeuangan(TransaksiOperasional $operasional): void
     {
-        // Dapatkan data pihak terkait
-        $pihakTerkait = match ($operasional->tipe_nama) {
-            'penjual' => $operasional->penjual?->nama,
-            'user' => $operasional->user?->name,
-            'pekerja' => $operasional->pekerja?->nama,
-            default => null
-        };
-
-        // Buat laporan keuangan
-        JurnalKeuangan::create([
+        $this->financeAction->execute([
+            'perusahaan_id' => $operasional->perusahaan_id,
             'tanggal' => $operasional->tanggal,
             'jenis_transaksi' => ucfirst($operasional->operasional), // Pemasukan/Pengeluaran
             'kategori' => 'Operasional',
@@ -398,18 +384,11 @@ class TransaksiOperasionalObserver
             'sumber_transaksi' => 'Operasional',
             'referensi_id' => $operasional->id,
             'nomor_referensi' => sprintf('OP-%s', str_pad($operasional->id, 5, '0', STR_PAD_LEFT)),
-            'pihak_terkait' => $pihakTerkait,
-            'tipe_pihak' => $operasional->tipe_nama,
+            'pihak_terkait' => $operasional->nama,
+            'tipe_pihak' => $operasional->pihak_type, 
             'cara_pembayaran' => 'tunai',
             'keterangan' => $operasional->keterangan ?: '-',
             'mempengaruhi_kas' => true,
-        ]);
-
-        Log::info('Laporan Keuangan Operasional dibuat:', [
-            'operasional_id' => $operasional->id,
-            'jenis' => $operasional->operasional,
-            'nominal' => $operasional->nominal,
-            'kategori' => $operasional->kategori?->label()
         ]);
     }
 

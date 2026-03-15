@@ -28,6 +28,8 @@ class JurnalKeuangan extends Model
         'kategori',
         'sub_kategori',
         'nominal',
+        'saldo_awal',
+        'saldo_akhir',
         'sumber_transaksi',
         'referensi_id',
         'nomor_referensi',
@@ -41,6 +43,8 @@ class JurnalKeuangan extends Model
     protected $casts = [
         'tanggal' => 'datetime',
         'nominal' => 'decimal:0',
+        'saldo_awal' => 'decimal:0',
+        'saldo_akhir' => 'decimal:0',
         'saldo_sebelum' => 'decimal:0',
         'saldo_sesudah' => 'decimal:0',
         'mempengaruhi_kas' => 'boolean',

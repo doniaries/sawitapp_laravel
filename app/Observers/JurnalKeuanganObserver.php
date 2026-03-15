@@ -9,6 +9,12 @@ use Filament\Notifications\Notification;
 class JurnalKeuanganObserver
 {
 
+    protected $financeAction;
+
+    public function __construct(\App\Actions\Finance\RecordFinanceTransactionAction $financeAction)
+    {
+        $this->financeAction = $financeAction;
+    }
 
     protected function createLaporan(array $data): void
     {
@@ -44,8 +50,8 @@ class JurnalKeuanganObserver
             $data['keterangan'] = $data['keterangan'] ?? '-';
             $data['mempengaruhi_kas'] = $data['mempengaruhi_kas'] ?? true;
 
-            // Create laporan
-            $laporan = JurnalKeuangan::create($data);
+            // Create laporan via Action (Best Practice)
+            $laporan = $this->financeAction->execute($data);
 
             // Log success dengan informasi minimal
             Log::info('Laporan dibuat: ' . $laporan->id);
@@ -91,9 +97,8 @@ class JurnalKeuanganObserver
 
             // Handle normal transactions
             if ($transaksiDo->cara_bayar === 'tunai') {
-                $perusahaan->increment('saldo', $transaksiDo->total);
-
                 $this->createLaporan([
+                    'perusahaan_id' => $transaksiDo->perusahaan_id,
                     'tanggal' => $transaksiDo->tanggal,
                     'jenis_transaksi' => 'Pemasukan',
                     'kategori' => 'DO',
@@ -102,8 +107,8 @@ class JurnalKeuanganObserver
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $transaksiDo->id,
                     'nomor_referensi' => $transaksiDo->nomor,
-                    'pihak_terkait' => $transaksiDo->penjual->nama,
-                    'tipe_pihak' => 'penjual', // Add this line
+                    'pihak_terkait' => $transaksiDo->penjual?->nama,
+                    'tipe_pihak' => \App\Models\Penjual::class,
                     'cara_pembayaran' => 'tunai',
                     'keterangan' => "Pembayaran DO Tunai #{$transaksiDo->nomor}",
                     'mempengaruhi_kas' => true
@@ -116,6 +121,7 @@ class JurnalKeuanganObserver
                 ]);
             } else {
                 $this->createLaporan([
+                    'perusahaan_id' => $transaksiDo->perusahaan_id,
                     'tanggal' => $transaksiDo->tanggal,
                     'jenis_transaksi' => 'Pemasukan',
                     'kategori' => 'DO',
@@ -124,8 +130,8 @@ class JurnalKeuanganObserver
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $transaksiDo->id,
                     'nomor_referensi' => $transaksiDo->nomor,
-                    'pihak_terkait' => $transaksiDo->penjual->nama,
-                    'tipe_pihak' => 'penjual', // Add this line
+                    'pihak_terkait' => $transaksiDo->penjual?->nama,
+                    'tipe_pihak' => \App\Models\Penjual::class,
                     'cara_pembayaran' => $transaksiDo->cara_bayar,
                     'keterangan' => "Pembayaran DO Non-Tunai #{$transaksiDo->nomor}",
                     'mempengaruhi_kas' => false

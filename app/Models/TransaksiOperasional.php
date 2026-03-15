@@ -16,17 +16,9 @@ class TransaksiOperasional extends Model
     protected $table = 'transaksi_operasional';
 
     protected $fillable = [
-        'tanggal',
-        'operasional',
-        'kategori',
-        'tipe_nama',
-        'penjual_id',
-        'supir_id',
-        'user_id',
-        'pekerja_id', // [TAMBAH] Sesuai dengan relasi
-        'nominal',
-        'keterangan',
         'perusahaan_id',
+        'pihak_id',
+        'pihak_type',
         // 'file_bukti',
     ];
 
@@ -51,22 +43,9 @@ class TransaksiOperasional extends Model
         'info_hutang'
     ];
 
-    // Relations
-    public function penjual(): BelongsTo // [EDIT] Tambah return type
+    public function pihak()
     {
-        return $this->belongsTo(Penjual::class);
-    }
-
-
-    public function supir()
-    {
-        return $this->belongsTo(Supir::class);
-    }
-
-
-    public function pekerja(): BelongsTo
-    {
-        return $this->belongsTo(Pekerja::class);
+        return $this->morphTo();
     }
 
     public function user(): BelongsTo // [EDIT] Tambah return type
@@ -77,12 +56,7 @@ class TransaksiOperasional extends Model
     // Accessors & Mutators
     public function getNamaAttribute(): ?string // [EDIT] Tambah return type
     {
-        return match ($this->tipe_nama) {
-            'penjual' => $this->penjual?->nama,
-            'user' => $this->user?->name,
-            'pekerja' => $this->pekerja?->nama, // [TAMBAH] Handle pekerja
-            default => null
-        };
+        return $this->pihak?->nama ?? $this->pihak?->name ?? '-';
     }
 
     // [TAMBAH] Accessor untuk label kategori
