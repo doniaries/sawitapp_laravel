@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\{TransaksiDo, Operasional};
+use App\Models\{TransaksiDo, TransaksiOperasional};
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -10,6 +10,11 @@ use Filament\Facades\Filament;
 
 class DailyFinanceChartWidget extends ChartWidget
 {
+    public static function shouldRegister(): bool
+    {
+        return \App\Providers\Filament\AdminPanelProvider::$dashboardWidgets['daily_chart'] ?? true;
+    }
+
     protected ?string $heading = 'Grafik Keuangan Harian';
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'full';
@@ -39,7 +44,7 @@ class DailyFinanceChartWidget extends ChartWidget
                 ])->first();
 
             // Get operational income
-            $operationalIncome = DB::table('operasional')
+            $operationalIncome = DB::table('transaksi_operasional')
                 ->whereNull('deleted_at')
                 ->where('perusahaan_id', $tenantId)
                 ->whereDate('tanggal', $date)
@@ -53,7 +58,7 @@ class DailyFinanceChartWidget extends ChartWidget
                 ->whereDate('tanggal', $date)
                 ->sum('sub_total');
 
-            $operationalExpense = DB::table('operasional')
+            $operationalExpense = DB::table('transaksi_operasional')
                 ->whereNull('deleted_at')
                 ->where('perusahaan_id', $tenantId)
                 ->whereDate('tanggal', $date)

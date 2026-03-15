@@ -10,6 +10,11 @@ use Filament\Support\Colors\Color;
 
 class TopHutangPenjualWidget extends BaseWidget
 {
+    public static function shouldRegister(): bool
+    {
+        return \App\Providers\Filament\AdminPanelProvider::$dashboardWidgets['top_hutang'] ?? true;
+    }
+
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'half';
     protected static ?string $heading = 'Hutang Penjual Terbesar';

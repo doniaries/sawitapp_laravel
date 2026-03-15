@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\{TransaksiDo, Operasional};
+use App\Models\{TransaksiDo, TransaksiOperasional};
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -10,6 +10,11 @@ use Filament\Facades\Filament;
 
 class MonthlyFinanceChartWidget extends ChartWidget
 {
+    public static function shouldRegister(): bool
+    {
+        return \App\Providers\Filament\AdminPanelProvider::$dashboardWidgets['monthly_chart'] ?? true;
+    }
+
     protected ?string $heading = 'Grafik Keuangan Bulanan';
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 'full';
@@ -41,7 +46,7 @@ class MonthlyFinanceChartWidget extends ChartWidget
                 ])->first();
 
             // Get operational income
-            $operationalIncome = DB::table('operasional')
+            $operationalIncome = DB::table('transaksi_operasional')
                 ->whereNull('deleted_at')
                 ->where('perusahaan_id', $tenantId)
                 ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
@@ -55,7 +60,7 @@ class MonthlyFinanceChartWidget extends ChartWidget
                 ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
                 ->sum('sub_total');
 
-            $operationalExpense = DB::table('operasional')
+            $operationalExpense = DB::table('transaksi_operasional')
                 ->whereNull('deleted_at')
                 ->where('perusahaan_id', $tenantId)
                 ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])

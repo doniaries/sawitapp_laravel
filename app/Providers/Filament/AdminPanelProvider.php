@@ -30,6 +30,17 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    /**
+     * Konfigurasi widget yang aktif di Dashboard
+     */
+    public static array $dashboardWidgets = [
+        'stats' => true,
+        'daily_chart' => true,
+        'monthly_chart' => true,
+        'top_hutang' => true,
+        'top_tonase' => true,
+    ];
+
     public function panel(Panel $panel): Panel
     {
 
@@ -74,7 +85,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->searchableTenantMenu()
+            // ->searchableTenantMenu()
             ->tenant(Perusahaan::class, slugAttribute: 'slug', ownershipRelationship: 'perusahaan')
             ->tenantProfile(EditTeamProfile::class)
             ->plugins([

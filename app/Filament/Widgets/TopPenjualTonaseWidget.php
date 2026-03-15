@@ -11,6 +11,11 @@ use Filament\Facades\Filament;
 
 class TopPenjualTonaseWidget extends BaseWidget
 {
+    public static function shouldRegister(): bool
+    {
+        return \App\Providers\Filament\AdminPanelProvider::$dashboardWidgets['top_tonase'] ?? true;
+    }
+
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 'half';
     protected static ?string $heading = 'Top 5 Penjual (Bulan Ini)';

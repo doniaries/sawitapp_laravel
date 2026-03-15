@@ -11,7 +11,11 @@ use Filament\Facades\Filament;
 
 class DashboardStatsWidget extends BaseWidget
 {
-    protected static bool $shouldRegister = true;
+    public static function shouldRegister(): bool
+    {
+        return \App\Providers\Filament\AdminPanelProvider::$dashboardWidgets['stats'] ?? true;
+    }
+
     protected static ?int $sort = 1;
     protected int | string | array $columnSpan = 'full';
 
@@ -37,7 +41,7 @@ class DashboardStatsWidget extends BaseWidget
                 END), 0) as remaining_payments')
             ])->first();
 
-        $operationalIncome = DB::table('operasional')
+        $operationalIncome = DB::table('transaksi_operasional')
             ->whereNull('deleted_at')
             ->where('perusahaan_id', $tenantId)
             ->where('operasional', 'pemasukan')
@@ -55,7 +59,7 @@ class DashboardStatsWidget extends BaseWidget
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->sum('sub_total');
 
-        $monthlyOperationalExpense = DB::table('operasional')
+        $monthlyOperationalExpense = DB::table('transaksi_operasional')
             ->whereNull('deleted_at')
             ->where('perusahaan_id', $tenantId)
             ->where('operasional', 'pengeluaran')
@@ -82,7 +86,7 @@ class DashboardStatsWidget extends BaseWidget
                 END), 0) as remaining_payments')
             ])->first();
 
-        $totalOperationalIncome = DB::table('operasional')
+        $totalOperationalIncome = DB::table('transaksi_operasional')
             ->whereNull('deleted_at')
             ->where('perusahaan_id', $tenantId)
             ->where('operasional', 'pemasukan')
@@ -97,7 +101,7 @@ class DashboardStatsWidget extends BaseWidget
             ->where('perusahaan_id', $tenantId)
             ->sum('sub_total');
 
-        $totalOperationalExpense = DB::table('operasional')
+        $totalOperationalExpense = DB::table('transaksi_operasional')
             ->whereNull('deleted_at')
             ->where('perusahaan_id', $tenantId)
             ->where('operasional', 'pengeluaran')
