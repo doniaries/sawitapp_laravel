@@ -25,16 +25,14 @@ class UserForm
                             ->components([
                                 TextInput::make('name')
                                     ->label('Nama Lengkap')
-                                    ->unique(ignoreRecord: true)
                                     ->required()
                                     ->maxLength(255),
 
                                 TextInput::make('email')
                                     ->label('Email')
-                                    ->unique(ignoreRecord: true)
                                     ->email()
                                     ->required()
-                                    ->maxLength(20),
+                                    ->maxLength(255),
 
                                 TextInput::make('password')
                                     ->label('Password')
