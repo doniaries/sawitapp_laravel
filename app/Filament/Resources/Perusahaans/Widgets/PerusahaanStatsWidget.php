@@ -24,9 +24,12 @@ class PerusahaanStatsWidget extends BaseWidget
                 return [];
             }
             return Cache::remember("perusahaan-stats-{$perusahaan->id}", 60, function () use ($perusahaan) {
-                // Get active kasir only for current company
+                // Get active kasir only for current company with role 'kasir'
                 $kasir = User::where('perusahaan_id', $perusahaan->id)
                     ->where('is_active', true)
+                    ->whereHas('roles', function ($query) {
+                        $query->where('name', 'kasir');
+                    })
                     ->get(['name']);
 
                 $kasirNames = $kasir->isEmpty() ? 'Belum ada kasir' : $kasir->pluck('name')->join(', ');
