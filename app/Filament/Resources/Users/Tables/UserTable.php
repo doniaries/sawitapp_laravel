@@ -23,10 +23,10 @@ class UserTable
     {
         return $table
             ->columns([
-                TextColumn::make('perusahaan.name')
+                TextColumn::make('perusahaans.name')
                     ->label('Perusahaan')
+                    ->badge()
                     ->placeholder('Semua Perusahaan')
-                    ->sortable()
                     ->searchable(),
 
                 TextColumn::make('name')
