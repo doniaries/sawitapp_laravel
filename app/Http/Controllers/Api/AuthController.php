@@ -88,4 +88,31 @@ class AuthController extends Controller
             'message' => 'Berhasil logout.'
         ]);
     }
+
+    public function updatePhoto(Request $request)
+    {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('photo')) {
+            // Hapus foto lama jika ada
+            if ($user->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->photo);
+            }
+
+            $path = $request->file('photo')->store('profile_photos', 'public');
+            $user->update(['photo' => $path]);
+
+            return response()->json([
+                'message' => 'Foto profil berhasil diperbarui.',
+                'photo_url' => asset('storage/' . $path),
+                'user' => new UserResource($user)
+            ]);
+        }
+
+        return response()->json(['message' => 'Gagal mengunggah foto.'], 400);
+    }
 }

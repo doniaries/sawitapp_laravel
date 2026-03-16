@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/user/photo', [AuthController::class, 'updatePhoto']);
 
     // Multi-Tenancy (Perusahaan)
     Route::get('/perusahaans', [AuthController::class, 'getPerusahaans']);

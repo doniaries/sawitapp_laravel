@@ -21,6 +21,8 @@ class UserResource extends JsonResource
             'perusahaan_id' => $this->perusahaan_id,
             'perusahaan_name' => $this->perusahaan?->name,
             'is_active' => $this->is_active,
+            'photo' => $this->photo,
+            'photo_url' => $this->photo ? asset('storage/' . $this->photo) : null,
             'roles' => $this->roles->pluck('name'),
         ];
     }
