@@ -9,6 +9,8 @@ use App\Models\Supir;
 use App\Models\PengajuanDana;
 use App\Models\Perusahaan;
 
+use App\Models\JurnalKeuangan;
+
 class DashboardController extends Controller
 {
     public function summary(Request $request)
@@ -20,6 +22,7 @@ class DashboardController extends Controller
         
         $totalSellers = Penjual::where('perusahaan_id', $perusahaanId)->count();
         $totalDrivers = Supir::where('perusahaan_id', $perusahaanId)->count();
+        $totalJurnal = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->count();
         $totalDana = PengajuanDana::where('perusahaan_id', $perusahaanId)
             ->where('status', 'pending')
             ->sum('nominal');
@@ -28,6 +31,7 @@ class DashboardController extends Controller
             'saldo' => $perusahaan->saldo ?? 0,
             'total_penjual' => $totalSellers,
             'total_supir' => $totalDrivers,
+            'total_jurnal_keuangan' => $totalJurnal,
             'total_pengajuan_dana' => $totalDana,
             'perusahaan_name' => $perusahaan->name ?? '-',
         ]);

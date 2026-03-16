@@ -38,16 +38,16 @@ class PengajuanDanaController extends Controller
     {
         $request->validate([
             'nominal' => 'required|numeric',
-            'keterangan' => 'nullable|string',
-            'tanggal' => 'required|date',
+            'keperluan' => 'required|string',
+            'tanggal_pengajuan' => 'required|date',
         ]);
 
         $pengajuan = PengajuanDana::create([
             'perusahaan_id' => $request->user()->perusahaan_id,
             'user_id' => $request->user()->id,
             'nominal' => $request->nominal,
-            'keterangan' => $request->keterangan,
-            'tanggal' => $request->tanggal,
+            'keperluan' => $request->keperluan,
+            'tanggal_pengajuan' => $request->tanggal_pengajuan,
             'status' => 'pending',
         ]);
 
