@@ -49,14 +49,23 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Penjual
     Route::get('/penjual', [PenjualController::class, 'index']);
+    Route::get('/penjual/{id}', [PenjualController::class, 'show']);
+    Route::post('/penjual', [PenjualController::class, 'store']);
 
     // Logistik
     Route::get('/supir', [LogistikController::class, 'supir']);
+    Route::get('/supir/{id}', [LogistikController::class, 'showSupir']);
+    Route::post('/supir', [LogistikController::class, 'storeSupir']);
+    
     Route::get('/kendaraan', [LogistikController::class, 'kendaraan']);
+    Route::get('/kendaraan/{id}', [LogistikController::class, 'showKendaraan']);
+    Route::post('/kendaraan', [LogistikController::class, 'storeKendaraan']);
 
     // Dashboard
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
     // Operasional
     Route::get('/operasional', [OperasionalController::class, 'index']);
+    Route::get('/operasional/{id}', [OperasionalController::class, 'show']);
+    Route::post('/operasional', [OperasionalController::class, 'store']);
 });
