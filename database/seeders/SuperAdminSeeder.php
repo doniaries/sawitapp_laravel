@@ -31,7 +31,7 @@ class SuperAdminSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'is_active' => true,
                 'email_verified_at' => now(),
-                'perusahaan_id' => $perusahaanPertama->id,
+                'perusahaan_id' => null,
             ]
         );
 
