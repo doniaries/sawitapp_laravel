@@ -21,6 +21,8 @@ class UserResource extends Resource
     protected static ?string $navigationLabel = 'Pengguna';
     protected static ?string $pluralModelLabel = 'Pengguna';
 
+    protected static ?string $tenantOwnershipRelationshipName = 'perusahaans';
+
     public static function form(Schema $form): Schema
     {
         return UserForm::configure($form);
