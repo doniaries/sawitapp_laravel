@@ -25,6 +25,7 @@ class UserTable
             ->columns([
                 TextColumn::make('perusahaan.name')
                     ->label('Perusahaan')
+                    ->placeholder('Semua Perusahaan')
                     ->sortable()
                     ->searchable(),
 

@@ -59,7 +59,7 @@ class UserResource extends Resource
     public static function getGlobalSearchResultDetails($record): array
     {
         return [
-            'Perusahaan' => $record->perusahaan->name,
+            'Perusahaan' => $record->perusahaan?->name ?? 'Semua Perusahaan',
         ];
     }
 }

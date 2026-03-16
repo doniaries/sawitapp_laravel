@@ -82,7 +82,7 @@ class UserForm
                                         fn($query) => auth()->user()->isSuperAdmin() ? $query : $query->where('id', \Filament\Facades\Filament::getTenant()->id)
                                     )
                                     ->searchable()
-                                    ->required()
+                                    ->placeholder('Semua Perusahaan (Khusus Super Admin)')
                                     ->native(false),
 
                                 Select::make('roles')

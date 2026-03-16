@@ -25,7 +25,7 @@ class SupirResourceTest extends TestCase
         $this->perusahaan = \App\Models\Perusahaan::factory()->create();
         $this->user = User::factory()->create([
             'email' => 'superadmin@gmail.com',
-            'perusahaan_id' => $this->perusahaan->id,
+            'perusahaan_id' => null,
             'is_active' => true,
         ]);
 
