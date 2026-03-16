@@ -35,11 +35,9 @@ class SuperAdminSeeder extends Seeder
             ]
         );
 
-        // Assign role super_admin di setiap perusahaan (Multi-tenancy Shield)
-        foreach ($perusahaans as $perusahaan) {
-            setPermissionsTeamId($perusahaan->id);
-            $superadmin->assignRole('super_admin');
-        }
+        // Assign role super_admin secara GLOBAL (tanpa perusahaan_id)
+        setPermissionsTeamId(null);
+        $superadmin->assignRole('super_admin');
 
         // Superadmin tidak perlu didaftarkan ke pivot (HasTenants) karena getTenants sudah me-return semua.
         // $superadmin->perusahaans()->sync($perusahaans->pluck('id'));

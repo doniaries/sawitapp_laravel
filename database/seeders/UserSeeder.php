@@ -32,11 +32,9 @@ class UserSeeder extends Seeder
             $allPerusahaanIds = Perusahaan::pluck('id')->toArray();
             $yondra->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
  
-            // Berikan role admin di SEMUA tim/perusahaan
-            foreach ($allPerusahaanIds as $pId) {
-                setPermissionsTeamId($pId);
-                $yondra->syncRoles(['admin']);
-            }
+            // Berikan role admin secara GLOBAL (Akses semua perusahaan)
+            setPermissionsTeamId(null);
+            $yondra->syncRoles(['admin']);
 
             // Taufik: Kasir di Perusahaan 1 saja
             $kasir = User::firstOrCreate(
