@@ -33,9 +33,23 @@ class AppServiceProvider extends ServiceProvider
             return str_replace('Models', 'Policies', $modelClass) . 'Policy';
         });
 
-        // Implicitly grant "Super Admin" role all permissions
+        // Implicitly grant "Super Admin" and "Admin" roles global permissions
         Gate::before(function ($user, $ability) {
-            return $user->email === 'superadmin@gmail.com' ? true : null;
+            // Super Admin gets everything bypass
+            if ($user->isSuperAdmin()) {
+                return true;
+            }
+
+            // Admin gets bypass for everything EXCEPT Role-related permissions
+            if ($user->isAdminOrSuperAdmin()) {
+                // If checking for Role management, skip bypass so permissions/policy can decide
+                if (str_contains($ability, ':Role') || str_contains($ability, 'role')) {
+                    return null;
+                }
+                return true;
+            }
+
+            return null;
         });
 
         // //---untuk perbaikan agar ngrok jalan
