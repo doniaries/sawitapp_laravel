@@ -58,10 +58,27 @@ class UserTable
                         $role = \Spatie\Permission\Models\Role::find($state);
                         if ($role) {
                             $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+                            
+                            // Role assignment for current tenant
                             if ($tenantId) {
                                 setPermissionsTeamId($tenantId);
                             }
                             $record->syncRoles([$role->name]);
+ 
+                            // Global Access for Admin
+                            if ($role->name === 'admin') {
+                                $allPerusahaanIds = \App\Models\Perusahaan::pluck('id')->toArray();
+                                $record->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
+                                
+                                foreach ($allPerusahaanIds as $pId) {
+                                    setPermissionsTeamId($pId);
+                                    $record->assignRole('admin');
+                                }
+ 
+                                if ($tenantId) {
+                                    setPermissionsTeamId($tenantId);
+                                }
+                            }
                         }
                         return $state;
                     }),

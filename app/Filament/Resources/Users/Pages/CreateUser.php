@@ -28,7 +28,8 @@ class CreateUser extends CreateRecord
             $user = parent::handleRecordCreation($data);
         }
  
-        // Otomatis hubungkan ke perusahaan (tenant) yang sedang aktif
+        // Hubungkan ke perusahaan (tenant) yang sedang aktif
+        // Logika global admin (all companies) sekarang ditangani oleh Role di UserForm.php
         if ($tenant && $user instanceof User) {
             $user->perusahaans()->syncWithoutDetaching([$tenant->id]);
         }

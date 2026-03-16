@@ -91,11 +91,28 @@ class UserForm
                                         if (filled($state)) {
                                             $tenantId = \Filament\Facades\Filament::getTenant()?->id;
                                             
+                                            // Handle Role Assignment
                                             if ($tenantId) {
                                                 setPermissionsTeamId($tenantId);
                                             }
-                                            
                                             $record->syncRoles([$state]);
+ 
+                                            // Handle Global Access for Admin
+                                            if ($state === 'admin') {
+                                                $allPerusahaanIds = \App\Models\Perusahaan::pluck('id')->toArray();
+                                                $record->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
+                                                
+                                                // Ensure Admin role in all companies
+                                                foreach ($allPerusahaanIds as $pId) {
+                                                    setPermissionsTeamId($pId);
+                                                    $record->assignRole('admin');
+                                                }
+                                                
+                                                // Reset back to current tenant
+                                                if ($tenantId) {
+                                                    setPermissionsTeamId($tenantId);
+                                                }
+                                            }
                                         }
                                     })
                                     ->preload()

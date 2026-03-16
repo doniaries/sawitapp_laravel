@@ -28,15 +28,15 @@ class UserSeeder extends Seeder
                 ]
             );
 
-            // Hubungkan ke kedua perusahaan di pivot
-            $yondra->perusahaans()->syncWithoutDetaching([$perusahaan1->id, $perusahaan2->id]);
-
-            // Berikan role admin di kedua tim/perusahaan
-            setPermissionsTeamId($perusahaan1->id);
-            $yondra->syncRoles(['admin']);
-            
-            setPermissionsTeamId($perusahaan2->id);
-            $yondra->syncRoles(['admin']);
+            // Admin: Akun Admin secara otomatis terhubung ke SEMUA perusahaan (Best Practice)
+            $allPerusahaanIds = Perusahaan::pluck('id')->toArray();
+            $yondra->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
+ 
+            // Berikan role admin di SEMUA tim/perusahaan
+            foreach ($allPerusahaanIds as $pId) {
+                setPermissionsTeamId($pId);
+                $yondra->syncRoles(['admin']);
+            }
 
             // Taufik: Kasir di Perusahaan 1 saja
             $kasir = User::firstOrCreate(
