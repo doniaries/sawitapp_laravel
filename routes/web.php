@@ -31,3 +31,12 @@ Route::middleware(['auth'])->group(function () {
         return $transaksi->generatePdf();
     })->name('transaksi-do.pdf');
 });
+
+// Route untuk testing halaman error premium
+Route::get('/preview-404', function () {
+    return view('errors.404');
+});
+
+Route::get('/preview-500', function () {
+    return view('errors.500');
+});
