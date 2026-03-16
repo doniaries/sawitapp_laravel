@@ -32,5 +32,6 @@ class DatabaseSeeder extends Seeder
             OperasionalSeeder::class,
             SimulationSeeder::class,
         ]);
+        $this->command->info("Seeders berhasil dijalankan");
     }
 }

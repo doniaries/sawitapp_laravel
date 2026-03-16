@@ -169,14 +169,15 @@ class SupirSeeder extends Seeder
 
         foreach ($supirs as $index => $supirData) {
             unset($supirData['id']); // Let database handle ID
-            
+
             $targetPerusahaan = ($index % 2 === 0) ? $perusahaan1 : $perusahaan2;
-            
+
             if ($targetPerusahaan) {
                 $supirData['perusahaan_id'] = $targetPerusahaan->id;
                 $supirData['nama'] .= ' (' . ($index % 2 === 0 ? 'CV' : 'PT') . ')';
                 Supir::create($supirData);
             }
         }
+        $this->command->info("Supir Seeder berhasil dijalankan");
     }
 }
