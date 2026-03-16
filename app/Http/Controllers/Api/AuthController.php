@@ -79,4 +79,13 @@ class AuthController extends Controller
             'perusahaan_id' => $user->perusahaan_id
         ]);
     }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Berhasil logout.'
+        ]);
+    }
 }

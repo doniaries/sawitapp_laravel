@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LogistikController;
 use App\Http\Controllers\Api\OperasionalController;
 use App\Http\Controllers\Api\PenjualController;
@@ -52,6 +53,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Logistik
     Route::get('/supir', [LogistikController::class, 'supir']);
     Route::get('/kendaraan', [LogistikController::class, 'kendaraan']);
+
+    // Dashboard
+    Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
     // Operasional
     Route::get('/operasional', [OperasionalController::class, 'index']);
