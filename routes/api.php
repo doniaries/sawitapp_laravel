@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\OperasionalController;
 use App\Http\Controllers\Api\PenjualController;
 use App\Http\Controllers\Api\TransaksiDoController;
 use App\Http\Controllers\Api\PengajuanDanaController;
+use App\Http\Controllers\Api\JurnalKeuanganController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -68,4 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/operasional', [OperasionalController::class, 'index']);
     Route::get('/operasional/{id}', [OperasionalController::class, 'show']);
     Route::post('/operasional', [OperasionalController::class, 'store']);
+
+    // Jurnal Keuangan
+    Route::get('/jurnal-keuangan', [JurnalKeuanganController::class, 'index']);
 });
