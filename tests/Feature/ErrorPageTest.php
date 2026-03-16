@@ -46,7 +46,7 @@ class ErrorPageTest extends TestCase
         $response = $this->get('/halaman-yang-pasti-tidak-ada-' . uniqid());
 
         $response->assertStatus(404);
-        $response->assertSee('404'); 
+        $response->assertSee('404');
         $response->assertSee('Halaman Tidak Ditemukan');
     }
 }
