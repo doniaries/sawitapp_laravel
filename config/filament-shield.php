@@ -11,6 +11,13 @@ return [
         'show_model_path' => true,
         'is_scoped_to_tenant' => false,
         'cluster' => null,
+        'tabs' => [
+            'enabled' => true,
+            'resources' => true,
+            'pages' => true,
+            'widgets' => true,
+            'custom_permissions' => true,
+        ],
     ],
 
     'tenant_model' => 'App\\Models\\Perusahaan',

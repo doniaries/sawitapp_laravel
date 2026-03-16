@@ -33,13 +33,14 @@ use Illuminate\Validation\Rules\Unique;
 class RoleResource extends Resource
 {
     use Essentials\BelongsToParent;
-    use Essentials\BelongsToTenant;
     use Essentials\HasGlobalSearch;
     use Essentials\HasLabels;
     use Essentials\HasNavigation;
     use HasShieldFormComponents;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    protected static bool $isScopedToTenant = false;
 
     public static function form(Schema $schema): Schema
     {
@@ -51,10 +52,7 @@ class RoleResource extends Resource
                             ->schema([
                                 TextInput::make('name')
                                     ->label(__('filament-shield::filament-shield.field.name'))
-                                    ->unique(
-                                        ignoreRecord: true, /** @phpstan-ignore-next-line */
-                                        modifyRuleUsing: fn (Unique $rule): Unique => Utils::isTenancyEnabled() ? $rule->where(Utils::getTenantModelForeignKey(), Filament::getTenant()?->id) : $rule
-                                    )
+                                    ->unique(ignoreRecord: true)
                                     ->required()
                                     ->maxLength(255),
 
