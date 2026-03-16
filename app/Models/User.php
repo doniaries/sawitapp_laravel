@@ -69,7 +69,24 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     }
 
     /**
-     * Cek super_admin langsung dari DB (tanpa team context).
+     * Cek apakah user adalah admin atau super_admin (akses global).
+     */
+    public function isAdminOrSuperAdmin(): bool
+    {
+        if ($this->email === 'superadmin@gmail.com' || $this->email === 'yondra@gmail.com') {
+            return true;
+        }
+
+        return DB::table('model_has_roles')
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->where('model_has_roles.model_id', $this->id)
+            ->where('model_has_roles.model_type', static::class)
+            ->whereIn('roles.name', ['super_admin', 'admin'])
+            ->exists();
+    }
+
+    /**
+     * Cek super_admin saja.
      */
     public function isSuperAdmin(): bool
     {
@@ -87,11 +104,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     /**
      * Filament: daftar tenant yang bisa diakses.
-     * Superadmin → semua perusahaan, user biasa → dari pivot.
      */
     public function getTenants(Panel $panel): Collection
     {
-        if ($this->isSuperAdmin()) {
+        if ($this->isAdminOrSuperAdmin()) {
             return Perusahaan::withoutGlobalScopes()->get();
         }
 
@@ -103,7 +119,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        if ($this->isSuperAdmin()) {
+        if ($this->isAdminOrSuperAdmin()) {
             return true;
         }
 
@@ -118,15 +134,15 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         parent::boot();
 
         static::saving(function (User $user) {
-            // Jika superadmin, kosongkan perusahaan_id
-            if ($user->isSuperAdmin()) {
+            // Jika admin/superadmin, kosongkan perusahaan_id
+            if ($user->isAdminOrSuperAdmin()) {
                 $user->perusahaan_id = null;
             }
         });
 
         static::saved(function (User $user) {
-            // Sinkronkan perusahaan_id dengan item pertama di pivot jika bukan superadmin
-            if (!$user->isSuperAdmin() && $user->perusahaans()->exists()) {
+            // Sinkronkan perusahaan_id dengan item pertama di pivot jika bukan admin/superadmin
+            if (!$user->isAdminOrSuperAdmin() && $user->perusahaans()->exists()) {
                 $firstPerusahaanId = $user->perusahaans()->first()->id;
                 
                 // Gunakan query langsung untuk menghindari infinite loop saved event jika perusahaan_id berubah
