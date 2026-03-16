@@ -32,6 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // Multi-Tenancy (Perusahaan)
+    Route::get('/perusahaans', [AuthController::class, 'getPerusahaans']);
+    Route::post('/switch-perusahaan', [AuthController::class, 'switchPerusahaan']);
+
     // Transaksi DO
     Route::get('/transaksi-do', [TransaksiDoController::class, 'index']);
     Route::get('/transaksi-do/{id}', [TransaksiDoController::class, 'show']);
