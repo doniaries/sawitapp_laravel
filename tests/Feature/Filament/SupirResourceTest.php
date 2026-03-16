@@ -6,6 +6,7 @@ use App\Filament\Resources\Supirs\Pages\ListSupirs;
 use App\Filament\Resources\Supirs\SupirResource;
 use App\Models\Supir;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -54,7 +55,9 @@ class SupirResourceTest extends TestCase
             'perusahaan_id' => $this->perusahaan->id,
         ]);
 
-        Livewire::test(ListSupirs::class, ['tenant' => $this->perusahaan])
+        Filament::setTenant($this->perusahaan);
+
+        Livewire::test(ListSupirs::class)
             ->assertCanSeeTableRecords($supirs);
     }
 

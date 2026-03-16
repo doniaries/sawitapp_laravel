@@ -8,28 +8,28 @@
    WARN  Metadata found in doc-comment for method Tests\Feature\Filament\SupirResourceTest::can_render_edit_page(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
 
    FAIL  Tests\Feature\Filament\SupirResourceTest
-  Γ£ô can render list page                4.74s  
-  Γ¿» can list supirs                     0.21s  
-  Γ£ô can render create page              0.29s  
-  Γ£ô can render edit page                0.34s  
+  Γ£ô can render list page                4.15s  
+  Γ¿» can list supirs                     0.12s  
+  Γ£ô can render create page              0.22s  
+  Γ£ô can render edit page                0.22s  
   ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
-   FAILED  Tests\Feature\FilΓÇª  ViewException   
-  Missing required parameter for [Route: filament.admin.resources.supirs.create] [URI: admin/{tenant}/supirs/create] [Missing parameter: tenant]. (View: C:\laragon\www\successmandiri_laravel\vendor\filament\tables\resources\views\index.blade.php) (View: C:\laragon\www\successmandiri_laravel\vendor\filament\tables\resources\views\index.blade.php) (View: C:\laragon\www\successmandiri_laravel\vendor\filament\tables\resources\views\index.blade.php)
+   FAILED  Tests\Feature\Filament\SuΓÇª  Error   
+  Class "Tests\Feature\Filament\Filament" not found
 
-  at vendor\laravel\framework\src\Illuminate\Routing\Exceptions\UrlGenerationException.php:35
-     31Γûò         }
-     32Γûò 
-     33Γûò         $message .= '.';
-     34Γûò 
-  Γ₧£  35Γûò         return new static($message);
-     36Γûò     }
-     37Γûò }
-     38Γûò
+  at tests\Feature\Filament\SupirResourceTest.php:57
+     53Γûò         $supirs = Supir::factory()->count(5)->create([
+     54Γûò             'perusahaan_id' => $this->perusahaan->id,
+     55Γûò         ]);
+     56Γûò 
+  Γ₧£  57Γûò         Filament::setTenant($this->perusahaan);
+     58Γûò 
+     59Γûò         Livewire::test(ListSupirs::class)
+     60Γûò             ->assertCanSeeTableRecords($supirs);
+     61Γûò     }
 
-  1   vendor\laravel\framework\src\Illuminate\Routing\Exceptions\UrlGenerationException.php:35
-  2   vendor\livewire\livewire\src\Mechanisms\ExtendBlade\ExtendedCompilerEngine.php:58
+  1   tests\Feature\Filament\SupirResourceTest.php:57
 
 
   Tests:    1 failed, 3 passed (3 assertions)
-  Duration: 5.85s
+  Duration: 4.95s
 
