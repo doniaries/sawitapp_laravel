@@ -57,6 +57,10 @@ class UserTable
                     ->updateStateUsing(function ($record, $state) {
                         $role = \Spatie\Permission\Models\Role::find($state);
                         if ($role) {
+                            $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+                            if ($tenantId) {
+                                setPermissionsTeamId($tenantId);
+                            }
                             $record->syncRoles([$role->name]);
                         }
                         return $state;

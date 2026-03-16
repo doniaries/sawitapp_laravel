@@ -1,7 +1,7 @@
 <?php
-
+ 
 namespace App\Filament\Resources\Users\Schemas;
-
+ 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -9,7 +9,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Facades\Hash;
-
+use App\Models\User;
+use Spatie\Permission\Models\Role;
+ 
 class UserForm
 {
     public static function configure(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
@@ -27,13 +29,13 @@ class UserForm
                                     ->label('Nama Lengkap')
                                     ->required()
                                     ->maxLength(255),
-
+ 
                                 TextInput::make('email')
                                     ->label('Email')
                                     ->email()
                                     ->required()
                                     ->maxLength(255),
-
+ 
                                 TextInput::make('password')
                                     ->label('Password')
                                     ->password()
@@ -46,27 +48,24 @@ class UserForm
                                     ->same('passwordConfirmation')
                                     ->dehydrated(fn($state) => filled($state))
                                     ->live(true),
-
+ 
                                 TextInput::make('passwordConfirmation')
                                     ->label('Konfirmasi Password')
                                     ->password()
                                     ->revealable(true)
-                                    ->dehydrateStateUsing(fn($state) => filled($state) ? Hash::make($state) : null)
+                                    ->helperText(fn (string $operation): ?string => $operation === 'edit' ? 'Abaikan jika tidak ingin merubah password' : null)
                                     ->required(
-                                        fn(string $operation, \Filament\Schemas\Components\Utilities\Get $get): bool =>
+                                        fn(string $operation, Get $get): bool =>
                                         $operation === 'create' || filled($get('password'))
                                     )
-                                    ->visible(
-                                        fn(string $operation, \Filament\Schemas\Components\Utilities\Get $get): bool =>
-                                        $operation === 'create' || filled($get('password'))
-                                    )
-                                    ->minLength(8)
-                                    ->maxLength(255)
+                                    ->visible(true) // Selalu tampak di create dan edit sesuai permintaan
+                                    ->minLength(6)
+                                    ->maxLength(50)
                                     ->dehydrated(false),
                             ])
                             ->columns(2),
                     ]),
-
+ 
                 Group::make()
                     ->columnSpan(['default' => 3, 'md' => 1])
                     ->components([
@@ -76,24 +75,33 @@ class UserForm
                                 Select::make('roles')
                                     ->label('Hak Akses')
                                     ->options(function() {
-                                        return \Spatie\Permission\Models\Role::whereIn('name', ['admin', 'kasir'])
+                                        return Role::whereIn('name', ['admin', 'kasir'])
                                             ->pluck('name', 'name')
                                             ->toArray();
                                     })
-                                    ->afterStateHydrated(function (Select $component, ?\App\Models\User $record) {
-                                        if (!$record) return;
-                                        
-                                        // Ambil role pertama dalam konteks tim saat ini
-                                        $component->state($record->roles->first()?->name);
+                                    ->afterStateHydrated(function (Select $component, ?User $record) {
+                                        if ($record) {
+                                            $role = $record->roles()->first();
+                                            if ($role) {
+                                                $component->state($role->name);
+                                            }
+                                        }
                                     })
-                                    ->saveRelationshipsUsing(function (\App\Models\User $record, $state) {
+                                    ->saveRelationshipsUsing(function (User $record, $state) {
                                         if (filled($state)) {
+                                            $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+                                            
+                                            if ($tenantId) {
+                                                setPermissionsTeamId($tenantId);
+                                            }
+                                            
                                             $record->syncRoles([$state]);
                                         }
                                     })
                                     ->preload()
-                                    ->searchable(),
-
+                                    ->searchable()
+                                    ->required(),
+ 
                                 Toggle::make('is_active')
                                     ->label('Status Aktif')
                                     ->default(true)
