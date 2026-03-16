@@ -65,7 +65,8 @@ class Penjual extends Model
     //relation ship penjual dengan operasional
     public function operasional(): HasMany
     {
-        return $this->hasMany(TransaksiOperasional::class);
+        return $this->hasMany(TransaksiOperasional::class, 'pihak_id')
+            ->where('pihak_type', self::class);
     }
 
     protected static function boot()

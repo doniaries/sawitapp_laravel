@@ -36,12 +36,19 @@ class Supir extends Model
 
     protected $casts = [
         'hutang' => 'decimal:0',
+        'is_maintenance' => 'boolean',
     ];
 
     // Relations
     public function transaksiDo(): HasMany
     {
         return $this->hasMany(TransaksiDo::class);
+    }
+
+    // Scopes
+    public function scopeIsNotMaintenance($query)
+    {
+        return $query->where('is_maintenance', false);
     }
 
 
@@ -67,8 +74,8 @@ class Supir extends Model
     // Add relationship with Operasional
     public function pinjaman()
     {
-        return $this->hasMany(Operasional::class, 'supir_id')
-            ->where('tipe_nama', 'supir')
+        return $this->hasMany(TransaksiOperasional::class, 'pihak_id')
+            ->where('pihak_type', Supir::class)
             ->where('kategori', KategoriOperasional::PINJAMAN);
     }
 

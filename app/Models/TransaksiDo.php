@@ -27,7 +27,7 @@ class TransaksiDo extends Model
     use HasFactory, SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait, GenerateMonthlyNumber, BelongsToTenant;
 
     protected $table = 'transaksi_do';
-    protected $with = ['penjual:id', 'supir:id']; // Default eager loading
+    protected $with = ['penjual:id', 'supir:id', 'kendaraan']; // Default eager loading
 
 
     protected $fillable = [
@@ -120,7 +120,8 @@ class TransaksiDo extends Model
 
     public function operasional()
     {
-        return $this->hasMany(Operasional::class, 'transaksi_do_id');
+        return $this->hasMany(TransaksiOperasional::class, 'pihak_id')
+            ->where('pihak_type', self::class);
     }
 
     // Accessor untuk hutang penjual
@@ -159,6 +160,13 @@ class TransaksiDo extends Model
     public function supir(): BelongsTo
     {
         return $this->belongsTo(Supir::class);
+    }
+
+    public function kendaraan(): BelongsTo
+    {
+        return $this->belongsTo(Kendaraan::class, 'no_polisi', 'no_polisi')->withDefault([
+            'nama' => 'Tanpa Armada'
+        ]);
     }
 
 

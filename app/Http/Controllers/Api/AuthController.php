@@ -40,7 +40,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'perusahaan_id' => $user->perusahaan_id,
-                'perusahaan_name' => $user->perusahaan?->nama_perusahaan ?? $user->perusahaan?->nama,
+                'perusahaan_name' => $user->perusahaan?->name,
             ],
         ]);
     }
