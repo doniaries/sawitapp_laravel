@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Perusahaans\Widgets;
 
 use App\Models\{Perusahaan, User};
+use Filament\Facades\Filament;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\{DB, Cache};
@@ -17,19 +18,22 @@ class PerusahaanStatsWidget extends BaseWidget
     protected function getStats(): array
     {
         try {
-            return Cache::remember('perusahaan-stats', 60, function () {
-                // Get perusahaan data
-                $perusahaan = Perusahaan::first();
+            $perusahaan = Filament::getTenant();
 
-                // Get active kasir
-                $kasir = User::where('is_active', true)
-                    ->whereNotNull('perusahaan_id')
+            if (!$perusahaan) {
+                return [];
+            }
+            return Cache::remember("perusahaan-stats-{$perusahaan->id}", 60, function () use ($perusahaan) {
+                // Get active kasir only for current company
+                $kasir = User::where('perusahaan_id', $perusahaan->id)
+                    ->where('is_active', true)
                     ->get(['name']);
 
-                $kasirNames = $kasir->pluck('name')->join(', ');
+                $kasirNames = $kasir->isEmpty() ? 'Belum ada kasir' : $kasir->pluck('name')->join(', ');
 
-                // Get last saldo addition
+                // Get last saldo addition for current company
                 $lastSaldo = DB::table('jurnal_keuangan')
+                    ->where('perusahaan_id', $perusahaan->id)
                     ->whereNull('deleted_at')
                     ->where('kategori', 'Saldo')
                     ->where('sub_kategori', 'Tambah Saldo')
@@ -41,30 +45,24 @@ class PerusahaanStatsWidget extends BaseWidget
                     " (" . date('d/m/Y', strtotime($lastSaldo->tanggal)) . ")" :
                     "Belum ada penambahan saldo";
 
-                // Calculate total pemasukan
+                // Calculate total pemasukan for current company
                 $totalPemasukan = DB::table('jurnal_keuangan')
+                    ->where('perusahaan_id', $perusahaan->id)
                     ->whereNull('deleted_at')
                     ->where('jenis_transaksi', 'Pemasukan')
                     ->where('mempengaruhi_kas', true)
                     ->sum('nominal');
 
-                // Calculate total pengeluaran
+                // Calculate total pengeluaran for current company
                 $totalPengeluaran = DB::table('jurnal_keuangan')
+                    ->where('perusahaan_id', $perusahaan->id)
                     ->whereNull('deleted_at')
                     ->where('jenis_transaksi', 'Pengeluaran')
                     ->where('mempengaruhi_kas', true)
                     ->sum('nominal');
 
-                // Calculate saldo
+                // Calculate saldo (already has perusahaan_id context)
                 $saldoAkhir = $perusahaan->saldo;
-
-                // Log calculations for debugging
-                // \Log::info('Widget Stats Calculation:', [
-                //     'total_pemasukan' => $totalPemasukan,
-                //     'total_pengeluaran' => $totalPengeluaran,
-                //     'saldo_sistem' => $saldoAkhir,
-                //     'saldo_kalkulasi' => $totalPemasukan - $totalPengeluaran
-                // ]);
 
                 return [
                     // Saldo from perusahaans table
@@ -74,7 +72,7 @@ class PerusahaanStatsWidget extends BaseWidget
                         ->color($this->getSaldoColor($saldoAkhir)),
 
                     // Pimpinan as main title with company name below
-                    Stat::make($perusahaan->name, $perusahaan->pimpinan)
+                    Stat::make($perusahaan->name, $perusahaan->pimpinan ?? 'Pimpinan belum diatur')
                         ->description("Kasir: {$kasirNames}")
                         ->descriptionIcon('heroicon-m-user-group')
                         ->color('info'),

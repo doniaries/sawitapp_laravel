@@ -93,6 +93,12 @@ class Supir extends Model
             ->sum('nominal');
     }
 
+    // Add relationship with kendaraan
+    public function kendaraan(): HasMany
+    {
+        return $this->hasMany(Kendaraan::class);
+    }
+
     // Add total hutang accessor
 
 }
