@@ -24,36 +24,15 @@ class ShieldSeeder extends Seeder
             "ViewAny:JurnalKeuangan", "View:JurnalKeuangan", "Create:JurnalKeuangan", "Update:JurnalKeuangan", "Delete:JurnalKeuangan", "Restore:JurnalKeuangan", "RestoreAny:JurnalKeuangan", "ForceDelete:JurnalKeuangan", "ForceDeleteAny:JurnalKeuangan",
             "ViewAny:Pekerja", "View:Pekerja", "Create:Pekerja", "Update:Pekerja", "Delete:Pekerja", "Restore:Pekerja", "RestoreAny:Pekerja", "ForceDelete:Pekerja", "ForceDeleteAny:Pekerja",
             "ViewAny:Pabrik", "View:Pabrik", "Create:Pabrik", "Update:Pabrik", "Delete:Pabrik", "Restore:Pabrik", "RestoreAny:Pabrik", "ForceDelete:Pabrik", "ForceDeleteAny:Pabrik",
-            "ViewAny:RiwayatPembayaranHutang", "View:RiwayatPembayaranHutang", "Create:RiwayatPembayaranHutang", "Update:RiwayatPembayaranHutang", "Delete:RiwayatPembayaranHutang", "Restore:RiwayatPembayaranHutang", "RestoreAny:RiwayatPembayaranHutang", "ForceDelete:RiwayatPembayaranHutang", "ForceDeleteAny:RiwayatPembayaranHutang",
+            "ViewAny:PembayaranHutang", "View:PembayaranHutang", "Create:PembayaranHutang", "Update:PembayaranHutang", "Delete:PembayaranHutang", "Restore:PembayaranHutang", "RestoreAny:PembayaranHutang", "ForceDelete:PembayaranHutang", "ForceDeleteAny:PembayaranHutang",
+            "ViewAny:PengajuanDana", "View:PengajuanDana", "Create:PengajuanDana", "Update:PengajuanDana", "Delete:PengajuanDana", "Restore:PengajuanDana", "RestoreAny:PengajuanDana", "ForceDelete:PengajuanDana", "ForceDeleteAny:PengajuanDana",
             "Page:Dashboard", "Page:Tenancy\EditPerusahaanProfile", "Page:Tenancy\RegisterPerusahaan"
         ];
 
-        // Admin: Semua kecuali Role management
-        $adminPermissions = collect($allPermissions)->filter(function ($permission) {
+        // Admin & Kasir: Semua kecuali Role management
+        $limitedPermissions = collect($allPermissions)->filter(function ($permission) {
             return !str_contains($permission, ':Role');
         })->toArray();
-
-        // Kasir: Terbatas pada Transaksi DO, Operasional, Laporan, dan Master Data (hanya Lihat)
-        $kasirPermissions = [
-            // Dashboard
-            "Page:Dashboard",
-
-            // Transaksi DO
-            "ViewAny:TransaksiDo", "View:TransaksiDo", "Create:TransaksiDo", "Update:TransaksiDo",
-            
-            // Transaksi Operasional
-            "ViewAny:TransaksiOperasional", "View:TransaksiOperasional", "Create:TransaksiOperasional", "Update:TransaksiOperasional",
-
-            // Jurnal Keuangan
-            "ViewAny:JurnalKeuangan", "View:JurnalKeuangan",
-
-            // Master Data (Hanya View/List)
-            "ViewAny:Penjual", "View:Penjual",
-            "ViewAny:Supir", "View:Supir",
-            "ViewAny:Kendaraan", "View:Kendaraan",
-            "ViewAny:Pekerja", "View:Pekerja",
-            "ViewAny:Perusahaan", "View:Perusahaan"
-        ];
 
         $rolesWithPermissions = [
             [
@@ -64,12 +43,12 @@ class ShieldSeeder extends Seeder
             [
                 'name' => 'admin',
                 'guard_name' => 'web',
-                'permissions' => $adminPermissions
+                'permissions' => $limitedPermissions
             ],
             [
                 'name' => 'kasir',
                 'guard_name' => 'web',
-                'permissions' => $kasirPermissions
+                'permissions' => $limitedPermissions
             ],
         ];
 
