@@ -48,7 +48,7 @@ class SupirResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withCount(['kendaraan', 'transaksiDo'])
+            ->withCount(['transaksiDo'])
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);

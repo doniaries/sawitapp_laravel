@@ -1,0 +1,8 @@
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\Filament\SupirResourceTest::can_render_list_page(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\Filament\SupirResourceTest::can_list_supirs(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\Filament\SupirResourceTest::can_render_create_page(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\Filament\SupirResourceTest::can_render_edit_page(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
