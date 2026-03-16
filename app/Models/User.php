@@ -109,4 +109,33 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
         return $this->perusahaans()->whereKey($tenant)->exists();
     }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function (User $user) {
+            // Jika superadmin, kosongkan perusahaan_id
+            if ($user->isSuperAdmin()) {
+                $user->perusahaan_id = null;
+            }
+        });
+
+        static::saved(function (User $user) {
+            // Sinkronkan perusahaan_id dengan item pertama di pivot jika bukan superadmin
+            if (!$user->isSuperAdmin() && $user->perusahaans()->exists()) {
+                $firstPerusahaanId = $user->perusahaans()->first()->id;
+                
+                // Gunakan query langsung untuk menghindari infinite loop saved event jika perusahaan_id berubah
+                if ($user->perusahaan_id !== $firstPerusahaanId) {
+                    DB::table('users')
+                        ->where('id', $user->id)
+                        ->update(['perusahaan_id' => $firstPerusahaanId]);
+                }
+            }
+        });
+    }
 }

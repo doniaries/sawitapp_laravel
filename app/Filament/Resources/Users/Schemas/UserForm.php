@@ -74,15 +74,21 @@ class UserForm
                         Section::make('Kredensial & Otorisasi')
                             ->description('Pengaturan hak akses dan perusahaan')
                             ->components([
-                                Select::make('perusahaan_id')
+                                Select::make('perusahaans')
                                     ->label('Perusahaan')
-                                    ->relationship(
-                                        'perusahaan',
-                                        'name',
-                                        fn($query) => auth()->user()->isSuperAdmin() ? $query : $query->where('id', \Filament\Facades\Filament::getTenant()->id)
-                                    )
+                                    ->relationship('perusahaans', 'name')
+                                    ->multiple()
+                                    ->preload()
                                     ->searchable()
-                                    ->placeholder('Semua Perusahaan (Khusus Super Admin)')
+                                    ->maxItems(function (Get $get) {
+                                        $roles = $get('roles') ?? [];
+                                        if (in_array('kasir', $roles)) {
+                                            return 1;
+                                        }
+                                        return 2;
+                                    })
+                                    ->required(fn (Get $get) => !in_array('super_admin', $get('roles') ?? []))
+                                    ->visible(fn (Get $get) => !in_array('super_admin', $get('roles') ?? []))
                                     ->native(false),
 
                                 Select::make('roles')
