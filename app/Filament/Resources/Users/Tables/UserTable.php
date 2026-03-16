@@ -10,6 +10,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -41,39 +42,25 @@ class UserTable
                     ->copyMessage('Email disalin')
                     ->copyMessageDuration(1500),
 
-                TextColumn::make('roles_display')
-                    ->label('Peran')
-                    ->badge()
-                    ->state(function (\App\Models\User $record): array {
-                        // Cek superadmin dulu
-                        if ($record->isSuperAdmin()) {
-                            return ['super_admin'];
-                        }
-
-                        // Ambil role secara langsung dari tabel pivot untuk menghindari filter tim Spatie
-                        // Kita gunakan query yang lebih fleksibel terhadap model_type
-                        return \Illuminate\Support\Facades\DB::table('model_has_roles')
-                            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
-                            ->where('model_has_roles.model_id', $record->id)
-                            ->where(function ($query) {
-                                $query->where('model_has_roles.model_type', \App\Models\User::class)
-                                      ->orWhere('model_has_roles.model_type', 'App\Models\User')
-                                      ->orWhere('model_has_roles.model_type', 'user');
-                            })
-                            ->pluck('roles.name')
-                            ->unique()
+                SelectColumn::make('roles')
+                    ->label('Hak Akses')
+                    ->options(function() {
+                        return \Spatie\Permission\Models\Role::whereIn('name', ['admin', 'kasir'])
+                            ->pluck('name', 'id')
                             ->toArray();
                     })
-                    ->color(fn ($state): string => match ($state) {
-                        'super_admin' => 'danger',
-                        'admin' => 'warning',
-                        'kasir' => 'info',
-                        default => 'gray',
-                    })
-                    ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder {
-                        return $query->whereHas('roles', fn ($query) => $query->where('name', 'like', "%{$search}%"));
+                    ->selectablePlaceholder(false)
+                    ->disabled(fn ($record) => $record->isSuperAdmin())
+                    // State di-get dari ID role pertama user (sudah terscope ke tenant oleh Spatie)
+                    ->state(fn ($record) => $record->roles->first()?->id)
+                    // Update role menggunakan ID
+                    ->updateStateUsing(function ($record, $state) {
+                        $role = \Spatie\Permission\Models\Role::find($state);
+                        if ($role) {
+                            $record->syncRoles([$role->name]);
+                        }
+                        return $state;
                     }),
-
 
                 ToggleColumn::make('is_active')
                     ->label('Status')
@@ -91,6 +78,11 @@ class UserTable
                     ->searchable()
                     ->preload()
                     ->label('Filter Perusahaan'),
+
+                SelectFilter::make('roles')
+                    ->label('Filter Hak Akses')
+                    ->relationship('roles', 'name')
+                    ->preload(),
 
                 SelectFilter::make('is_active')
                     ->label('Status')

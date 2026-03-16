@@ -38,6 +38,7 @@ class UserForm
                                     ->label('Password')
                                     ->password()
                                     ->revealable(true)
+                                    ->helperText(fn (string $operation): ?string => $operation === 'edit' ? 'Abaikan jika tidak ingin merubah password' : null)
                                     ->dehydrateStateUsing(fn($state) => filled($state) ? Hash::make($state) : null)
                                     ->required(fn(string $operation): bool => $operation === 'create')
                                     ->minLength(6)
@@ -72,27 +73,24 @@ class UserForm
                         Section::make('Kredensial & Otorisasi')
                             ->description('Pengaturan hak akses dan perusahaan')
                             ->components([
-                                Select::make('perusahaans')
-                                    ->label('Perusahaan')
-                                    ->relationship('perusahaans', 'name')
-                                    ->multiple()
-                                    ->preload()
-                                    ->searchable()
-                                    ->maxItems(function (Get $get) {
-                                        $roles = $get('roles') ?? [];
-                                        if (in_array('kasir', $roles)) {
-                                            return 1;
-                                        }
-                                        return 2;
-                                    })
-                                    ->required(fn (Get $get) => !in_array('super_admin', $get('roles') ?? []))
-                                    ->visible(fn (Get $get) => !in_array('super_admin', $get('roles') ?? []))
-                                    ->native(false),
-
                                 Select::make('roles')
                                     ->label('Hak Akses')
-                                    ->relationship('roles', 'name')
-                                    ->multiple()
+                                    ->options(function() {
+                                        return \Spatie\Permission\Models\Role::whereIn('name', ['admin', 'kasir'])
+                                            ->pluck('name', 'name')
+                                            ->toArray();
+                                    })
+                                    ->afterStateHydrated(function (Select $component, ?\App\Models\User $record) {
+                                        if (!$record) return;
+                                        
+                                        // Ambil role pertama dalam konteks tim saat ini
+                                        $component->state($record->roles->first()?->name);
+                                    })
+                                    ->saveRelationshipsUsing(function (\App\Models\User $record, $state) {
+                                        if (filled($state)) {
+                                            $record->syncRoles([$state]);
+                                        }
+                                    })
                                     ->preload()
                                     ->searchable(),
 
