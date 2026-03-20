@@ -48,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pengajuan-dana', [PengajuanDanaController::class, 'index']);
     Route::get('/pengajuan-dana/{id}', [PengajuanDanaController::class, 'show']);
     Route::post('/pengajuan-dana', [PengajuanDanaController::class, 'store']);
+    Route::post('/pengajuan-dana/{id}/approve', [PengajuanDanaController::class, 'approve']);
+    Route::post('/pengajuan-dana/{id}/reject', [PengajuanDanaController::class, 'reject']);
 
     // Penjual
     Route::get('/penjual', [PenjualController::class, 'index']);

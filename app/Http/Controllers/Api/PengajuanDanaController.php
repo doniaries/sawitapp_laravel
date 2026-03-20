@@ -53,4 +53,67 @@ class PengajuanDanaController extends Controller
 
         return response()->json($pengajuan, 201);
     }
+
+    public function approve($id, Request $request)
+    {
+        $request->validate([
+            'bukti_transfer' => 'required|string',
+            'catatan_pimpinan' => 'nullable|string',
+        ]);
+
+        $pengajuan = PengajuanDana::where('perusahaan_id', $request->user()->perusahaan_id)
+            ->findOrFail($id);
+
+        if ($pengajuan->status !== 'pending') {
+            return response()->json(['message' => 'Pengajuan sudah diproses.'], 422);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($pengajuan, $request) {
+            $pengajuan->update([
+                'status' => 'disetujui',
+                'tanggal_proses' => now(),
+                'proses_by' => $request->user()->id,
+                'bukti_transfer' => $request->bukti_transfer,
+                'catatan_pimpinan' => $request->catatan_pimpinan,
+            ]);
+
+            \App\Models\JurnalKeuangan::create([
+                'perusahaan_id' => $pengajuan->perusahaan_id,
+                'tanggal' => now(),
+                'jenis_transaksi' => 'Pemasukan',
+                'kategori' => 'Saldo',
+                'sub_kategori' => 'Tambah Saldo',
+                'nominal' => $pengajuan->nominal,
+                'referensi_id' => $pengajuan->id,
+                'sumber_transaksi' => 'Pengajuan Dana',
+                'keterangan' => 'Penambahan saldo dari pengajuan dana #' . $pengajuan->id . ': ' . $pengajuan->keperluan,
+                'mempengaruhi_kas' => true,
+            ]);
+        });
+
+        return response()->json($pengajuan->fresh());
+    }
+
+    public function reject($id, Request $request)
+    {
+        $request->validate([
+            'catatan_pimpinan' => 'required|string',
+        ]);
+
+        $pengajuan = PengajuanDana::where('perusahaan_id', $request->user()->perusahaan_id)
+            ->findOrFail($id);
+
+        if ($pengajuan->status !== 'pending') {
+            return response()->json(['message' => 'Pengajuan sudah diproses.'], 422);
+        }
+
+        $pengajuan->update([
+            'status' => 'ditolak',
+            'tanggal_proses' => now(),
+            'proses_by' => $request->user()->id,
+            'catatan_pimpinan' => $request->catatan_pimpinan,
+        ]);
+
+        return response()->json($pengajuan);
+    }
 }
