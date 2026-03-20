@@ -45,7 +45,7 @@ class PenjualTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('nama', 'asc')
+            ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make()
                     ->icon('heroicon-o-plus')

@@ -39,7 +39,7 @@ class SupirTable
                     ->sortable()
                     ->color(fn($state) => $state > 0 ? 'danger' : 'success'),
             ])
-            ->defaultSort('nama', 'asc')
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
                 Filter::make('has_hutang')

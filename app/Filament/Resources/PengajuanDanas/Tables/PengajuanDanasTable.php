@@ -62,6 +62,7 @@ class PengajuanDanasTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('tanggal_pengajuan', 'desc')
             ->filters([
                 TrashedFilter::make(),
             ])

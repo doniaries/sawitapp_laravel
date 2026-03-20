@@ -45,7 +45,7 @@ class PekerjaTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('nama', 'asc')
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
             ])
