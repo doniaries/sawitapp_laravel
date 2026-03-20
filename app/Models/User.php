@@ -133,12 +133,14 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         parent::boot();
 
+/*
         static::saving(function (User $user) {
             // Jika admin/superadmin, kosongkan perusahaan_id
             if ($user->isAdminOrSuperAdmin()) {
                 $user->perusahaan_id = null;
             }
         });
+*/
 
         static::saved(function (User $user) {
             // Sinkronkan perusahaan_id dengan item pertama di pivot jika bukan admin/superadmin
