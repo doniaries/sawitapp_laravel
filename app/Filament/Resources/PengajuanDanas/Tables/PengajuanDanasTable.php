@@ -14,6 +14,8 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\JurnalKeuangan;
 
 class PengajuanDanasTable
 {
@@ -82,13 +84,29 @@ class PengajuanDanasTable
                             ->label('Catatan'),
                     ])
                     ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => 'disetujui',
-                            'tanggal_proses' => now(),
-                            'proses_by' => Auth::id(),
-                            'bukti_transfer' => $data['bukti_transfer'],
-                            'catatan_pimpinan' => $data['catatan_pimpinan'],
-                        ]);
+                        DB::transaction(function () use ($record, $data) {
+                            $record->update([
+                                'status' => 'disetujui',
+                                'tanggal_proses' => now(),
+                                'proses_by' => Auth::id(),
+                                'bukti_transfer' => $data['bukti_transfer'],
+                                'catatan_pimpinan' => $data['catatan_pimpinan'],
+                            ]);
+
+                            // Catat ke Jurnal Keuangan (Ini akan mentrigger sync saldo di Observer)
+                            JurnalKeuangan::create([
+                                'perusahaan_id' => $record->perusahaan_id,
+                                'tanggal' => now(),
+                                'jenis_transaksi' => 'Pemasukan',
+                                'kategori' => 'Saldo',
+                                'sub_kategori' => 'Tambah Saldo',
+                                'nominal' => $record->nominal,
+                                'referensi_id' => $record->id,
+                                'sumber_transaksi' => 'Pengajuan Dana',
+                                'keterangan' => 'Penambahan saldo dari pengajuan dana #' . $record->id . ': ' . $record->keperluan,
+                                'mempengaruhi_kas' => true,
+                            ]);
+                        });
                     })
                     ->requiresConfirmation(),
                 Action::make('tolak')

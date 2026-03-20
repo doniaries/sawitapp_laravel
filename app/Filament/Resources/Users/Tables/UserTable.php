@@ -44,8 +44,7 @@ class UserTable
                 SelectColumn::make('roles')
                     ->label('Hak Akses')
                     ->options(function () {
-                        return \Spatie\Permission\Models\Role::whereIn('name', ['admin', 'kasir'])
-                            ->pluck('name', 'id')
+                        return \Spatie\Permission\Models\Role::pluck('name', 'id')
                             ->toArray();
                     })
                     ->selectablePlaceholder(false)

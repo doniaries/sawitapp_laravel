@@ -241,13 +241,20 @@ class JurnalKeuanganObserver
                 ->where('operasional', 'pemasukan')
                 ->sum('nominal');
 
+            // 3. Get approved Pengajuan Dana income
+            $pengajuanIncome = DB::table('pengajuan_dana')
+                ->whereNull('deleted_at')
+                ->where('status', 'disetujui')
+                ->sum('nominal');
+
             // Total Income components
             $pembayaranHutang = $incomingFunds->total_debt_payments; // Rp 2,000,000
             $pembayaranSisa = $incomingFunds->remaining_payments;    // Rp 164,128,680
             $pemasukanOperasional = $operationalIncome;             // Rp 265,647,000
+            $pemasukanPengajuan = $pengajuanIncome;
 
-            // Total Income (Rp 431,775,680)
-            $totalPemasukan = $pembayaranHutang + $pembayaranSisa + $pemasukanOperasional;
+            // Total Income
+            $totalPemasukan = $pembayaranHutang + $pembayaranSisa + $pemasukanOperasional + $pemasukanPengajuan;
 
             // Calculate expenditure
             // 1. Total DO expenses
