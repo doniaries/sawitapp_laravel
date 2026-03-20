@@ -12,7 +12,6 @@ use App\Models\Perusahaan;
 use App\Enums\KategoriOperasional;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 
 class SimulationSeeder extends Seeder
 {
@@ -20,14 +19,14 @@ class SimulationSeeder extends Seeder
     {
         // 1. Get all Perusahaan
         $perusahaans = Perusahaan::all();
-        
+
         if ($perusahaans->isEmpty()) {
             $this->command->warn("No Perusahaan found! Creating a default one...");
             $perusahaans = collect([Perusahaan::create([
                 'name' => 'SUKSES MANDIRI',
                 'alamat' => 'Jl. Lintas Sumatera',
                 'telepon' => '08123456789',
-                'saldo' => 1000000000,
+                'saldo' => 800000000,
             ])]);
         }
 
@@ -81,7 +80,7 @@ class SimulationSeeder extends Seeder
                 for ($i = 1; $i <= $count; $i++) {
                     $targetDay = rand(1, $daysInMonth);
                     $tanggal = (clone $currentDate)->setDay($targetDay)->setHour(rand(8, 17))->setMinute(rand(0, 59));
-                    
+
                     if ($tanggal >= now()->subDays(2)->startOfDay()) continue;
 
                     $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
@@ -117,7 +116,7 @@ class SimulationSeeder extends Seeder
         $harga = rand(3000, 3500);
         $subTotal = $tonase * $harga;
         $caraBayar = ['tunai', 'transfer', 'cair di luar', 'belum dibayar'][rand(0, 3)];
-        
+
         $penjualId = $penjualIds[array_rand($penjualIds)];
         $supirId = $supirIds[array_rand($supirIds)];
 
@@ -167,7 +166,7 @@ class SimulationSeeder extends Seeder
         for ($i = 0; $i < $pemasukanCount; $i++) {
             $day = rand(1, $daysInMonth);
             $tanggal = (clone $monthDate)->setDay($day);
-            
+
             $this->seedOp($tanggal, 'Pemasukan Bulanan ' . $monthDate->format('F'), rand(5000000, 20000000), KategoriOperasional::TAMBAH_SALDO, $perusahaanId);
         }
 
@@ -184,7 +183,7 @@ class SimulationSeeder extends Seeder
             $day = rand(1, $daysInMonth);
             $tanggal = (clone $monthDate)->setDay($day);
             $kat = $kategoriPengeluaran[array_rand($kategoriPengeluaran)];
-            
+
             $this->seedOp($tanggal, "Operasional {$kat->label()} " . $monthDate->format('F'), rand(200000, 2000000), $kat, $perusahaanId);
         }
     }

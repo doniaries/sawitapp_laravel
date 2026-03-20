@@ -10,6 +10,9 @@ use App\Models\PengajuanDana;
 use App\Models\Perusahaan;
 
 use App\Models\JurnalKeuangan;
+use App\Models\TransaksiDo;
+use App\Models\TransaksiOperasional;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -27,6 +30,22 @@ class DashboardController extends Controller
             ->where('status', 'pending')
             ->sum('nominal');
 
+        $month = Carbon::now()->month;
+        $year = Carbon::now()->year;
+
+        // Pemasukan
+        $pembayaranHutang = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('pembayaran_hutang');
+        $operasionalMasuk = TransaksiOperasional::where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
+        $pemasukanTotal = $pembayaranHutang + $operasionalMasuk;
+
+        // Pengeluaran
+        $doPengeluaran = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('sisa_bayar');
+        $operasionalKeluar = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
+        $pengeluaranTotal = $doPengeluaran + $operasionalKeluar;
+
+        // Transaksi
+        $totalTransaksi = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
+
         return response()->json([
             'saldo' => $perusahaan->saldo ?? 0,
             'total_penjual' => $totalSellers,
@@ -34,6 +53,24 @@ class DashboardController extends Controller
             'total_jurnal_keuangan' => $totalJurnal,
             'total_pengajuan_dana' => $totalDana,
             'perusahaan_name' => $perusahaan->name ?? '-',
+            'stats' => [
+                'pemasukan' => [
+                    'total' => $pemasukanTotal,
+                    'hutang' => $pembayaranHutang,
+                    'sisa' => 0, // Placeholder jika ada logika sisa nanti
+                    'operasional' => $operasionalMasuk,
+                ],
+                'pengeluaran' => [
+                    'total' => $pengeluaranTotal,
+                    'do' => $doPengeluaran,
+                    'operasional' => $operasionalKeluar,
+                ],
+                'transaksi' => [
+                    'total' => $totalTransaksi,
+                    'periode_awal' => Carbon::now()->startOfMonth()->format('Y-m-d'),
+                    'periode_akhir' => Carbon::now()->endOfMonth()->format('Y-m-d'),
+                ]
+            ]
         ]);
     }
 }
