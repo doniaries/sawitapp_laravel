@@ -86,6 +86,7 @@ class TransaksiDoTable
                     ])
                     ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
             ])

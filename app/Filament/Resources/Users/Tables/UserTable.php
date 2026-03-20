@@ -44,37 +44,37 @@ class UserTable
 
                 SelectColumn::make('roles')
                     ->label('Hak Akses')
-                    ->options(function() {
+                    ->options(function () {
                         return \Spatie\Permission\Models\Role::whereIn('name', ['admin', 'kasir'])
                             ->pluck('name', 'id')
                             ->toArray();
                     })
                     ->selectablePlaceholder(false)
-                    ->disabled(fn ($record) => $record->isSuperAdmin())
+                    ->disabled(fn($record) => $record->isSuperAdmin())
                     // State di-get dari ID role pertama user (sudah terscope ke tenant oleh Spatie)
-                    ->state(fn ($record) => $record->roles->first()?->id)
+                    ->state(fn($record) => $record->roles->first()?->id)
                     // Update role menggunakan ID
                     ->updateStateUsing(function ($record, $state) {
                         $role = \Spatie\Permission\Models\Role::find($state);
                         if ($role) {
                             $tenantId = \Filament\Facades\Filament::getTenant()?->id;
-                            
+
                             // Role assignment for current tenant
                             if ($tenantId) {
                                 setPermissionsTeamId($tenantId);
                             }
                             $record->syncRoles([$role->name]);
- 
+
                             // Global Access for Admin
                             if ($role->name === 'admin') {
                                 $allPerusahaanIds = \App\Models\Perusahaan::pluck('id')->toArray();
                                 $record->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
-                                
+
                                 foreach ($allPerusahaanIds as $pId) {
                                     setPermissionsTeamId($pId);
                                     $record->assignRole('admin');
                                 }
- 
+
                                 if ($tenantId) {
                                     setPermissionsTeamId($tenantId);
                                 }
@@ -93,6 +93,7 @@ class UserTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('perusahaan')
                     ->relationship('perusahaan', 'name')
