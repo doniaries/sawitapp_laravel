@@ -52,6 +52,27 @@ class DashboardController extends Controller
             'total_supir' => $totalDrivers,
             'total_jurnal_keuangan' => $totalJurnal,
             'total_pengajuan_dana' => $totalDana,
+            'transactions' => TransaksiDo::with(['penjual:id,nama', 'supir:id,nama'])->latest()->limit(5)->get()->map(function($tx) {
+                return [
+                    'id' => $tx->id,
+                    'nomor' => $tx->nomor,
+                    'tanggal' => $tx->tanggal,
+                    'tonase' => $tx->tonase,
+                    'harga_satuan' => $tx->harga_satuan,
+                    'sub_total' => $tx->sub_total,
+                    'upah_bongkar' => $tx->upah_bongkar,
+                    'biaya_lain' => $tx->biaya_lain,
+                    'keterangan_biaya_lain' => $tx->keterangan_biaya_lain,
+                    'hutang_awal' => $tx->hutang_awal,
+                    'pembayaran_hutang' => $tx->pembayaran_hutang,
+                    'sisa_bayar' => $tx->sisa_bayar,
+                    'cara_bayar' => $tx->cara_bayar,
+                    'sisa_hutang_penjual' => $tx->sisa_hutang_penjual,
+                    'penjual_nama' => $tx->penjual?->nama,
+                    'supir_nama' => $tx->supir?->nama,
+                    'no_polisi' => $tx->no_polisi,
+                ];
+            }),
             'perusahaan_name' => $perusahaan->name ?? '-',
             'stats' => [
                 'pemasukan' => [
