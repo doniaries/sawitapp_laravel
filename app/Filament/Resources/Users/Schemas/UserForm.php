@@ -2,14 +2,15 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\User;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 use Spatie\Permission\Models\Role;
 
 class UserForm
@@ -116,6 +117,13 @@ class UserForm
                                     })
                                     ->preload()
                                     ->searchable()
+                                    ->required(),
+
+                                FileUpload::make('photo')
+                                    ->label('Foto')
+                                    ->disk('public')
+                                    ->directory('users')
+                                    ->visibility('public')
                                     ->required(),
 
                                 Toggle::make('is_active')

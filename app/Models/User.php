@@ -77,6 +77,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             return true;
         }
 
+        if (!\Illuminate\Support\Facades\Schema::hasTable('model_has_roles')) {
+            return false;
+        }
+
         return DB::table('model_has_roles')
             ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
             ->where('model_has_roles.model_id', $this->id)
@@ -92,6 +96,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         if ($this->email === 'superadmin@gmail.com') {
             return true;
+        }
+
+        if (!\Illuminate\Support\Facades\Schema::hasTable('model_has_roles')) {
+            return false;
         }
 
         return DB::table('model_has_roles')

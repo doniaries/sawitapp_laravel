@@ -33,15 +33,17 @@ class AuthController extends Controller
             ], 403);
         }
 
+        // Auto select perusahaan untuk admin/superadmin jika kosong
+        if ($user->isAdminOrSuperAdmin() && is_null($user->perusahaan_id)) {
+            $firstPerusahaan = \App\Models\Perusahaan::first();
+            if ($firstPerusahaan) {
+                $user->update(['perusahaan_id' => $firstPerusahaan->id]);
+            }
+        }
+
         return response()->json([
             'token' => $user->createToken($request->device_name)->plainTextToken,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'perusahaan_id' => $user->perusahaan_id,
-                'perusahaan_name' => $user->perusahaan?->name,
-            ],
+            'user' => new UserResource($user),
         ]);
     }
 
