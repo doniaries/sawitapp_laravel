@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
-use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;

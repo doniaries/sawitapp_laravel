@@ -7,7 +7,6 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\Action as BulkAction;
 use Filament\Tables\Columns\TextColumn;
 
