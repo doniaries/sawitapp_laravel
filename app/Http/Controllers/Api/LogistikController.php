@@ -12,7 +12,7 @@ class LogistikController extends Controller
     public function supir(Request $request)
     {
         $perusahaan_id = $request->user()->perusahaan_id;
-        $supir = Supir::where('perusahaan_id', $perusahaan_id)->get();
+        $supir = Supir::where('perusahaan_id', $perusahaan_id)->latest()->get();
         return response()->json($supir);
     }
 
@@ -46,7 +46,7 @@ class LogistikController extends Controller
     public function kendaraan(Request $request)
     {
         $perusahaan_id = $request->user()->perusahaan_id;
-        $kendaraan = Kendaraan::where('perusahaan_id', $perusahaan_id)->get();
+        $kendaraan = Kendaraan::where('perusahaan_id', $perusahaan_id)->latest()->get();
         return response()->json($kendaraan);
     }
 
