@@ -167,7 +167,14 @@ class SimulationSeeder extends Seeder
             $day = rand(1, $daysInMonth);
             $tanggal = (clone $monthDate)->setDay($day);
 
-            $this->seedOp($tanggal, 'Pemasukan Bulanan ' . $monthDate->format('F'), rand(5000000, 20000000), KategoriOperasional::TAMBAH_SALDO, $perusahaanId);
+            $monthName = [
+                'January' => 'Januari', 'February' => 'Februari', 'March' => 'Maret',
+                'April' => 'April', 'May' => 'Mei', 'June' => 'Juni',
+                'July' => 'Juli', 'August' => 'Agustus', 'September' => 'September',
+                'October' => 'Oktober', 'November' => 'November', 'December' => 'Desember'
+            ][$monthDate->format('F')];
+
+            $this->seedOp($tanggal, 'Pemasukan Bulanan ' . $monthName, rand(5000000, 20000000), KategoriOperasional::TAMBAH_SALDO, $perusahaanId);
         }
 
         // 2. Pengeluaran Bulanan (e.g., Listrik, Gaji, etc)
@@ -184,7 +191,14 @@ class SimulationSeeder extends Seeder
             $tanggal = (clone $monthDate)->setDay($day);
             $kat = $kategoriPengeluaran[array_rand($kategoriPengeluaran)];
 
-            $this->seedOp($tanggal, "Operasional {$kat->label()} " . $monthDate->format('F'), rand(200000, 2000000), $kat, $perusahaanId);
+            $monthName = [
+                'January' => 'Januari', 'February' => 'Februari', 'March' => 'Maret',
+                'April' => 'April', 'May' => 'Mei', 'June' => 'Juni',
+                'July' => 'Juli', 'August' => 'Agustus', 'September' => 'September',
+                'October' => 'Oktober', 'November' => 'November', 'December' => 'Desember'
+            ][$monthDate->format('F')];
+
+            $this->seedOp($tanggal, "Operasional {$kat->label()} " . $monthName, rand(200000, 2000000), $kat, $perusahaanId);
         }
     }
 
