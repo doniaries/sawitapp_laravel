@@ -12,7 +12,8 @@ class LogistikController extends Controller
     public function supir(Request $request)
     {
         $perusahaan_id = $request->user()->perusahaan_id;
-        $supir = Supir::where('perusahaan_id', $perusahaan_id)->latest()->get();
+        $perPage = $request->get('per_page', 20);
+        $supir = Supir::where('perusahaan_id', $perusahaan_id)->latest()->paginate($perPage);
         return response()->json($supir);
     }
 
@@ -46,7 +47,8 @@ class LogistikController extends Controller
     public function kendaraan(Request $request)
     {
         $perusahaan_id = $request->user()->perusahaan_id;
-        $kendaraan = Kendaraan::where('perusahaan_id', $perusahaan_id)->latest()->get();
+        $perPage = $request->get('per_page', 20);
+        $kendaraan = Kendaraan::where('perusahaan_id', $perusahaan_id)->latest()->paginate($perPage);
         return response()->json($kendaraan);
     }
 

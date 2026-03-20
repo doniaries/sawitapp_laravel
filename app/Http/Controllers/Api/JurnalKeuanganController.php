@@ -26,7 +26,8 @@ class JurnalKeuanganController extends Controller
             $query->where('kategori', $request->kategori);
         }
 
-        return response()->json($query->orderBy('tanggal', 'desc')->get());
+        $perPage = $request->get('per_page', 20);
+        return response()->json($query->orderBy('tanggal', 'desc')->paginate($perPage));
     }
 
     /**

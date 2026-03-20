@@ -11,7 +11,8 @@ class PenjualController extends Controller
     public function index(Request $request)
     {
         $perusahaan_id = $request->user()->perusahaan_id;
-        $penjual = Penjual::where('perusahaan_id', $perusahaan_id)->latest()->get();
+        $perPage = $request->get('per_page', 20);
+        $penjual = Penjual::where('perusahaan_id', $perusahaan_id)->latest()->paginate($perPage);
         return response()->json($penjual);
     }
 

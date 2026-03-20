@@ -11,7 +11,8 @@ class OperasionalController extends Controller
     public function index(Request $request)
     {
         $perusahaan_id = $request->user()->perusahaan_id;
-        $operasional = TransaksiOperasional::where('perusahaan_id', $perusahaan_id)->latest()->get();
+        $perPage = $request->get('per_page', 20);
+        $operasional = TransaksiOperasional::where('perusahaan_id', $perusahaan_id)->latest()->paginate($perPage);
         return response()->json($operasional);
     }
 

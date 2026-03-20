@@ -18,8 +18,9 @@ class TransaksiDoController extends Controller
             $query->whereDate('tanggal', $request->tanggal);
         }
 
+        $perPage = $request->get('per_page', 20);
         return response()->json(
-            $query->with(['supir', 'kendaraan', 'penjual'])->latest()->paginate(20)
+            $query->with(['supir', 'kendaraan', 'penjual'])->latest()->paginate($perPage)
         );
     }
 
