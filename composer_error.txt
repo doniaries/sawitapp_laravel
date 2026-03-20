@@ -1,0 +1,19 @@
+./composer.json has been updated
+Running composer update rupadana/filament-api-service --with-all-dependencies
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires filament/filament ^5.0 -> satisfiable by filament/filament[v5.0.0-beta1, ..., 5.x-dev].
+    - filament/filament v5.3.2 requires filament/tables v5.3.2 -> found filament/tables[v5.3.2] but these were not loaded, because they are affected by security advisories ("PKSA-5bdf-2x61-v43c"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add them to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.
+  Problem 2
+    - ariaieboy/filament-currency is locked to version 3.0.0 and an update of this package was not requested.
+    - ariaieboy/filament-currency 3.0.0 requires filament/tables ^5.0 -> satisfiable by filament/tables[v5.3.5, v5.4.0, v5.4.1, 5.x-dev].
+    - filament/tables v5.3.5 requires filament/support v5.3.5 -> found filament/support[v5.3.5] but these were not loaded, likely because it conflicts with another require.
+    - filament/tables v5.4.0 requires filament/support v5.4.0 -> found filament/support[v5.4.0] but these were not loaded, likely because it conflicts with another require.
+    - filament/tables v5.4.1 requires filament/support v5.4.1 -> found filament/support[v5.4.1] but these were not loaded, likely because it conflicts with another require.
+    - filament/tables 5.x-dev requires filament/support 5.x-dev -> found filament/support[5.x-dev] but these were not loaded, likely because it conflicts with another require.
+
+
+Installation failed, reverting ./composer.json and ./composer.lock to their original content.

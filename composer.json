@@ -25,7 +25,8 @@
         "livewire/livewire": "^4.0",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-settings": "^3.4",
-        "stechstudio/filament-impersonate": "*"
+        "stechstudio/filament-impersonate": "*",
+        "rupadana/filament-api-service": "dev-copilot/update-to-filament-v5"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",
@@ -83,8 +84,11 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": ["PKSA-5bdf-2x61-v43c"]
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }

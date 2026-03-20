@@ -110,7 +110,8 @@ class AdminPanelProvider extends PanelProvider
                     ->users([
                         'Admin' => 'superadmin@gmail.com',
                         'User' => 'user@example.com',
-                    ])
+                    ]),
+                \Rupadana\ApiService\ApiServicePlugin::make()
             ])
             ->renderHook(
                 'panels::head.end',
