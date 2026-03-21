@@ -35,19 +35,29 @@ class DashboardController extends Controller
 
         // Pemasukan
         $pembayaranHutang = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('pembayaran_hutang');
+        $countHutang = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('pembayaran_hutang', '>', 0)->count();
+        
         $operasionalMasuk = TransaksiOperasional::where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
+        $countOpMasuk = TransaksiOperasional::where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
+        
         $pemasukanTotal = $pembayaranHutang + $operasionalMasuk;
+        $totalPemasukanCount = $countHutang + $countOpMasuk;
 
         // Pengeluaran
         $doPengeluaran = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('sisa_bayar');
+        $countDoPengeluaran = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('sisa_bayar', '>', 0)->count();
+        
         $operasionalKeluar = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
+        $countOpKeluar = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
+        
         $pengeluaranTotal = $doPengeluaran + $operasionalKeluar;
+        $totalPengeluaranCount = $countDoPengeluaran + $countOpKeluar;
 
         // Transaksi
         $totalTransaksi = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
 
         return response()->json([
-            'saldo' => $perusahaan->saldo ?? 0,
+            'saldo' => $perusahaan?->saldo ?? 0,
             'total_penjual' => $totalSellers,
             'total_supir' => $totalDrivers,
             'total_jurnal_keuangan' => $totalJurnal,
@@ -73,18 +83,20 @@ class DashboardController extends Controller
                     'no_polisi' => $tx->no_polisi,
                 ];
             }),
-            'perusahaan_name' => $perusahaan->name ?? '-',
+            'perusahaan_name' => $perusahaan?->name ?? '-',
             'stats' => [
                 'pemasukan' => [
                     'total' => $pemasukanTotal,
                     'hutang' => $pembayaranHutang,
-                    'sisa' => 0, // Placeholder jika ada logika sisa nanti
+                    'sisa' => 0,
                     'operasional' => $operasionalMasuk,
+                    'count' => (int) $totalPemasukanCount,
                 ],
                 'pengeluaran' => [
                     'total' => $pengeluaranTotal,
                     'do' => $doPengeluaran,
                     'operasional' => $operasionalKeluar,
+                    'count' => (int) $totalPengeluaranCount,
                 ],
                 'transaksi' => [
                     'total' => $totalTransaksi,
