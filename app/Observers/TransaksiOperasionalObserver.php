@@ -195,32 +195,16 @@ class TransaksiOperasionalObserver
 
     private function processHutang(TransaksiOperasional $operasional): void
     {
-        if ($operasional->kategori === KategoriOperasional::PINJAMAN) {
+        if ($operasional->kategori === KategoriOperasional::PINJAMAN && $operasional->pihak) {
             try {
                 DB::beginTransaction();
 
-                // Process driver loan
-                if ($operasional->tipe_nama === 'supir' && $operasional->supir_id) {
-                    $supir = Supir::lockForUpdate()->findOrFail($operasional->supir_id);
-                    
-                    DebtService::increaseDebt(
-                        $supir, 
-                        $operasional->nominal, 
-                        $operasional, 
-                        "Pinjaman supir via operasional: " . ($operasional->keterangan ?: '-')
-                    );
-                }
-                // Process seller loan
-                elseif ($operasional->tipe_nama === 'penjual' && $operasional->penjual_id) {
-                    $penjual = Penjual::lockForUpdate()->findOrFail($operasional->penjual_id);
-                    
-                    DebtService::increaseDebt(
-                        $penjual, 
-                        $operasional->nominal, 
-                        $operasional, 
-                        "Pinjaman penjual via operasional: " . ($operasional->keterangan ?: '-')
-                    );
-                }
+                DebtService::increaseDebt(
+                    $operasional->pihak, 
+                    $operasional->nominal, 
+                    $operasional, 
+                    "Pinjaman via operasional: " . ($operasional->keterangan ?: '-')
+                );
 
                 DB::commit();
             } catch (\Exception $e) {
@@ -236,24 +220,14 @@ class TransaksiOperasionalObserver
     
     private function rollbackHutang(TransaksiOperasional $operasional): void
     {
-        if ($operasional->kategori === KategoriOperasional::PINJAMAN) {
+        if ($operasional->kategori === KategoriOperasional::PINJAMAN && $operasional->pihak) {
             DB::transaction(function () use ($operasional) {
-                if ($operasional->tipe_nama === 'supir' && $operasional->supir) {
-                    DebtService::recordPayment(
-                        $operasional->supir, 
-                        $operasional->nominal, 
-                        $operasional, 
-                        "Pembatalan pinjaman supir #{$operasional->id}"
-                    );
-                }
-                elseif ($operasional->tipe_nama === 'penjual' && $operasional->penjual) {
-                    DebtService::recordPayment(
-                        $operasional->penjual, 
-                        $operasional->nominal, 
-                        $operasional, 
-                        "Pembatalan pinjaman penjual #{$operasional->id}"
-                    );
-                }
+                DebtService::recordPayment(
+                    $operasional->pihak, 
+                    $operasional->nominal, 
+                    $operasional, 
+                    "Pembatalan pinjaman #{$operasional->id}"
+                );
             });
         }
     }
@@ -332,6 +306,15 @@ class TransaksiOperasionalObserver
 
     private function createJurnalKeuangan(TransaksiOperasional $operasional): void
     {
+        // Resolve target type slug
+        $tipePihak = match ($operasional->pihak_type) {
+            \App\Models\Penjual::class => 'penjual',
+            \App\Models\Supir::class => 'supir',
+            \App\Models\Pekerja::class => 'pekerja',
+            \App\Models\User::class => 'user',
+            default => 'user',
+        };
+
         $this->financeAction->execute([
             'perusahaan_id' => $operasional->perusahaan_id,
             'tanggal' => $operasional->tanggal,
@@ -343,12 +326,7 @@ class TransaksiOperasionalObserver
             'referensi_id' => $operasional->id,
             'nomor_referensi' => sprintf('OP-%s', str_pad($operasional->id, 5, '0', STR_PAD_LEFT)),
             'pihak_terkait' => $operasional->nama,
-            'tipe_pihak' => match ($operasional->pihak_type) {
-                \App\Models\Penjual::class => 'penjual',
-                \App\Models\Supir::class => 'supir',
-                \App\Models\Pekerja::class => 'pekerja',
-                default => 'user',
-            },
+            'tipe_pihak' => $tipePihak,
             'cara_pembayaran' => $operasional->cara_pembayaran ?? 'tunai',
             'keterangan' => $operasional->keterangan ?: '-',
             'mempengaruhi_kas' => true,

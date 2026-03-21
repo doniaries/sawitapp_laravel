@@ -6,6 +6,7 @@ use App\Enums\KategoriOperasional; // [TAMBAH] Import enum
 use App\Models\{User, Penjual, Supir, Pekerja, TransaksiDo}; // [EDIT] Gabungkan import
 use Illuminate\Database\Eloquent\{Model, SoftDeletes, Factories\HasFactory}; // [EDIT] Gabungkan import
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Builder;
 use App\Traits\BelongsToTenant;
 
@@ -24,17 +25,16 @@ class TransaksiOperasional extends Model
         'kategori',
         'nominal',
         'keterangan',
-        'tipe_nama',
-        'user_id',
+        'file_bukti',
         'is_from_transaksi',
-        // 'file_bukti',
     ];
 
     protected $casts = [
         'tanggal' => 'datetime', // [EDIT] Ubah ke datetime untuk tampilan jam
         'nominal' => 'decimal:0',
         'kategori' => KategoriOperasional::class, // [TAMBAH] Cast ke Enum
-        'tipe_nama' => 'string',
+        'operasional' => 'string',
+        'is_from_transaksi' => 'boolean',
     ];
 
     // [HAPUS] $dates karena sudah tercover oleh SoftDeletes dan casts
@@ -51,14 +51,15 @@ class TransaksiOperasional extends Model
         'info_hutang'
     ];
 
-    public function pihak()
+    // Relationships
+    public function pihak(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function user(): BelongsTo // [EDIT] Tambah return type
+    public function perusahaan(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Perusahaan::class);
     }
 
     // Accessors & Mutators

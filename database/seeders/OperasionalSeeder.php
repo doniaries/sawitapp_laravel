@@ -4,121 +4,108 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\TransaksiOperasional;
-use App\Models\JurnalKeuangan;
+use App\Models\Penjual;
+use App\Models\Supir;
+use App\Models\Pekerja;
+use App\Models\Perusahaan;
+use App\Models\User;
+use App\Enums\KategoriOperasional;
+use App\Actions\Finance\ProcessDebtPayment;
 use Carbon\Carbon;
 
 class OperasionalSeeder extends Seeder
 {
+    protected $processDebtPayment;
+
+    public function __construct(ProcessDebtPayment $processDebtPayment)
+    {
+        $this->processDebtPayment = $processDebtPayment;
+    }
+
     public function run(): void
     {
-        $operasionals = [
-            [
-                'tanggal' => '2024-12-03 18:01:54',
-                'operasional' => 'pemasukan',
-                'kategori' => 'tambah_saldo',
-                'tipe_nama' => 'user',
-                'user_id' => 3,
-                'nominal' => 3592000,
-                'keterangan' => 'Sisa Saldo kemaren',
-            ],
-            [
-                'tanggal' => '2024-12-03 18:01:52',
-                'operasional' => 'pemasukan',
-                'kategori' => 'tambah_saldo',
-                'tipe_nama' => 'user',
-                'user_id' => 3,
-                'nominal' => 250000000,
-                'keterangan' => 'Jemput Ke Kamang',
-            ],
-            [
-                'tanggal' => '2024-12-03 18:03:05',
-                'operasional' => 'pemasukan',
-                'kategori' => 'tambah_saldo',
-                'tipe_nama' => 'user',
-                'user_id' => 3,
-                'nominal' => 12025000,
-                'keterangan' => 'siska Minta transfer',
-            ],
-            [
-                'tanggal' => '2024-12-03 18:04:05',
-                'operasional' => 'pemasukan',
-                'kategori' => 'tambah_saldo',
-                'tipe_nama' => 'user',
-                'user_id' => 3,
-                'nominal' => 30000,
-                'keterangan' => 'Sisa DITEG',
-            ],
-            [
-                'tanggal' => '2024-12-03 18:20:34',
-                'operasional' => 'pengeluaran',
-                'kategori' => 'pijakan_gas',
-                'tipe_nama' => 'supir',
-                'supir_id' => 1,
-                'nominal' => 76000,
-                'keterangan' => 'Biaya pijakan gas Eko',
-            ],
-            [
-                'tanggal' => '2024-12-03 18:30:19',
-                'operasional' => 'pengeluaran',
-                'kategori' => 'lain_lain',
-                'tipe_nama' => 'user',
-                'user_id' => 4,
-                'nominal' => 50000,
-                'keterangan' => 'Belanja operasional',
-            ],
-            [
-                'tanggal' => '2024-12-03 18:31:05',
-                'operasional' => 'pengeluaran',
-                'kategori' => 'pijakan_gas',
-                'tipe_nama' => 'supir',
-                'user_id' => 4,
-                'nominal' => 78000,
-                'keterangan' => 'Biaya pijakan gas Naro',
-            ],
+        $perusahaans = Perusahaan::all();
+        $admin = User::first() ?: User::factory()->create();
+
+        foreach ($perusahaans as $perusahaan) {
+            $this->command->info("Starting Operasional simulation for: {$perusahaan->name}");
+            $perusahaanId = $perusahaan->id;
+
+            // 1. Generate Daily Expenses for last 6 months
+            $startDate = now()->subMonths(6)->startOfMonth();
+            $currentDate = clone $startDate;
+
+            while ($currentDate < now()->startOfDay()) {
+                $daysInMonth = $currentDate->daysInMonth;
+                
+                // Expense frequency: 5-10 times per month
+                $expenseCount = rand(5, 10);
+                for ($i = 0; $i < $expenseCount; $i++) {
+                    $tanggal = (clone $currentDate)->setDay(rand(1, $daysInMonth))->setHour(rand(8, 17));
+                    if ($tanggal >= now()) continue;
+
+                    $this->seedRandomExpense($tanggal, $perusahaanId);
+                }
+
+                // Standalone Debt Payments: 2-5 times per month
+                $this->seedMonthlyPayments($currentDate, $perusahaanId, $daysInMonth);
+
+                $currentDate->addMonth();
+            }
+        }
+
+        $this->command->info("Simulasi Operasional & Pembayaran Hutang berhasil dibuat!");
+    }
+
+    private function seedRandomExpense($tanggal, $perusahaanId)
+    {
+        $categories = [
+            KategoriOperasional::BAHAN_BAKAR,
+            KategoriOperasional::PERAWATAN,
+            KategoriOperasional::LAIN_LAIN,
+            KategoriOperasional::UANG_JALAN,
+        ];
+        $kat = $categories[array_rand($categories)];
+
+        TransaksiOperasional::create([
+            'tanggal' => $tanggal,
+            'operasional' => 'pengeluaran',
+            'kategori' => $kat,
+            'nominal' => rand(50000, 500000),
+            'keterangan' => "Biaya {$kat->label()} (Simulasi)",
+            'perusahaan_id' => $perusahaanId,
+            'pihak_type' => User::class,
+            'pihak_id' => 1, // Admin
+        ]);
+    }
+
+    private function seedMonthlyPayments($monthDate, $perusahaanId, $daysInMonth)
+    {
+        $entities = [
+            ['model' => Penjual::class, 'slug' => 'penjual'],
+            ['model' => Supir::class, 'slug' => 'supir'],
+            ['model' => Pekerja::class, 'slug' => 'pekerja'],
         ];
 
-        $perusahaan1 = \App\Models\Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
-        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
-        
-        $userCV = \App\Models\User::where('perusahaan_id', $perusahaan1?->id)->first();
-        $userPT = \App\Models\User::where('perusahaan_id', $perusahaan2?->id)->first();
-        $supirCV = \App\Models\Supir::where('perusahaan_id', $perusahaan1?->id)->first();
-        $supirPT = \App\Models\Supir::where('perusahaan_id', $perusahaan2?->id)->first();
+        foreach ($entities as $entity) {
+            $records = ($entity['model'])::where('perusahaan_id', $perusahaanId)
+                ->where('hutang', '>', 100000)
+                ->get();
 
-        foreach ($operasionals as $index => $data) {
-            $isCV = ($index % 2 === 0);
-            $targetPerusahaan = $isCV ? $perusahaan1 : $perusahaan2;
-            
-            if ($targetPerusahaan) {
-                $data['perusahaan_id'] = $targetPerusahaan->id;
-                
-                // Map user and supir
-                if (isset($data['user_id'])) { // Use isset to check if key exists
-                    $data['user_id'] = $isCV ? ($userCV?->id ?? 1) : ($userPT?->id ?? 2);
-                }
-                if (isset($data['supir_id'])) { // Use isset to check if key exists
-                    $data['supir_id'] = $isCV ? ($supirCV?->id ?? 1) : ($supirPT?->id ?? 2);
-                }
-                
-                // Create TransaksiOperasional entry
-                $operasional = TransaksiOperasional::create($data);
+            if ($records->isEmpty()) continue;
 
-                // Create corresponding JurnalKeuangan entry
-                JurnalKeuangan::create([
-                    'tanggal' => $data['tanggal'],
-                    'jenis_transaksi' => ucfirst($data['operasional']),
-                    'kategori' => 'Operasional',
-                    'sub_kategori' => $data['kategori'],
-                    'nominal' => $data['nominal'],
-                    'sumber_transaksi' => 'Operasional',
-                    'referensi_id' => $operasional->id,
-                    'pihak_terkait' => $data['tipe_nama'] === 'user' ? 'User: ' . ($isCV ? 'CV' : 'PT') : 'Supir: ' . ($isCV ? 'CV' : 'PT'),
-                    'tipe_pihak' => $data['tipe_nama'],
-                    'cara_pembayaran' => 'tunai',
-                    'keterangan' => $data['keterangan'] . ' (' . ($isCV ? 'CV' : 'PT') . ')',
-                    'mempengaruhi_kas' => true,
-                    'perusahaan_id' => $targetPerusahaan->id,
-                ]);
+            $toPay = $records->random(min($records->count(), rand(1, 2)));
+            foreach ($toPay as $record) {
+                $nominal = rand(50000, 200000);
+                $tanggal = (clone $monthDate)->setDay(rand(1, $daysInMonth))->format('Y-m-d H:i:s');
+                
+                $this->processDebtPayment->execute(
+                    $record,
+                    (float) $nominal,
+                    $tanggal,
+                    'tunai',
+                    'Bayar Hutang (Simulasi)'
+                );
             }
         }
     }

@@ -247,14 +247,20 @@ class JurnalKeuanganObserver
                 ->where('status', 'disetujui')
                 ->sum('nominal');
 
+            // 4. Get standalone debt payments (not via DO)
+            $standaloneDebtIncome = DB::table('pembayaran_hutang')
+                ->whereNull('deleted_at')
+                ->sum('nominal');
+
             // Total Income components
             $pembayaranHutang = $incomingFunds->total_debt_payments; // Rp 2,000,000
             $pembayaranSisa = $incomingFunds->remaining_payments;    // Rp 164,128,680
             $pemasukanOperasional = $operationalIncome;             // Rp 265,647,000
             $pemasukanPengajuan = $pengajuanIncome;
+            $pemasukanHutangMandiri = $standaloneDebtIncome;
 
             // Total Income
-            $totalPemasukan = $pembayaranHutang + $pembayaranSisa + $pemasukanOperasional + $pemasukanPengajuan;
+            $totalPemasukan = $pembayaranHutang + $pembayaranSisa + $pemasukanOperasional + $pemasukanPengajuan + $pemasukanHutangMandiri;
 
             // Calculate expenditure
             // 1. Total DO expenses

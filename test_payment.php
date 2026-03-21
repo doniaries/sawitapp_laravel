@@ -9,6 +9,7 @@ use App\Models\Penjual;
 use App\Actions\Finance\ProcessDebtPayment;
 use App\Models\MutasiHutang;
 use App\Models\JurnalKeuangan;
+use Illuminate\Support\Facades\DB;
 
 DB::beginTransaction();
 
@@ -59,6 +60,7 @@ try {
 
 } catch (\Exception $e) {
     echo "ERROR: " . $e->getMessage() . "\n";
+    echo $e->getTraceAsString() . "\n";
 } finally {
     DB::rollBack();
     echo "Rollback test data.\n";

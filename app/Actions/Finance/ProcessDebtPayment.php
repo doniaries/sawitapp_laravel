@@ -16,6 +16,13 @@ use Illuminate\Support\Facades\DB;
 
 class ProcessDebtPayment
 {
+    protected $financeAction;
+
+    public function __construct(\App\Actions\Finance\RecordFinanceTransactionAction $financeAction)
+    {
+        $this->financeAction = $financeAction;
+    }
+
     public function execute(
         Model $pihak,
         float $nominal,
@@ -27,20 +34,24 @@ class ProcessDebtPayment
             $perusahaanId = $pihak->perusahaan_id;
             $tipePihak = $this->resolveTipePihak($pihak);
 
-            // 1. Create Operational Transaction (Pemasukan)
-            $op = TransaksiOperasional::create([
-                'tanggal' => $tanggal,
-                'operasional' => 'pemasukan',
-                'kategori' => KategoriOperasional::BAYAR_HUTANG,
-                'tipe_nama' => $tipePihak,
-                'pihak_id' => $pihak->id,
-                'pihak_type' => get_class($pihak),
-                'nominal' => $nominal,
-                'keterangan' => $keterangan ?? "Pembayaran Hutang oleh {$pihak->nama}",
+            // 1. Record Finance Transaction (Jurnal & Update Saldo)
+            $this->financeAction->execute([
                 'perusahaan_id' => $perusahaanId,
+                'tanggal' => $tanggal,
+                'jenis_transaksi' => 'Pemasukan',
+                'kategori' => 'Hutang',
+                'sub_kategori' => 'Bayar Hutang',
+                'nominal' => $nominal,
+                'sumber_transaksi' => 'Pembayaran Hutang',
+                // 'referensi_id' => $payment->id, // Set later or pass after creation
+                'pihak_terkait' => $pihak->nama,
+                'tipe_pihak' => $tipePihak,
+                'cara_pembayaran' => $caraPembayaran,
+                'keterangan' => $keterangan ?? "Terima Pembayaran Hutang: {$pihak->nama}",
+                'mempengaruhi_kas' => true,
             ]);
 
-            // 2. Create PembayaranHutang record
+            // 2. Create PembayaranHutang record for history
             $payment = PembayaranHutang::create([
                 'tanggal' => $tanggal,
                 'nominal' => $nominal,
@@ -48,7 +59,7 @@ class ProcessDebtPayment
                 'penjual_id' => $tipePihak === 'penjual' ? $pihak->id : null,
                 'supir_id' => $tipePihak === 'supir' ? $pihak->id : null,
                 'pekerja_id' => $tipePihak === 'pekerja' ? $pihak->id : null,
-                'operasional_id' => $op->id,
+                // 'operasional_id' => $op->id, // Optional link
                 'keterangan' => $keterangan ?? "Pelunasan Hutang",
                 'perusahaan_id' => $perusahaanId,
             ]);
@@ -60,23 +71,6 @@ class ProcessDebtPayment
                 $payment,
                 $keterangan ?? "Pembayaran Hutang"
             );
-
-            // 4. Record in Company Journal (JurnalKeuangan)
-            JurnalKeuangan::create([
-                'tanggal' => $tanggal,
-                'jenis_transaksi' => 'Pemasukan',
-                'kategori' => 'Operasional',
-                'sub_kategori' => 'Bayar Hutang',
-                'nominal' => $nominal,
-                'sumber_transaksi' => 'Operasional',
-                'referensi_id' => $op->id,
-                'pihak_terkait' => $pihak->nama,
-                'tipe_pihak' => $tipePihak,
-                'cara_pembayaran' => $caraPembayaran,
-                'keterangan' => $keterangan ?? "Terima Pembayaran Hutang: {$pihak->nama}",
-                'mempengaruhi_kas' => true,
-                'perusahaan_id' => $perusahaanId,
-            ]);
         });
     }
 
