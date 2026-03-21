@@ -36,7 +36,7 @@ class TransaksiOperasionalObserver
             $this->processHutang($operasional);
 
             // Create financial report entry & update balance via Action (Best Practice)
-            $this->createLaporanKeuangan($operasional);
+            $this->createJurnalKeuangan($operasional);
 
             DB::commit();
 
@@ -61,7 +61,7 @@ class TransaksiOperasionalObserver
             ])->delete();
 
             // 2. Buat laporan keuangan baru & update saldo via Action
-            $this->createLaporanKeuangan($operasional);
+            $this->createJurnalKeuangan($operasional);
 
             // 3. Proses perubahan hutang jika ada
             if ($operasional->isDirty(['nominal', 'kategori'])) {
@@ -116,7 +116,7 @@ class TransaksiOperasionalObserver
             DB::beginTransaction();
 
             // 1. Catat lagi ke laporan keuangan
-            $this->createLaporanKeuangan($operasional);
+            $this->createJurnalKeuangan($operasional);
 
             // 2. Proses ulang perubahan hutang jika ada
             $this->processHutang($operasional);
@@ -330,7 +330,7 @@ class TransaksiOperasionalObserver
     }
 
 
-    private function createLaporanKeuangan(TransaksiOperasional $operasional): void
+    private function createJurnalKeuangan(TransaksiOperasional $operasional): void
     {
         $this->financeAction->execute([
             'perusahaan_id' => $operasional->perusahaan_id,

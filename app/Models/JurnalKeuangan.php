@@ -74,22 +74,22 @@ class JurnalKeuangan extends Model
     }
     public function supir(): EloquentBelongsTo
     {
-        return $this->belongsTo(Supir::class, 'referensi_id');
+        return $this->belongsTo(Supir::class, 'pihak_terkait', 'nama');
     }
 
     public function pekerja(): EloquentBelongsTo
     {
-        return $this->belongsTo(Pekerja::class, 'referensi_id');
+        return $this->belongsTo(Pekerja::class, 'pihak_terkait', 'nama');
     }
 
     public function penjual(): EloquentBelongsTo
     {
-        return $this->belongsTo(Penjual::class, 'referensi_id');
+        return $this->belongsTo(Penjual::class, 'pihak_terkait', 'nama');
     }
 
     public function user(): EloquentBelongsTo
     {
-        return $this->belongsTo(User::class, 'referensi_id');
+        return $this->belongsTo(User::class, 'pihak_terkait', 'name');
     }
 
     public function operasional(): EloquentBelongsTo
@@ -133,7 +133,7 @@ class JurnalKeuangan extends Model
         return $query->where('mempengaruhi_kas', true);
     }
 
-    // Di dalam model LaporanKeuangan
+    // Di dalam model JurnalKeuangan
 
     public function getFormattedNominalAttribute()
     {

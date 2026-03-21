@@ -16,7 +16,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => 500000,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 2,
@@ -24,7 +23,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => 750000,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 3,
@@ -32,7 +30,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => 1200000,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 4,
@@ -40,7 +37,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => 300000,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 5,
@@ -48,7 +44,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 6,
@@ -56,7 +51,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 7,
@@ -64,7 +58,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 8,
@@ -72,7 +65,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 9,
@@ -80,7 +72,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 10,
@@ -88,7 +79,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 11,
@@ -96,7 +86,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 12,
@@ -104,7 +93,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 13,
@@ -112,7 +100,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 14,
@@ -120,7 +107,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 15,
@@ -128,7 +114,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 16,
@@ -136,7 +121,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 17,
@@ -144,7 +128,6 @@ class SupirSeeder extends Seeder
                 'telepon' => '',
                 'alamat' => '',
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 18,
@@ -152,7 +135,6 @@ class SupirSeeder extends Seeder
                 'telepon' => '',
                 'alamat' => '',
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
             [
                 'id' => 19,
@@ -160,7 +142,6 @@ class SupirSeeder extends Seeder
                 'telepon' => null,
                 'alamat' => null,
                 'hutang' => null,
-                'riwayat_bayar' => null,
             ],
         ];
 

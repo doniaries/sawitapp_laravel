@@ -42,6 +42,12 @@ class Pekerja extends Model
         return $this->hasMany(TransaksiOperasional::class);
     }
 
+    public function jurnalKeuangan(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JurnalKeuangan::class, 'pihak_terkait', 'nama')
+            ->orderBy('tanggal', 'desc');
+    }
+
     // Tambahkan relasi ke riwayat pembayaran
     public function riwayatPembayaran()
     {

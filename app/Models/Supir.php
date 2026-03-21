@@ -25,13 +25,14 @@ class Supir extends Model
     protected $table = 'supir';
 
     protected $fillable = [
+        'perusahaan_id',
         'nama',
+        'slug',
         'alamat',
         'telepon',
         'hutang',
-        'riwayat_bayar',
-        'perusahaan_id',
-        'slug',
+        'is_maintenance',
+        'status_supir',
     ];
 
     protected $casts = [
@@ -43,6 +44,12 @@ class Supir extends Model
     public function transaksiDo(): HasMany
     {
         return $this->hasMany(TransaksiDo::class);
+    }
+
+    public function jurnalKeuangan(): HasMany
+    {
+        return $this->hasMany(JurnalKeuangan::class, 'pihak_terkait', 'nama')
+            ->orderBy('tanggal', 'desc');
     }
 
     // Scopes

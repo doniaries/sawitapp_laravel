@@ -5,30 +5,28 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Supir;
 use App\Models\Kendaraan;
+use App\Actions\Finance\CreateResourceAction;
 use Illuminate\Http\Request;
 
 class LogistikController extends Controller
 {
     public function supir(Request $request)
     {
-        $perusahaan_id = $request->user()->perusahaan_id;
         $perPage = $request->get('per_page', 20);
-        $supir = Supir::where('perusahaan_id', $perusahaan_id)->latest()->paginate($perPage);
+        $supir = Supir::latest()->paginate($perPage);
         return response()->json($supir);
     }
 
     public function showSupir($id, Request $request)
     {
-        $perusahaan_id = $request->user()->perusahaan_id;
-        $supir = Supir::where('perusahaan_id', $perusahaan_id)
-            ->with(['transaksiDo', 'mutasiHutang' => function($query) {
+        $supir = Supir::with(['transaksiDo', 'mutasiHutang' => function($query) {
                 $query->latest()->limit(50);
             }])
             ->findOrFail($id);
         return response()->json($supir);
     }
 
-    public function storeSupir(Request $request)
+    public function storeSupir(Request $request, CreateResourceAction $action)
     {
         $request->validate([
             'nama' => 'required|string|max:255',
@@ -37,29 +35,42 @@ class LogistikController extends Controller
             'hutang' => 'nullable|numeric',
         ]);
 
-        $supir = Supir::create([
-            'perusahaan_id' => $request->user()->perusahaan_id,
-            'nama' => $request->nama,
-            'alamat' => $request->alamat,
-            'telepon' => $request->telepon,
-            'hutang' => $request->hutang ?? 0,
-        ]);
+        $supir = $action->execute('supir', $request->all());
 
         return response()->json($supir, 201);
     }
 
+    public function updateSupir($id, Request $request)
+    {
+        $supir = Supir::findOrFail($id);
+
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'telepon' => 'nullable|string|max:20',
+            'status_supir' => 'nullable|string',
+        ]);
+
+        $supir->update([
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'telepon' => $request->telepon,
+            'status_supir' => $request->status_supir,
+        ]);
+
+        return response()->json($supir);
+    }
+
     public function kendaraan(Request $request)
     {
-        $perusahaan_id = $request->user()->perusahaan_id;
         $perPage = $request->get('per_page', 20);
-        $kendaraan = Kendaraan::where('perusahaan_id', $perusahaan_id)->latest()->paginate($perPage);
+        $kendaraan = Kendaraan::latest()->paginate($perPage);
         return response()->json($kendaraan);
     }
 
     public function showKendaraan($id, Request $request)
     {
-        $perusahaan_id = $request->user()->perusahaan_id;
-        $kendaraan = Kendaraan::where('perusahaan_id', $perusahaan_id)->findOrFail($id);
+        $kendaraan = Kendaraan::findOrFail($id);
         return response()->json($kendaraan);
     }
 
@@ -71,7 +82,6 @@ class LogistikController extends Controller
         ]);
 
         $kendaraan = Kendaraan::create([
-            'perusahaan_id' => $request->user()->perusahaan_id,
             'nama' => $request->nama,
             'no_polisi' => $request->no_polisi,
             'is_maintenance' => false,

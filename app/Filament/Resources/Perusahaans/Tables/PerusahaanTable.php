@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Perusahaans\Tables;
 
 use App\Models\Perusahaan;
-use App\Models\LaporanKeuangan;
+use App\Models\JurnalKeuangan;
 use App\Enums\TipeNama;
 use App\Events\SaldoUpdated;
 use Filament\Tables\Table;
@@ -137,7 +137,7 @@ class PerusahaanTable
                             $record->increment('saldo', $nominal);
                             event(new SaldoUpdated($nominal));
 
-                            LaporanKeuangan::create([
+                            JurnalKeuangan::create([
                                 'tanggal' => $data['tanggal'],
                                 'jenis_transaksi' => 'Pemasukan',
                                 'kategori' => 'Saldo',

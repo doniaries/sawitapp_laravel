@@ -9,7 +9,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 
 class RiwayatHutangPinjamanRelationManager extends RelationManager
 {
-    protected static string $relationship = 'laporanKeuangan';
+    protected static string $relationship = 'jurnalKeuangan';
 
     protected static ?string $title = 'Riwayat Hutang & Pembayaran';
 

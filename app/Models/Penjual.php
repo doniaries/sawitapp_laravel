@@ -24,7 +24,6 @@ class Penjual extends Model
         'telepon',
         'hutang',
         'perusahaan_id',
-        'slug',
     ];
 
     protected $casts = [
@@ -51,9 +50,9 @@ class Penjual extends Model
 
 
     //riwayat bayar
-    public function laporanKeuangan()
+    public function jurnalKeuangan()
     {
-        return $this->hasMany(LaporanKeuangan::class, 'pihak_terkait', 'nama')
+        return $this->hasMany(JurnalKeuangan::class, 'pihak_terkait', 'nama')
             ->whereIn('sub_kategori', ['Bayar Hutang', 'Pinjaman'])
             ->orderBy('tanggal', 'desc');
     }

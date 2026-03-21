@@ -88,7 +88,7 @@ class RiwayatSaldoRelationManager extends RelationManager
                             }
 
                             // Tambah catatan pembatalan di laporan keuangan
-                            \App\Models\LaporanKeuangan::create([
+                            \App\Models\JurnalKeuangan::create([
                                 'tanggal' => now(),
                                 'jenis_transaksi' => 'Pengeluaran',
                                 'kategori' => 'Saldo',

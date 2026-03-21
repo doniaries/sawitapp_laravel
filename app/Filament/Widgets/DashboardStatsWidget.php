@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\{Perusahaan, Penjual, TransaksiDo, LaporanKeuangan, JurnalKeuangan};
+use App\Models\{Perusahaan, Penjual, TransaksiDo, JurnalKeuangan};
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Carbon\Carbon;

@@ -17,7 +17,7 @@ class JurnalKeuanganPolicy
         return $authUser->can('ViewAny:JurnalKeuangan');
     }
 
-    public function view(AuthUser $authUser, JurnalKeuangan $laporanKeuangan): bool
+    public function view(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
         return $authUser->can('View:JurnalKeuangan');
     }
@@ -27,22 +27,22 @@ class JurnalKeuanganPolicy
         return $authUser->can('Create:JurnalKeuangan');
     }
 
-    public function update(AuthUser $authUser, JurnalKeuangan $laporanKeuangan): bool
+    public function update(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
         return $authUser->can('Update:JurnalKeuangan');
     }
 
-    public function delete(AuthUser $authUser, JurnalKeuangan $laporanKeuangan): bool
+    public function delete(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
         return $authUser->can('Delete:JurnalKeuangan');
     }
 
-    public function restore(AuthUser $authUser, JurnalKeuangan $laporanKeuangan): bool
+    public function restore(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
         return $authUser->can('Restore:JurnalKeuangan');
     }
 
-    public function forceDelete(AuthUser $authUser, JurnalKeuangan $laporanKeuangan): bool
+    public function forceDelete(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
         return $authUser->can('ForceDelete:JurnalKeuangan');
     }
@@ -57,7 +57,7 @@ class JurnalKeuanganPolicy
         return $authUser->can('RestoreAny:JurnalKeuangan');
     }
 
-    public function replicate(AuthUser $authUser, JurnalKeuangan $laporanKeuangan): bool
+    public function replicate(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
         return $authUser->can('Replicate:JurnalKeuangan');
     }

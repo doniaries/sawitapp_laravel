@@ -55,11 +55,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/penjual', [PenjualController::class, 'index']);
     Route::get('/penjual/{id}', [PenjualController::class, 'show']);
     Route::post('/penjual', [PenjualController::class, 'store']);
+    Route::put('/penjual/{id}', [PenjualController::class, 'update']);
 
     // Logistik
     Route::get('/supir', [LogistikController::class, 'supir']);
     Route::get('/supir/{id}', [LogistikController::class, 'showSupir']);
     Route::post('/supir', [LogistikController::class, 'storeSupir']);
+    Route::put('/supir/{id}', [LogistikController::class, 'updateSupir']);
     
     Route::get('/kendaraan', [LogistikController::class, 'kendaraan']);
     Route::get('/kendaraan/{id}', [LogistikController::class, 'showKendaraan']);
