@@ -87,7 +87,7 @@ class Supir extends Model
     public function pinjaman()
     {
         return $this->hasMany(TransaksiOperasional::class, 'pihak_id')
-            ->where('pihak_type', Supir::class)
+            ->where('pihak_type', self::class)
             ->where('kategori', KategoriOperasional::PINJAMAN);
     }
 
@@ -100,8 +100,7 @@ class Supir extends Model
     // Add total pinjaman accessor
     public function getTotalPinjamanAttribute()
     {
-        return $this->riwayatHutang()
-            ->where('tipe_nama', 'supir')
+        return $this->pinjaman()
             ->sum('nominal');
     }
 

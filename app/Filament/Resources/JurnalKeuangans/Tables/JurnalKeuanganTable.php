@@ -204,8 +204,23 @@ class JurnalKeuanganTable
                         'Pemasukan' => 'Pemasukan',
                         'Pengeluaran' => 'Pengeluaran'
                     ])
-                    ->placeholder('Pilih Jenis Transaksi')
-                    ->label('Jenis Transaksi'),
+                    ->placeholder('Semua Jenis')
+                    ->label('Jenis'),
+
+                SelectFilter::make('kategori')
+                    ->options([
+                        'DO' => 'DO',
+                        'Operasional' => 'Operasional',
+                        'Hutang' => 'Hutang',
+                        'Saldo' => 'Saldo',
+                    ])
+                    ->placeholder('Semua Kategori')
+                    ->label('Kategori'),
+
+                SelectFilter::make('tipe_pihak')
+                    ->options(\App\Enums\TipeNama::class)
+                    ->placeholder('Semua Pihak')
+                    ->label('Tipe Pihak'),
 
                 Filter::make('date_range')
                     ->schema([

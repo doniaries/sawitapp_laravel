@@ -89,6 +89,7 @@ class RiwayatSaldoRelationManager extends RelationManager
 
                             // Tambah catatan pembatalan di laporan keuangan
                             \App\Models\JurnalKeuangan::create([
+                                'perusahaan_id' => $record->perusahaan_id,
                                 'tanggal' => now(),
                                 'jenis_transaksi' => 'Pengeluaran',
                                 'kategori' => 'Saldo',
@@ -98,6 +99,7 @@ class RiwayatSaldoRelationManager extends RelationManager
                                 'referensi_id' => $record->referensi_id,
                                 'nomor_referensi' => 'BTL-' . $record->nomor_referensi,
                                 'pihak_terkait' => $perusahaan->pimpinan,
+                                'tipe_pihak' => 'user',
                                 'cara_pembayaran' => $record->cara_pembayaran,
                                 'keterangan' => "Pembatalan transaksi {$record->nomor_referensi}",
                                 'mempengaruhi_kas' => $record->cara_pembayaran === 'tunai'

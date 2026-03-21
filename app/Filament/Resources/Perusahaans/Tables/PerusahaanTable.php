@@ -138,6 +138,7 @@ class PerusahaanTable
                             event(new SaldoUpdated($nominal));
 
                             JurnalKeuangan::create([
+                                'perusahaan_id' => $record->id,
                                 'tanggal' => $data['tanggal'],
                                 'jenis_transaksi' => 'Pemasukan',
                                 'kategori' => 'Saldo',

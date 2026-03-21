@@ -86,6 +86,9 @@ class PengajuanDanaController extends Controller
                 'nominal' => $pengajuan->nominal,
                 'referensi_id' => $pengajuan->id,
                 'sumber_transaksi' => 'Pengajuan Dana',
+                'tipe_pihak' => 'user',
+                'cara_pembayaran' => 'transfer',
+                'pihak_terkait' => $pengajuan->user?->name,
                 'keterangan' => 'Penambahan saldo dari pengajuan dana #' . $pengajuan->id . ': ' . $pengajuan->keperluan,
                 'mempengaruhi_kas' => true,
             ]);

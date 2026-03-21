@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('tipe_nama')->nullable();
             $table->foreignId('penjual_id')->nullable()->constrained('penjual')->cascadeOnDelete();
             $table->foreignId('pekerja_id')->nullable()->constrained('pekerja')->cascadeOnDelete();
-            $table->foreignId('operasional_id')->constrained('transaksi_operasional')->cascadeOnDelete();
+            $table->foreignId('operasional_id')->nullable()->constrained('transaksi_operasional')->cascadeOnDelete();
             $table->foreignId('supir_id')->nullable()->constrained('supir')->cascadeOnDelete();
             $table->text('keterangan')->nullable();
             $table->timestamps();

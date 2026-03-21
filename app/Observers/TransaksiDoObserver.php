@@ -167,6 +167,11 @@ class TransaksiDoObserver
 
     protected function validateCompanyBalance(TransaksiDo $transaksiDo)
     {
+        // Skip validasi jika sedang seeding
+        if (app()->runningInConsole()) {
+            return;
+        }
+
         // Skip validasi untuk data yang dipulihkan
         if ($transaksiDo->exists && $transaksiDo->wasRecentlyCreated === false) {
             return;
@@ -176,8 +181,6 @@ class TransaksiDoObserver
         if ($transaksiDo->cara_bayar === 'tunai') {
             $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
             if (!$perusahaan) {
-                // Jika sedang seeding atau perusahaan belum ada, mungkin abaikan atau throw khusus
-                if (app()->runningInConsole()) return;
                 throw new \Exception('Data perusahaan tidak ditemukan');
             }
 

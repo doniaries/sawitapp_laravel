@@ -45,7 +45,7 @@ class JurnalKeuanganObserver
             $data['sub_kategori'] = $data['sub_kategori'] ?? '-';
             $data['nomor_referensi'] = $data['nomor_referensi'] ?? '-';
             $data['pihak_terkait'] = $data['pihak_terkait'] ?? '-';
-            $data['tipe_pihak'] = $data['tipe_pihak'] ?? '-';
+            $data['tipe_pihak'] = $data['tipe_pihak'] ?? 'user';
             $data['cara_pembayaran'] = $data['cara_pembayaran'] ?? 'tunai';
             $data['keterangan'] = $data['keterangan'] ?? '-';
             $data['mempengaruhi_kas'] = $data['mempengaruhi_kas'] ?? true;
@@ -66,150 +66,103 @@ class JurnalKeuanganObserver
         try {
             DB::beginTransaction();
 
-            // Lock perusahaan untuk update
-            $perusahaan = Perusahaan::lockForUpdate()->first();
-            if (!$perusahaan) {
-                throw new \Exception('Data perusahaan tidak ditemukan');
-            }
+            // 1. DELETE existing journals for this DO to prevent duplicates on update
+            JurnalKeuangan::where([
+                'sumber_transaksi' => 'DO',
+                'referensi_id' => $transaksiDo->id
+            ])->delete();
 
-            // Handle deleted transactions
             if ($transaksiDo->trashed()) {
-                if ($transaksiDo->cara_bayar === 'tunai') {
-                    $this->createLaporan([
-                        'tanggal' => $transaksiDo->tanggal,
-                        'jenis_transaksi' => 'Pengeluaran',
-                        'kategori' => 'DO',
-                        'sub_kategori' => 'Pembayaran DO',
-                        'nominal' => $transaksiDo->sisa_bayar,
-                        'sumber_transaksi' => 'DO',
-                        'referensi_id' => $transaksiDo->id,
-                        'nomor_referensi' => $transaksiDo->nomor,
-                        'pihak_terkait' => $transaksiDo->penjual->nama,
-                        'tipe_pihak' => 'penjual',
-                        'cara_pembayaran' => 'tunai',
-                        'keterangan' => "Pembatalan DO #{$transaksiDo->nomor}",
-                        'mempengaruhi_kas' => false
-                    ]);
-                }
                 DB::commit();
                 return;
             }
 
-            // Handle normal transactions
-            if ($transaksiDo->cara_bayar === 'tunai') {
+            // 2. Record GROSS EXPENDITURE (The cost of buying the fruit)
+            $this->createLaporan([
+                'perusahaan_id' => $transaksiDo->perusahaan_id,
+                'tanggal' => $transaksiDo->tanggal,
+                'jenis_transaksi' => 'Pengeluaran',
+                'kategori' => 'DO',
+                'sub_kategori' => 'Pembelian Buah',
+                'nominal' => $transaksiDo->sub_total,
+                'sumber_transaksi' => 'DO',
+                'referensi_id' => $transaksiDo->id,
+                'nomor_referensi' => $transaksiDo->nomor,
+                'pihak_terkait' => $transaksiDo->penjual?->nama,
+                'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
+                'cara_pembayaran' => $transaksiDo->cara_bayar,
+                'keterangan' => "Pembelian DO #{$transaksiDo->nomor} (Bruto)",
+                'mempengaruhi_kas' => true
+            ]);
+
+            // 3. Record INCOME COMPONENTS (Deductions that return to company)
+            
+            // A. Upah Bongkar
+            if ($transaksiDo->upah_bongkar > 0) {
                 $this->createLaporan([
                     'perusahaan_id' => $transaksiDo->perusahaan_id,
                     'tanggal' => $transaksiDo->tanggal,
                     'jenis_transaksi' => 'Pemasukan',
                     'kategori' => 'DO',
-                    'sub_kategori' => 'Pembayaran DO',
-                    'nominal' => $transaksiDo->total,
+                    'sub_kategori' => 'Upah Bongkar',
+                    'nominal' => $transaksiDo->upah_bongkar,
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $transaksiDo->id,
                     'nomor_referensi' => $transaksiDo->nomor,
                     'pihak_terkait' => $transaksiDo->penjual?->nama,
-                    'tipe_pihak' => \App\Models\Penjual::class,
-                    'cara_pembayaran' => 'tunai',
-                    'keterangan' => "Pembayaran DO Tunai #{$transaksiDo->nomor}",
+                    'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
+                    'cara_pembayaran' => $transaksiDo->cara_bayar,
+                    'keterangan' => "Potongan Upah Bongkar DO #{$transaksiDo->nomor}",
                     'mempengaruhi_kas' => true
                 ]);
+            }
 
-                Log::info('Transaksi DO Tunai:', [
-                    'nomor' => $transaksiDo->nomor,
-                    'total' => $transaksiDo->total,
-                    'saldo_akhir' => $perusahaan->fresh()->saldo
-                ]);
-            } else {
+            // B. Biaya Lain
+            if ($transaksiDo->biaya_lain > 0) {
                 $this->createLaporan([
                     'perusahaan_id' => $transaksiDo->perusahaan_id,
                     'tanggal' => $transaksiDo->tanggal,
                     'jenis_transaksi' => 'Pemasukan',
                     'kategori' => 'DO',
-                    'sub_kategori' => 'Pembayaran DO',
-                    'nominal' => $transaksiDo->total,
+                    'sub_kategori' => 'Biaya Lain',
+                    'nominal' => $transaksiDo->biaya_lain,
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $transaksiDo->id,
                     'nomor_referensi' => $transaksiDo->nomor,
                     'pihak_terkait' => $transaksiDo->penjual?->nama,
-                    'tipe_pihak' => \App\Models\Penjual::class,
+                    'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                     'cara_pembayaran' => $transaksiDo->cara_bayar,
-                    'keterangan' => "Pembayaran DO Non-Tunai #{$transaksiDo->nomor}",
-                    'mempengaruhi_kas' => false
+                    'keterangan' => "Potongan Biaya Lain DO #{$transaksiDo->nomor}",
+                    'mempengaruhi_kas' => true
                 ]);
+            }
 
-                Log::info('Transaksi DO Non-Tunai:', [
-                    'nomor' => $transaksiDo->nomor,
-                    'total' => $transaksiDo->total,
-                    'cara_bayar' => $transaksiDo->cara_bayar
+            // C. Pembayaran Hutang
+            if ($transaksiDo->pembayaran_hutang > 0) {
+                $this->createLaporan([
+                    'perusahaan_id' => $transaksiDo->perusahaan_id,
+                    'tanggal' => $transaksiDo->tanggal,
+                    'jenis_transaksi' => 'Pemasukan',
+                    'kategori' => 'DO',
+                    'sub_kategori' => 'Potong Hutang',
+                    'nominal' => $transaksiDo->pembayaran_hutang,
+                    'sumber_transaksi' => 'DO',
+                    'referensi_id' => $transaksiDo->id,
+                    'nomor_referensi' => $transaksiDo->nomor,
+                    'pihak_terkait' => $transaksiDo->penjual?->nama,
+                    'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
+                    'cara_pembayaran' => $transaksiDo->cara_bayar,
+                    'keterangan' => "Potongan Hutang via DO #{$transaksiDo->nomor}",
+                    'mempengaruhi_kas' => true
                 ]);
             }
 
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error transaksi DO:', [
-                'error' => $e->getMessage(),
-                'transaksi' => $transaksiDo->toArray()
-            ]);
+            Log::error('Error journaling DO:', ['error' => $e->getMessage()]);
             throw $e;
         }
-    }
-
-    protected function handleTransaksiNontunai(TransaksiDo $transaksiDo)
-    {
-        // Catat komponen pemasukan
-        $komponenPemasukan = [
-            ['sub_kategori' => 'Upah Bongkar', 'nominal' => $transaksiDo->upah_bongkar],
-            ['sub_kategori' => 'Biaya Lain', 'nominal' => $transaksiDo->biaya_lain],
-            ['sub_kategori' => 'Bayar Hutang', 'nominal' => $transaksiDo->pembayaran_hutang],
-        ];
-
-        $totalPemasukan = 0;
-        $pihakTerkait = $transaksiDo->penjual ? $transaksiDo->penjual->nama : 'Penjual tidak ditemukan';
-
-        // Catat setiap komponen pemasukan
-        foreach ($komponenPemasukan as $komponen) {
-            if ($komponen['nominal'] > 0) {
-                $this->createLaporan([
-                    'tanggal' => $transaksiDo->tanggal,
-                    'jenis_transaksi' => 'Pemasukan',
-                    'kategori' => 'DO',
-                    'sub_kategori' => $komponen['sub_kategori'],
-                    'nominal' => $komponen['nominal'],
-                    'sumber_transaksi' => 'DO',
-                    'referensi_id' => $transaksiDo->id,
-                    'nomor_referensi' => $transaksiDo->nomor,
-                    'pihak_terkait' => $transaksiDo->penjual->nama,
-                    'tipe_pihak' => 'penjual',
-                    'cara_pembayaran' => 'nontunai',
-                    'keterangan' => "Pemasukan nontunai DO #{$transaksiDo->nomor}",
-                    'mempengaruhi_kas' => false,
-                ]);
-
-                $totalPemasukan += $komponen['nominal'];
-            }
-        }
-
-        // Catat transaksi non tunai untuk sisa bayar
-        if ($transaksiDo->sisa_bayar > 0) {
-            $this->createLaporan([
-                'tanggal' => $transaksiDo->tanggal,
-                'jenis_transaksi' => 'Pengeluaran',
-                'kategori' => 'DO',
-                'sub_kategori' => 'Pembayaran DO',
-                'nominal' => $transaksiDo->sisa_bayar,
-                'sumber_transaksi' => 'DO',
-                'referensi_id' => $transaksiDo->id,
-                'nomor_referensi' => $transaksiDo->nomor,
-                'pihak_terkait' => $pihakTerkait,
-                'tipe_pihak' => 'penjual',
-                'cara_pembayaran' => $transaksiDo->cara_bayar,
-                'keterangan' => "Pembayaran DO via {$transaksiDo->cara_bayar}",
-                'mempengaruhi_kas' => false,
-            ]);
-        }
-
-        Log::info("DO non-tunai #{$transaksiDo->nomor} selesai: +{$totalPemasukan}");
     }
 
     // di JurnalKeuanganObserver.php

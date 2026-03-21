@@ -34,7 +34,19 @@ class ProcessDebtPayment
             $perusahaanId = $pihak->perusahaan_id;
             $tipePihak = $this->resolveTipePihak($pihak);
 
-            // 1. Record Finance Transaction (Jurnal & Update Saldo)
+            // 1. Create PembayaranHutang record first for history and reference
+            $payment = PembayaranHutang::create([
+                'tanggal' => $tanggal,
+                'nominal' => $nominal,
+                'tipe_nama' => $tipePihak,
+                'penjual_id' => $tipePihak === 'penjual' ? $pihak->id : null,
+                'supir_id' => $tipePihak === 'supir' ? $pihak->id : null,
+                'pekerja_id' => $tipePihak === 'pekerja' ? $pihak->id : null,
+                'keterangan' => $keterangan ?? "Pelunasan Hutang",
+                'perusahaan_id' => $perusahaanId,
+            ]);
+
+            // 2. Record Finance Transaction (Jurnal & Update Saldo)
             $this->financeAction->execute([
                 'perusahaan_id' => $perusahaanId,
                 'tanggal' => $tanggal,
@@ -43,25 +55,13 @@ class ProcessDebtPayment
                 'sub_kategori' => 'Bayar Hutang',
                 'nominal' => $nominal,
                 'sumber_transaksi' => 'Pembayaran Hutang',
-                // 'referensi_id' => $payment->id, // Set later or pass after creation
+                'referensi_id' => $payment->id, 
+                'nomor_referensi' => sprintf('PAY-%s', str_pad((string)$payment->id, 5, '0', STR_PAD_LEFT)),
                 'pihak_terkait' => $pihak->nama,
                 'tipe_pihak' => $tipePihak,
                 'cara_pembayaran' => $caraPembayaran,
                 'keterangan' => $keterangan ?? "Terima Pembayaran Hutang: {$pihak->nama}",
                 'mempengaruhi_kas' => true,
-            ]);
-
-            // 2. Create PembayaranHutang record for history
-            $payment = PembayaranHutang::create([
-                'tanggal' => $tanggal,
-                'nominal' => $nominal,
-                'tipe_nama' => $tipePihak,
-                'penjual_id' => $tipePihak === 'penjual' ? $pihak->id : null,
-                'supir_id' => $tipePihak === 'supir' ? $pihak->id : null,
-                'pekerja_id' => $tipePihak === 'pekerja' ? $pihak->id : null,
-                // 'operasional_id' => $op->id, // Optional link
-                'keterangan' => $keterangan ?? "Pelunasan Hutang",
-                'perusahaan_id' => $perusahaanId,
             ]);
 
             // 3. Record in Ledger (MutasiHutang) and update balance via DebtService

@@ -103,6 +103,9 @@ class PengajuanDanasTable
                                 'nominal' => $record->nominal,
                                 'referensi_id' => $record->id,
                                 'sumber_transaksi' => 'Pengajuan Dana',
+                                'tipe_pihak' => 'user',
+                                'cara_pembayaran' => 'transfer',
+                                'pihak_terkait' => $record->user?->name,
                                 'keterangan' => 'Penambahan saldo dari pengajuan dana #' . $record->id . ': ' . $record->keperluan,
                                 'mempengaruhi_kas' => true,
                             ]);

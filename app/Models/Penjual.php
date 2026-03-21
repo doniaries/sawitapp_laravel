@@ -122,8 +122,7 @@ class Penjual extends Model
     public function scopePinjaman($query)
     {
         return $query->whereHas('operasional', function ($q) {
-            $q->where('kategori', KategoriOperasional::PINJAMAN)
-                ->where('tipe_nama', 'penjual');
+            $q->where('kategori', KategoriOperasional::PINJAMAN);
         });
     }
 
@@ -131,7 +130,6 @@ class Penjual extends Model
     {
         return $this->operasional()
             ->where('kategori', KategoriOperasional::PINJAMAN)
-            ->where('tipe_nama', 'penjual')
             ->sum('nominal');
     }
 

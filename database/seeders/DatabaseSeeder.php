@@ -20,9 +20,7 @@ class DatabaseSeeder extends Seeder
 
 
         // Disable observers during seeding to avoid tenant scoping/validation issues
-        \App\Models\TransaksiDo::unsetEventDispatcher();
-        \App\Models\JurnalKeuangan::unsetEventDispatcher();
-        \App\Models\TransaksiOperasional::unsetEventDispatcher();
+        // Observers are now enabled during seeding for better data integrity
 
         $this->call([
             UserSeeder::class,

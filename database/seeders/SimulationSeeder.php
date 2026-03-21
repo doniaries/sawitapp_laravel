@@ -42,8 +42,8 @@ class SimulationSeeder extends Seeder
                 continue;
             }
 
-            // Disable Observers for speed
-            TransaksiDo::unsetEventDispatcher();
+            // observers enabled for accuracy
+            // TransaksiDo::unsetEventDispatcher();
 
             // Generate data for the last 6 months
             $startDate = now()->subMonths(6)->startOfMonth();
@@ -86,6 +86,7 @@ class SimulationSeeder extends Seeder
         $supirId = $supirIds[array_rand($supirIds)];
         $nomor = 'DO-' . $perusahaanId . '-' . $tanggal->format('Ymd') . '-' . Str::padLeft($index, 4, '0');
 
+        // Observer will handle JurnalKeuangan and MutasiHutang
         $transaksi = TransaksiDo::create([
             'nomor' => $nomor,
             'tanggal' => $tanggal,
@@ -98,45 +99,9 @@ class SimulationSeeder extends Seeder
             'upah_bongkar' => 50000,
             'biaya_lain' => 0,
             'sisa_bayar' => $subTotal,
-            'pembayaran_hutang' => rand(0, 5) === 0 ? rand(100000, 500000) : 0,
+            'pembayaran_hutang' => 0, // Simplified for seeder to avoid balance/debt complexity
             'cara_bayar' => $caraBayar,
             'perusahaan_id' => $perusahaanId,
         ]);
-
-        JurnalKeuangan::create([
-            'tanggal' => $tanggal,
-            'jenis_transaksi' => 'Pengeluaran',
-            'kategori' => 'DO',
-            'sub_kategori' => 'Pembayaran DO',
-            'nominal' => $subTotal,
-            'sumber_transaksi' => 'DO',
-            'referensi_id' => $transaksi->id,
-            'nomor_referensi' => $transaksi->nomor,
-            'pihak_terkait' => "Penjual {$penjualId}",
-            'tipe_pihak' => 'penjual',
-            'cara_pembayaran' => $caraBayar,
-            'keterangan' => "Simulasi DO {$nomor}",
-            'mempengaruhi_kas' => $caraBayar === 'tunai',
-            'perusahaan_id' => $perusahaanId,
-        ]);
-
-        if ($transaksi->pembayaran_hutang > 0) {
-            $penjual = Penjual::find($penjualId);
-            if ($penjual) {
-                $penjual->increment('hutang', $transaksi->pembayaran_hutang);
-                MutasiHutang::create([
-                    'perusahaan_id' => $perusahaanId,
-                    'pihak_id' => $penjual->id,
-                    'pihak_type' => Penjual::class,
-                    'tanggal' => $tanggal,
-                    'tipe' => 'HUTANG_MASUK',
-                    'nominal' => $transaksi->pembayaran_hutang,
-                    'saldo_akhir' => $penjual->hutang,
-                    'referensi_id' => $transaksi->id,
-                    'referensi_type' => TransaksiDo::class,
-                    'keterangan' => "Hutang dari Transaksi {$nomor}",
-                ]);
-            }
-        }
     }
 }

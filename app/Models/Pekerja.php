@@ -39,7 +39,19 @@ class Pekerja extends Model
 
     public function operasional()
     {
-        return $this->hasMany(TransaksiOperasional::class);
+        return $this->hasMany(TransaksiOperasional::class, 'pihak_id')
+            ->where('pihak_type', self::class);
+    }
+
+    public function pinjaman()
+    {
+        return $this->operasional()
+            ->where('kategori', \App\Enums\KategoriOperasional::PINJAMAN);
+    }
+
+    public function getTotalPinjamanAttribute()
+    {
+        return $this->pinjaman()->sum('nominal');
     }
 
     public function jurnalKeuangan(): \Illuminate\Database\Eloquent\Relations\HasMany

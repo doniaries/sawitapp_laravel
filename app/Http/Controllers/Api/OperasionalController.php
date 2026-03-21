@@ -12,7 +12,10 @@ class OperasionalController extends Controller
     {
         $perusahaan_id = $request->user()->perusahaan_id;
         $perPage = $request->get('per_page', 20);
-        $operasional = TransaksiOperasional::where('perusahaan_id', $perusahaan_id)->latest()->paginate($perPage);
+        $operasional = TransaksiOperasional::where('perusahaan_id', $perusahaan_id)
+            ->with(['pihak'])
+            ->latest()
+            ->paginate($perPage);
         return response()->json($operasional);
     }
 
@@ -36,11 +39,17 @@ class OperasionalController extends Controller
             'pihak_type' => 'nullable|string',
         ]);
 
+        $kategori = \App\Enums\KategoriOperasional::tryFrom($request->kategori);
+        if (!$kategori) {
+            return response()->json(['message' => 'Kategori tidak valid'], 422);
+        }
+
         $operasional = TransaksiOperasional::create([
             'perusahaan_id' => $request->user()->perusahaan_id,
             'user_id' => $request->user()->id,
             'tanggal' => $request->tanggal,
-            'kategori' => $request->kategori,
+            'operasional' => $kategori->getJenisOperasional(),
+            'kategori' => $kategori,
             'nominal' => $request->nominal,
             'keterangan' => $request->keterangan,
             'pihak_id' => $request->pihak_id,
@@ -48,6 +57,6 @@ class OperasionalController extends Controller
             'is_from_transaksi' => false,
         ]);
 
-        return response()->json($operasional, 201);
+        return response()->json($operasional->load('pihak'), 201);
     }
 }
