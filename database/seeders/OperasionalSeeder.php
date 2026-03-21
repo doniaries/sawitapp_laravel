@@ -52,6 +52,18 @@ class OperasionalSeeder extends Seeder
 
                 $currentDate->addMonth();
             }
+
+            // Yesterday & Today
+            for ($i = 0; $i < rand(1, 3); $i++) {
+                $tanggal = now()->subDay()->setHour(rand(8, 17))->setMinute(rand(0, 59));
+                $this->seedRandomExpense($tanggal, $perusahaanId);
+            }
+
+            for ($i = 0; $i < rand(1, 3); $i++) {
+                $maxMinutes = max(1, now()->diffInMinutes(now()->startOfDay()));
+                $tanggal = now()->startOfDay()->addMinutes(rand(0, $maxMinutes));
+                $this->seedRandomExpense($tanggal, $perusahaanId);
+            }
         }
 
         $this->command->info("Simulasi Operasional & Pembayaran Hutang berhasil dibuat!");

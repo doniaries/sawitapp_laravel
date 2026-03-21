@@ -65,10 +65,14 @@ class SimulationSeeder extends Seeder
 
             // Yesterday & Today
             for ($i = 1; $i <= 5; $i++) {
-                $this->createMonthlyTransaction(now()->subDay()->setHour(8+$i), $i, $penjualIds, $supirIds, $perusahaanId);
+                $tanggal = now()->subDay()->setHour(rand(8, 17))->setMinute(rand(0, 59));
+                $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
             }
+
             for ($i = 1; $i <= 3; $i++) {
-                $this->createMonthlyTransaction(now()->setHour(8+$i), $i, $penjualIds, $supirIds, $perusahaanId);
+                $maxMinutes = max(1, now()->diffInMinutes(now()->startOfDay()));
+                $tanggal = now()->startOfDay()->addMinutes(rand(0, $maxMinutes));
+                $this->createMonthlyTransaction($tanggal, $i, $penjualIds, $supirIds, $perusahaanId);
             }
         }
 
