@@ -32,6 +32,11 @@ class Penjual extends Model
     ];
 
     // Custom accessor for formatted hutang
+    public function mutasiHutang()
+    {
+        return $this->morphMany(MutasiHutang::class, 'pihak');
+    }
+
     public function getFormattedHutangAttribute()
     {
         return 'Rp ' . number_format($this->hutang, 0, ',', '.');

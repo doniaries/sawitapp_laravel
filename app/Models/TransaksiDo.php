@@ -95,13 +95,6 @@ class TransaksiDo extends Model
         'belum dibayar' => 'belum dibayar',
     ];
 
-    // Panggil method dari trait
-    public function handlePembayaran()
-    {
-        $this->validateSaldotunai($this->sisa_bayar);
-        $this->handlePembayaranHutang($this->pembayaran_hutang);
-        $this->updateSaldoPerusahaan();
-    }
 
 
     public function penjual(): BelongsTo

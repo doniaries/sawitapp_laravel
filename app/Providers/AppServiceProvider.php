@@ -8,7 +8,7 @@ use App\Events\RefreshDashboardWidgets;
 use Illuminate\Support\ServiceProvider;
 use App\Services\JurnalKeuanganService;
 use Illuminate\Support\Facades\Gate;
-use App\Models\{Operasional, TransaksiDo, LaporanKeuangan};
+use App\Models\{TransaksiOperasional, TransaksiDo, JurnalKeuangan};
 use App\Observers\{TransaksiOperasionalObserver, JurnalKeuanganObserver, TransaksiDoObserver};
 
 class AppServiceProvider extends ServiceProvider
@@ -61,9 +61,9 @@ class AppServiceProvider extends ServiceProvider
         setlocale(LC_TIME, 'id_ID');
         Carbon::setLocale('id');
 
-        // Register observers dengan namespace yang benar
-        \App\Models\TransaksiOperasional::observe(TransaksiOperasionalObserver::class);
-        \App\Models\JurnalKeuangan::observe(JurnalKeuanganObserver::class);
-        \App\Models\TransaksiDo::observe(\App\Observers\TransaksiDoObserver::class);
+        // Register observers
+        TransaksiOperasional::observe(TransaksiOperasionalObserver::class);
+        JurnalKeuangan::observe(JurnalKeuanganObserver::class);
+        TransaksiDo::observe(TransaksiDoObserver::class);
     }
 }

@@ -20,7 +20,9 @@ class PenjualController extends Controller
     {
         $perusahaan_id = $request->user()->perusahaan_id;
         $penjual = Penjual::where('perusahaan_id', $perusahaan_id)
-            ->with(['transaksiDo', 'riwayatPembayaran'])
+            ->with(['transaksiDo', 'mutasiHutang' => function($query) {
+                $query->latest()->limit(50);
+            }])
             ->findOrFail($id);
         return response()->json($penjual);
     }

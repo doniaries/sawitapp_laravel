@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Supir;
 use App\Enums\KategoriOperasional;
+use App\Services\DebtService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\{DB, Log};
 use Filament\Actions\Action;
@@ -199,53 +200,32 @@ class TransaksiOperasionalObserver
                 DB::beginTransaction();
 
                 // Process driver loan
-                if ($operasional->tipe_nama === 'supir') {
+                if ($operasional->tipe_nama === 'supir' && $operasional->supir_id) {
                     $supir = Supir::lockForUpdate()->findOrFail($operasional->supir_id);
-                    $hutangSebelum = $supir->hutang ?? 0;
-
-                    // Update driver debt
-                    $supir->update([
-                        'hutang' => $hutangSebelum + $operasional->nominal
-                    ]);
-
-                    // Create payment history
-                    PembayaranHutang::create([
-                        'tanggal' => $operasional->tanggal,
-                        'nominal' => $operasional->nominal,
-                        'tipe' => 'supir',
-                        'supir_id' => $supir->id,
-                        'operasional_id' => $operasional->id,
-                        'keterangan' => "Penambahan pinjaman supir: " . ($operasional->keterangan ?: 'Via operasional')
-                    ]);
-
-                    Log::info('Pinjaman Supir diproses:', [
-                        'supir' => $supir->nama,
-                        'hutang_sebelum' => $hutangSebelum,
-                        'nominal' => $operasional->nominal,
-                        'hutang_setelah' => $supir->fresh()->hutang
-                    ]);
+                    
+                    DebtService::increaseDebt(
+                        $supir, 
+                        $operasional->nominal, 
+                        $operasional, 
+                        "Pinjaman supir via operasional: " . ($operasional->keterangan ?: '-')
+                    );
                 }
                 // Process seller loan
-                elseif ($operasional->tipe_nama === 'penjual') {
+                elseif ($operasional->tipe_nama === 'penjual' && $operasional->penjual_id) {
                     $penjual = Penjual::lockForUpdate()->findOrFail($operasional->penjual_id);
-                    $hutangSebelum = $penjual->hutang;
-
-                    $penjual->increment('hutang', $operasional->nominal);
-
-                    PembayaranHutang::create([
-                        'tanggal' => $operasional->tanggal,
-                        'nominal' => $operasional->nominal,
-                        'tipe' => 'penjual',
-                        'penjual_id' => $penjual->id,
-                        'operasional_id' => $operasional->id,
-                        'keterangan' => "Penambahan pinjaman penjual: " . ($operasional->keterangan ?: 'Via operasional')
-                    ]);
+                    
+                    DebtService::increaseDebt(
+                        $penjual, 
+                        $operasional->nominal, 
+                        $operasional, 
+                        "Pinjaman penjual via operasional: " . ($operasional->keterangan ?: '-')
+                    );
                 }
 
                 DB::commit();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Error memproses pinjaman:', [
+                Log::error('Error memproses pinjaman via DebtService:', [
                     'error' => $e->getMessage(),
                     'operasional_id' => $operasional->id
                 ]);
@@ -253,54 +233,26 @@ class TransaksiOperasionalObserver
             }
         }
     }
-
-
-    // Modifikasi method rollbackHutang juga agar konsisten
+    
     private function rollbackHutang(TransaksiOperasional $operasional): void
     {
         if ($operasional->kategori === KategoriOperasional::PINJAMAN) {
             DB::transaction(function () use ($operasional) {
-                // Handle driver loan rollback
                 if ($operasional->tipe_nama === 'supir' && $operasional->supir) {
-                    $supir = $operasional->supir;
-                    $hutangSebelum = $supir->hutang;
-
-                    // Reverse the driver's debt
-                    $supir->decrement('hutang', $operasional->nominal);
-
-                    // Delete related payment history
-                    PembayaranHutang::where([
-                        'supir_id' => $supir->id,
-                        'operasional_id' => $operasional->id
-                    ])->delete();
-
-                    Log::info('Pinjaman Supir dibatalkan:', [
-                        'supir' => $supir->nama,
-                        'hutang_sebelum' => $hutangSebelum,
-                        'nominal_dibatalkan' => $operasional->nominal,
-                        'hutang_setelah' => $supir->fresh()->hutang
-                    ]);
+                    DebtService::recordPayment(
+                        $operasional->supir, 
+                        $operasional->nominal, 
+                        $operasional, 
+                        "Pembatalan pinjaman supir #{$operasional->id}"
+                    );
                 }
-                // Handle seller loan rollback
                 elseif ($operasional->tipe_nama === 'penjual' && $operasional->penjual) {
-                    $penjual = $operasional->penjual;
-                    $hutangSebelum = $penjual->hutang;
-
-                    // Reverse the seller's debt
-                    $penjual->decrement('hutang', $operasional->nominal);
-
-                    // Delete related payment history
-                    PembayaranHutang::where([
-                        'penjual_id' => $penjual->id,
-                        'operasional_id' => $operasional->id
-                    ])->delete();
-
-                    Log::info('Pinjaman Penjual dibatalkan:', [
-                        'penjual' => $penjual->nama,
-                        'hutang_sebelum' => $hutangSebelum,
-                        'nominal_dibatalkan' => $operasional->nominal,
-                        'hutang_setelah' => $penjual->fresh()->hutang
-                    ]);
+                    DebtService::recordPayment(
+                        $operasional->penjual, 
+                        $operasional->nominal, 
+                        $operasional, 
+                        "Pembatalan pinjaman penjual #{$operasional->id}"
+                    );
                 }
             });
         }

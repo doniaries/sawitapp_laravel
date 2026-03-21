@@ -21,7 +21,9 @@ class LogistikController extends Controller
     {
         $perusahaan_id = $request->user()->perusahaan_id;
         $supir = Supir::where('perusahaan_id', $perusahaan_id)
-            ->with(['transaksiDo', 'riwayatHutang'])
+            ->with(['transaksiDo', 'mutasiHutang' => function($query) {
+                $query->latest()->limit(50);
+            }])
             ->findOrFail($id);
         return response()->json($supir);
     }

@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\{TransaksiDo, Penjual, Perusahaan, JurnalKeuangan};
+use App\Services\DebtService;
 use Illuminate\Support\Facades\{DB, Log};
 use Filament\Notifications\Notification;
 use App\Traits\HasNotificationRecipients;
@@ -101,9 +102,14 @@ class TransaksiDoObserver
         try {
             DB::beginTransaction();
 
-            // Kembalikan hutang penjual
+            // Kembalikan hutang penjual (Rollback mutasi)
             if ($transaksiDo->pembayaran_hutang > 0 && $transaksiDo->penjual) {
-                $transaksiDo->penjual->increment('hutang', $transaksiDo->pembayaran_hutang);
+                DebtService::increaseDebt(
+                    $transaksiDo->penjual, 
+                    $transaksiDo->pembayaran_hutang, 
+                    $transaksiDo, 
+                    "Pembatalan transaksi DO #{$transaksiDo->nomor}"
+                );
             }
 
             // Hapus laporan keuangan
@@ -148,7 +154,14 @@ class TransaksiDoObserver
             );
         }
 
-        $penjual->decrement('hutang', $transaksiDo->pembayaran_hutang);
+        // Gunakan DebtService untuk pencatatan mutasi otomatis
+        DebtService::recordPayment(
+            $penjual, 
+            $transaksiDo->pembayaran_hutang, 
+            $transaksiDo, 
+            "Pembayaran hutang via DO #{$transaksiDo->nomor}"
+        );
+
         $transaksiDo->sisa_hutang_penjual = $penjual->fresh()->hutang;
     }
 

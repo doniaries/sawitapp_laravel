@@ -54,6 +54,11 @@ class Supir extends Model
 
 
     // Helpers
+    public function mutasiHutang()
+    {
+        return $this->morphMany(MutasiHutang::class, 'pihak');
+    }
+
     public function getFormattedHutangAttribute(): string
     {
         return 'Rp ' . number_format($this->hutang ?? 0, 0, ',', '.');
