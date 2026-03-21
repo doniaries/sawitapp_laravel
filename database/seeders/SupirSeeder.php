@@ -15,7 +15,7 @@ class SupirSeeder extends Seeder
                 'nama' => 'FURQON',
                 'telepon' => null,
                 'alamat' => null,
-                'hutang' => null,
+                'hutang' => 500000,
                 'riwayat_bayar' => null,
             ],
             [
@@ -23,7 +23,7 @@ class SupirSeeder extends Seeder
                 'nama' => 'FURQONS',
                 'telepon' => null,
                 'alamat' => null,
-                'hutang' => null,
+                'hutang' => 750000,
                 'riwayat_bayar' => null,
             ],
             [
@@ -31,7 +31,7 @@ class SupirSeeder extends Seeder
                 'nama' => 'EPI',
                 'telepon' => null,
                 'alamat' => null,
-                'hutang' => null,
+                'hutang' => 1200000,
                 'riwayat_bayar' => null,
             ],
             [
@@ -39,7 +39,7 @@ class SupirSeeder extends Seeder
                 'nama' => 'ANDES',
                 'telepon' => null,
                 'alamat' => null,
-                'hutang' => null,
+                'hutang' => 300000,
                 'riwayat_bayar' => null,
             ],
             [
