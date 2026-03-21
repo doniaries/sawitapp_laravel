@@ -20,7 +20,9 @@ class LogistikController extends Controller
     public function showSupir($id, Request $request)
     {
         $perusahaan_id = $request->user()->perusahaan_id;
-        $supir = Supir::where('perusahaan_id', $perusahaan_id)->findOrFail($id);
+        $supir = Supir::where('perusahaan_id', $perusahaan_id)
+            ->with(['transaksiDo', 'riwayatHutang'])
+            ->findOrFail($id);
         return response()->json($supir);
     }
 

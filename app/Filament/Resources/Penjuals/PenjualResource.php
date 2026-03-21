@@ -19,9 +19,9 @@ class PenjualResource extends Resource
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
     protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static ?int $navigationSort = 4;
-    protected static ?string $modelLabel = 'Pemasok';
-    protected static ?string $navigationLabel = 'Pemasok';
-    protected static ?string $pluralModelLabel = 'Pemasok';
+    protected static ?string $modelLabel = 'Penjual';
+    protected static ?string $navigationLabel = 'Penjual';
+    protected static ?string $pluralModelLabel = 'Penjual';
 
 
     public static function getRelations(): array

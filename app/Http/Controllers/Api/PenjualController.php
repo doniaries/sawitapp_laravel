@@ -19,7 +19,9 @@ class PenjualController extends Controller
     public function show($id, Request $request)
     {
         $perusahaan_id = $request->user()->perusahaan_id;
-        $penjual = Penjual::where('perusahaan_id', $perusahaan_id)->findOrFail($id);
+        $penjual = Penjual::where('perusahaan_id', $perusahaan_id)
+            ->with(['transaksiDo', 'riwayatPembayaran'])
+            ->findOrFail($id);
         return response()->json($penjual);
     }
 
