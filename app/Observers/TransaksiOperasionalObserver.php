@@ -343,8 +343,13 @@ class TransaksiOperasionalObserver
             'referensi_id' => $operasional->id,
             'nomor_referensi' => sprintf('OP-%s', str_pad($operasional->id, 5, '0', STR_PAD_LEFT)),
             'pihak_terkait' => $operasional->nama,
-            'tipe_pihak' => $operasional->pihak_type,
-            'cara_pembayaran' => 'tunai',
+            'tipe_pihak' => match ($operasional->pihak_type) {
+                \App\Models\Penjual::class => 'penjual',
+                \App\Models\Supir::class => 'supir',
+                \App\Models\Pekerja::class => 'pekerja',
+                default => 'user',
+            },
+            'cara_pembayaran' => $operasional->cara_pembayaran ?? 'tunai',
             'keterangan' => $operasional->keterangan ?: '-',
             'mempengaruhi_kas' => true,
         ]);

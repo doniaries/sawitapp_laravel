@@ -9,7 +9,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\Action as BulkAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
