@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\PenjualController;
 use App\Http\Controllers\Api\TransaksiDoController;
 use App\Http\Controllers\Api\PengajuanDanaController;
 use App\Http\Controllers\Api\JurnalKeuanganController;
+use App\Http\Controllers\Api\PekerjaController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +57,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/penjual/{id}', [PenjualController::class, 'show']);
     Route::post('/penjual', [PenjualController::class, 'store']);
     Route::put('/penjual/{id}', [PenjualController::class, 'update']);
+
+    // Pekerja
+    Route::get('/pekerja', [PekerjaController::class, 'index']);
+    Route::get('/pekerja/{id}', [PekerjaController::class, 'show']);
+    Route::post('/pekerja', [PekerjaController::class, 'store']);
+    Route::put('/pekerja/{id}', [PekerjaController::class, 'update']);
 
     // Logistik
     Route::get('/supir', [LogistikController::class, 'supir']);
