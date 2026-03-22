@@ -39,15 +39,22 @@ class PekerjaForm
                             ->description('Ringkasan data keuangan terkait')
                             ->components([
                                 TextInput::make('pendapatan')
+                                    ->label('Pendapatan')
                                     ->disabled()
                                     ->prefix('Rp. ')
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->default(0),
-                                TextInput::make('total_hutang')
+                                TextInput::make('hutang')
+                                    ->label('Hutang Awal')
                                     ->disabled()
                                     ->prefix('Rp. ')
-                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                    ->default(0),
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0),
+                                TextInput::make('sisa_hutang')
+                                    ->label('Total Hutang (Sisa)')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->prefix('Rp. ')
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0),
                             ]),
                     ]),
         ]);

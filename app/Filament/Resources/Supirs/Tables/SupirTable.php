@@ -65,6 +65,12 @@ class SupirTable
                     ->color('success')
                     ->visible(fn($record) => $record->sisa_hutang > 0)
                     ->form([
+                        TextInput::make('sisa_hutang_info')
+                            ->label('Sisa Hutang Saat Ini')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->prefix('Rp')
+                            ->default(fn($record) => number_format($record->sisa_hutang, 0, ',', '.')),
                         TextInput::make('nominal')
                             ->label('Nominal Pembayaran')
                             ->numeric()

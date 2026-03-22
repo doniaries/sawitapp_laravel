@@ -26,6 +26,10 @@ class JurnalKeuanganController extends Controller
             $query->where('kategori', $request->kategori);
         }
 
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('tanggal', [$request->start_date, $request->end_date]);
+        }
+
         $perPage = $request->get('per_page', 20);
         return response()->json($query->orderBy('tanggal', 'desc')->paginate($perPage));
     }

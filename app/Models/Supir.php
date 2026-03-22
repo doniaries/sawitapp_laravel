@@ -35,6 +35,10 @@ class Supir extends Model
         'status_supir',
     ];
 
+    protected $appends = [
+        'sisa_hutang',
+    ];
+
     protected $casts = [
         'hutang' => 'decimal:0',
         'is_maintenance' => 'boolean',

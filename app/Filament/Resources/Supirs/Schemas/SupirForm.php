@@ -46,6 +46,16 @@ class SupirForm
                                         decimalSeparator: ',',
                                         precision: 0
                                     ),
+                                TextInput::make('sisa_hutang')
+                                    ->label('Sisa Hutang Saat Ini')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->prefix('Rp')
+                                    ->currencyMask(
+                                        thousandSeparator: '.',
+                                        decimalSeparator: ',',
+                                        precision: 0
+                                    ),
                             ]),
                     ]),
         ]);

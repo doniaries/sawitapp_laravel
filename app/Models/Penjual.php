@@ -26,6 +26,10 @@ class Penjual extends Model
         'perusahaan_id',
     ];
 
+    protected $appends = [
+        'sisa_hutang',
+    ];
+
     protected $casts = [
         'hutang' => 'decimal:0',
     ];

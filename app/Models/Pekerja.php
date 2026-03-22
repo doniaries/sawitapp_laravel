@@ -31,6 +31,10 @@ class Pekerja extends Model
         'slug',
     ];
 
+    protected $appends = [
+        'sisa_hutang',
+    ];
+
     protected $casts = [
         'pendapatan' => 'decimal:0',
         'hutang' => 'decimal:0',
