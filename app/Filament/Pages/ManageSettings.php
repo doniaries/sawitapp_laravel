@@ -16,6 +16,18 @@ class ManageSettings extends SettingsPage
 
     protected static string $settings = GeneralSettings::class;
 
+    public static function canAccess(): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        return $user && $user->hasRole('super_admin');
+    }
+
+    public static function isScopedToTenant(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
