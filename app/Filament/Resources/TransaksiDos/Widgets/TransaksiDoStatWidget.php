@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\TransaksiDos\Widgets;
 
 use App\Models\{TransaksiDo, Perusahaan, Operasional};
+use App\Filament\Resources\TransaksiDos\TransaksiDoResource;
+use App\Filament\Resources\JurnalKeuangans\JurnalKeuanganResource;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Illuminate\Support\Facades\{DB, Log, Cache};
@@ -115,13 +117,15 @@ class TransaksiDoStatWidget extends BaseWidget
                     Stat::make('DO Hari Ini', $todayStats->count ?? 0)
                         ->description('Total: Rp ' . number_format($todayStats->total ?? 0, 0, ',', '.'))
                         ->descriptionIcon('heroicon-m-clock')
-                        ->color('info'),
+                        ->color('info')
+                        ->url(TransaksiDoResource::getUrl('index', ['activeTab' => 'hari_ini'])),
 
                     // Remaining Balance (Global/Cumulative)
                     Stat::make('Sisa Saldo', 'Rp ' . number_format($remainingBalanceGlobal, 0, ',', '.'))
                         ->description('Total saldo (Kumulatif)')
                         ->descriptionIcon('heroicon-m-banknotes')
-                        ->color($remainingBalanceGlobal >= 0 ? 'success' : 'danger'),
+                        ->color($remainingBalanceGlobal >= 0 ? 'success' : 'danger')
+                        ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'semua'])),
 
                     // Total Income (Today)
                     Stat::make('Uang Masuk (Hari Ini)', 'Rp ' . number_format($totalIncomingToday, 0, ',', '.'))
@@ -132,7 +136,11 @@ class TransaksiDoStatWidget extends BaseWidget
                             number_format($operationalIncomeToday, 0, ',', '.')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-up')
-                        ->color('success'),
+                        ->color('success')
+                        ->url(JurnalKeuanganResource::getUrl('index', [
+                            'activeTab' => 'hari_ini',
+                            'tableFilters' => ['jenis_transaksi' => ['value' => 'Pemasukan']]
+                        ])),
 
                     // Total Expenditure (Today)
                     Stat::make('Pengeluaran (Hari Ini)', 'Rp ' . number_format($totalExpenditureToday, 0, ',', '.'))
@@ -142,7 +150,11 @@ class TransaksiDoStatWidget extends BaseWidget
                             number_format($totalOperationalToday, 0, ',', '.')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-down')
-                        ->color('danger'),
+                        ->color('danger')
+                        ->url(JurnalKeuanganResource::getUrl('index', [
+                            'activeTab' => 'hari_ini',
+                            'tableFilters' => ['jenis_transaksi' => ['value' => 'Pengeluaran']]
+                        ])),
 
                     Stat::make('Transaksi (Hari Ini)', TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->count())
                         ->description(sprintf(
@@ -153,7 +165,8 @@ class TransaksiDoStatWidget extends BaseWidget
                             TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'belum dibayar')->count()
                         ))
                         ->descriptionIcon('heroicon-m-document-text')
-                        ->color('primary'),
+                        ->color('primary')
+                        ->url(TransaksiDoResource::getUrl('index', ['activeTab' => 'hari_ini'])),
                 ];
             });
         } catch (\Exception $e) {

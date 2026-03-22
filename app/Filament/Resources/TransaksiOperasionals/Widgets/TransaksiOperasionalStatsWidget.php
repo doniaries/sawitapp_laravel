@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TransaksiOperasionals\Widgets;
 
 use App\Models\TransaksiOperasional;
+use App\Filament\Resources\TransaksiOperasionals\TransaksiOperasionalResource;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -34,13 +35,15 @@ class TransaksiOperasionalStatsWidget extends BaseWidget
                 ->description($countPemasukan . ' transaksi pemasukan hari ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success')
-                ->icon('heroicon-o-arrow-up-circle'),
+                ->icon('heroicon-o-arrow-up-circle')
+                ->url(TransaksiOperasionalResource::getUrl('index', ['activeTab' => 'pemasukan'])),
 
             Stat::make('Pengeluaran Hari Ini', 'Rp ' . number_format($todayPengeluaran, 0, ',', '.'))
                 ->description($countPengeluaran . ' transaksi pengeluaran hari ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-down')
                 ->color('danger')
-                ->icon('heroicon-o-arrow-down-circle'),
+                ->icon('heroicon-o-arrow-down-circle')
+                ->url(TransaksiOperasionalResource::getUrl('index', ['activeTab' => 'pengeluaran'])),
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\{Perusahaan, Penjual, TransaksiDo, JurnalKeuangan};
+use App\Filament\Resources\JurnalKeuangans\JurnalKeuanganResource;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Carbon\Carbon;
@@ -31,8 +32,7 @@ class DashboardStatsWidget extends BaseWidget
 
         // 2. Daily Income Breakdown
         $dailyIncomeQuery = JurnalKeuangan::query()
-            ->where('perusahaan_id', $tenantId)
-            ->whereDate('tanggal', $today)
+            ->whereDate('tanggal', Carbon::today())
             ->where('jenis_transaksi', 'Pemasukan');
 
         $totalIncomeDaily = (float) $dailyIncomeQuery->sum('nominal');
@@ -49,8 +49,7 @@ class DashboardStatsWidget extends BaseWidget
 
         // 3. Daily Expense Breakdown
         $dailyExpenseQuery = JurnalKeuangan::query()
-            ->where('perusahaan_id', $tenantId)
-            ->whereDate('tanggal', $today)
+            ->whereDate('tanggal', Carbon::today())
             ->where('jenis_transaksi', 'Pengeluaran');
 
         $totalExpenseDaily = (float) $dailyExpenseQuery->sum('nominal');
@@ -64,8 +63,8 @@ class DashboardStatsWidget extends BaseWidget
         $operasionalExpense = $expenseStats->where('kategori', 'Operasional')->sum('total');
 
         // 4. Transaction Count
-        $dailyTransactions = JurnalKeuangan::where('perusahaan_id', $tenantId)
-            ->whereDate('tanggal', $today)
+        $dailyTransactions = JurnalKeuangan::query()
+            ->whereDate('tanggal', Carbon::today())
             ->count();
 
         // Format date range for display
@@ -75,7 +74,8 @@ class DashboardStatsWidget extends BaseWidget
             Stat::make('Sisa Saldo', 'Rp ' . number_format($currentBalance, 0, ',', '.'))
                 ->description('Total saldo masuk - Total pengeluaran (Kumulatif)')
                 ->icon('heroicon-m-banknotes')
-                ->color($currentBalance >= 0 ? 'success' : 'danger'),
+                ->color($currentBalance >= 0 ? 'success' : 'danger')
+                ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'semua'])),
 
             Stat::make('Pemasukan Hari Ini', 'Rp ' . number_format($totalIncomeDaily, 0, ',', '.'))
                 ->description(sprintf(
@@ -85,7 +85,13 @@ class DashboardStatsWidget extends BaseWidget
                     number_format($operasionalIncome, 0, ',', '.')
                 ))
                 ->icon('heroicon-m-arrow-trending-up')
-                ->color('success'),
+                ->color('success')
+                ->url(JurnalKeuanganResource::getUrl('index', [
+                    'activeTab' => 'hari_ini',
+                    'tableFilters' => [
+                        'jenis_transaksi' => ['value' => 'Pemasukan']
+                    ]
+                ])),
 
             Stat::make('Pengeluaran Hari Ini', 'Rp ' . number_format($totalExpenseDaily, 0, ',', '.'))
                 ->description(sprintf(
@@ -94,12 +100,19 @@ class DashboardStatsWidget extends BaseWidget
                     number_format($operasionalExpense, 0, ',', '.')
                 ))
                 ->icon('heroicon-m-arrow-trending-down')
-                ->color('danger'),
+                ->color('danger')
+                ->url(JurnalKeuanganResource::getUrl('index', [
+                    'activeTab' => 'hari_ini',
+                    'tableFilters' => [
+                        'jenis_transaksi' => ['value' => 'Pengeluaran']
+                    ]
+                ])),
 
             Stat::make('Total Transaksi', $dailyTransactions)
                 ->description($dateRange)
                 ->icon('heroicon-m-document-text')
-                ->color('primary'),
+                ->color('primary')
+                ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'hari_ini'])),
         ];
     }
 }
