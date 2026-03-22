@@ -12,52 +12,32 @@ class TransaksiOperasionalStatsWidget extends BaseWidget
     protected function getStats(): array
     {
         $tenantId = \Filament\Facades\Filament::getTenant()->id;
-        $yesterday = now()->subDay();
-        $bulanIni = now()->startOfMonth();
+        $today = now();
 
-        // Yesterday Stats
-        $yesterdayPemasukan = TransaksiOperasional::where('perusahaan_id', $tenantId)
+        // Today Stats
+        $todayPemasukanQuery = TransaksiOperasional::where('perusahaan_id', $tenantId)
             ->where('operasional', 'pemasukan')
-            ->whereDate('tanggal', $yesterday)
-            ->sum('nominal');
+            ->whereDate('tanggal', $today);
+            
+        $todayPemasukan = $todayPemasukanQuery->sum('nominal');
+        $countPemasukan = $todayPemasukanQuery->count();
 
-        $yesterdayPengeluaran = TransaksiOperasional::where('perusahaan_id', $tenantId)
+        $todayPengeluaranQuery = TransaksiOperasional::where('perusahaan_id', $tenantId)
             ->where('operasional', 'pengeluaran')
-            ->whereDate('tanggal', $yesterday)
-            ->sum('nominal');
-
-        // Monthly Stats
-        $totalPemasukan = TransaksiOperasional::where('perusahaan_id', $tenantId)
-            ->where('operasional', 'pemasukan')
-            ->where('tanggal', '>=', $bulanIni)
-            ->sum('nominal');
-
-        $totalPengeluaran = TransaksiOperasional::where('perusahaan_id', $tenantId)
-            ->where('operasional', 'pengeluaran')
-            ->where('tanggal', '>=', $bulanIni)
-            ->sum('nominal');
+            ->whereDate('tanggal', $today);
+            
+        $todayPengeluaran = $todayPengeluaranQuery->sum('nominal');
+        $countPengeluaran = $todayPengeluaranQuery->count();
 
         return [
-            Stat::make('Operasional Kemarin (Masuk)', 'Rp ' . number_format($yesterdayPemasukan, 0, ',', '.'))
-                ->description('Pemasukan operasional kemarin')
+            Stat::make('Pemasukan Hari Ini', 'Rp ' . number_format($todayPemasukan, 0, ',', '.'))
+                ->description($countPemasukan . ' transaksi pemasukan hari ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success')
                 ->icon('heroicon-o-arrow-up-circle'),
 
-            Stat::make('Operasional Kemarin (Keluar)', 'Rp ' . number_format($yesterdayPengeluaran, 0, ',', '.'))
-                ->description('Pengeluaran operasional kemarin')
-                ->descriptionIcon('heroicon-m-arrow-trending-down')
-                ->color('danger')
-                ->icon('heroicon-o-arrow-down-circle'),
-
-            Stat::make('Total Pemasukan', 'Rp ' . number_format($totalPemasukan, 0, ',', '.'))
-                ->description('Bulan ' . now()->format('F Y'))
-                ->descriptionIcon('heroicon-m-arrow-trending-up')
-                ->color('success')
-                ->icon('heroicon-o-arrow-up-circle'),
-
-            Stat::make('Total Pengeluaran', 'Rp ' . number_format($totalPengeluaran, 0, ',', '.'))
-                ->description('Bulan ' . now()->format('F Y'))
+            Stat::make('Pengeluaran Hari Ini', 'Rp ' . number_format($todayPengeluaran, 0, ',', '.'))
+                ->description($countPengeluaran . ' transaksi pengeluaran hari ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-down')
                 ->color('danger')
                 ->icon('heroicon-o-arrow-down-circle'),

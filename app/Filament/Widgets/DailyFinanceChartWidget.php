@@ -22,15 +22,20 @@ class DailyFinanceChartWidget extends ChartWidget
     protected function getData(): array
     {
         $tenantId = Filament::getTenant()->id;
-        
-        $days = collect(range(1, Carbon::now()->daysInMonth))->map(function ($day) {
-            return Carbon::now()->startOfMonth()->addDays($day - 1);
+        $today = Carbon::today();
+
+        // Array representing 24 hours of today
+        $hours = collect(range(0, 23))->map(function ($hour) use ($today) {
+            return $today->copy()->setHour($hour);
         });
 
-        $dailyData = $days->map(function ($date) use ($tenantId) {
+        $hourlyData = $hours->map(function ($date) use ($tenantId) {
             $stats = JurnalKeuangan::query()
                 ->where('perusahaan_id', $tenantId)
+                // Match the date
                 ->whereDate('tanggal', $date)
+                // Match the hour
+                ->whereRaw('HOUR(tanggal) = ?', [$date->hour])
                 ->select([
                     'jenis_transaksi',
                     DB::raw('SUM(nominal) as total')
@@ -43,7 +48,7 @@ class DailyFinanceChartWidget extends ChartWidget
             $profit = $income - $expense;
 
             return [
-                'date' => $date->format('d M'),
+                'hour' => $date->format('H:00'),
                 'income' => $income,
                 'expense' => $expense,
                 'profit' => $profit,
@@ -54,7 +59,7 @@ class DailyFinanceChartWidget extends ChartWidget
             'datasets' => [
                 [
                     'label' => 'Pemasukan',
-                    'data' => $dailyData->pluck('income')->toArray(),
+                    'data' => $hourlyData->pluck('income')->toArray(),
                     'borderColor' => '#10B981',
                     'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
                     'fill' => true,
@@ -62,7 +67,7 @@ class DailyFinanceChartWidget extends ChartWidget
                 ],
                 [
                     'label' => 'Pengeluaran',
-                    'data' => $dailyData->pluck('expense')->toArray(),
+                    'data' => $hourlyData->pluck('expense')->toArray(),
                     'borderColor' => '#EF4444',
                     'backgroundColor' => 'rgba(239, 68, 68, 0.1)',
                     'fill' => true,
@@ -70,14 +75,14 @@ class DailyFinanceChartWidget extends ChartWidget
                 ],
                 [
                     'label' => 'Keuntungan',
-                    'data' => $dailyData->pluck('profit')->toArray(),
+                    'data' => $hourlyData->pluck('profit')->toArray(),
                     'borderColor' => '#3B82F6',
                     'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
                     'fill' => true,
                     'tension' => 0.3,
                 ],
             ],
-            'labels' => $dailyData->pluck('date')->toArray(),
+            'labels' => $hourlyData->pluck('hour')->toArray(),
         ];
     }
 

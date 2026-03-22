@@ -48,6 +48,6 @@ class TransaksiOperasionalResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ])
-            ->with(['pihak', 'user']);
+            ->with(['pihak']);
     }
 }

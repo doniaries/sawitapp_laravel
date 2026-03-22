@@ -22,24 +22,23 @@ class TransaksiDoStatWidget extends BaseWidget
             // Get stats from cache or calculate
             return Cache::remember('transaksi-stats', 60, function () {
                 $tenantId = \Filament\Facades\Filament::getTenant()->id;
-                $yesterday = now()->subDay();
+                $today = now();
 
-                // --- YESTERDAY CALCULATIONS ---
-                $yesterdayStats = DB::table('transaksi_do')
+                // --- TODAY CALCULATIONS ---
+                $todayStats = DB::table('transaksi_do')
                     ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
-                    ->whereDate('tanggal', $yesterday)
+                    ->whereDate('tanggal', $today)
                     ->select([
                         DB::raw('COUNT(*) as count'),
                         DB::raw('SUM(sub_total) as total')
                     ])->first();
 
-                // --- MONTHLY CALCULATIONS (Tenant Scoped) ---
-                $incomingFundsMonthly = DB::table('transaksi_do')
+                // --- TODAY CALCULATIONS (Tenant Scoped) ---
+                $incomingFundsToday = DB::table('transaksi_do')
                     ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
-                    ->whereMonth('tanggal', now()->month)
-                    ->whereYear('tanggal', now()->year)
+                    ->whereDate('tanggal', $today)
                     ->select([
                         DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
                         DB::raw('COALESCE(SUM(CASE
@@ -49,34 +48,31 @@ class TransaksiDoStatWidget extends BaseWidget
                         END), 0) as remaining_payments')
                     ])->first();
 
-                $operationalIncomeMonthly = DB::table('transaksi_operasional')
+                $operationalIncomeToday = DB::table('transaksi_operasional')
                     ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pemasukan')
-                    ->whereMonth('tanggal', now()->month)
-                    ->whereYear('tanggal', now()->year)
+                    ->whereDate('tanggal', $today)
                     ->sum('nominal');
 
-                $totalIncomingMonthly = $incomingFundsMonthly->total_debt_payments +
-                    $incomingFundsMonthly->remaining_payments +
-                    $operationalIncomeMonthly;
+                $totalIncomingToday = $incomingFundsToday->total_debt_payments +
+                    $incomingFundsToday->remaining_payments +
+                    $operationalIncomeToday;
 
-                $totalDOMonthly = DB::table('transaksi_do')
+                $totalDOToday = DB::table('transaksi_do')
                     ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
-                    ->whereMonth('tanggal', now()->month)
-                    ->whereYear('tanggal', now()->year)
+                    ->whereDate('tanggal', $today)
                     ->sum('sub_total');
 
-                $totalOperationalMonthly = DB::table('transaksi_operasional')
+                $totalOperationalToday = DB::table('transaksi_operasional')
                     ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('operasional', 'pengeluaran')
-                    ->whereMonth('tanggal', now()->month)
-                    ->whereYear('tanggal', now()->year)
+                    ->whereDate('tanggal', $today)
                     ->sum('nominal');
 
-                $totalExpenditureMonthly = $totalDOMonthly + $totalOperationalMonthly;
+                $totalExpenditureToday = $totalDOToday + $totalOperationalToday;
 
                 // --- GLOBAL CALCULATIONS (Cumulative - Scoped) ---
                 $incomingFundsGlobal = DB::table('transaksi_do')
@@ -116,8 +112,8 @@ class TransaksiDoStatWidget extends BaseWidget
                 $remainingBalanceGlobal = $totalIncomingGlobal - $totalExpenditureGlobal;
 
                 return [
-                    Stat::make('DO Kemarin', $yesterdayStats->count ?? 0)
-                        ->description('Total: Rp ' . number_format($yesterdayStats->total ?? 0, 0, ',', '.'))
+                    Stat::make('DO Hari Ini', $todayStats->count ?? 0)
+                        ->description('Total: Rp ' . number_format($todayStats->total ?? 0, 0, ',', '.'))
                         ->descriptionIcon('heroicon-m-clock')
                         ->color('info'),
 
@@ -127,34 +123,34 @@ class TransaksiDoStatWidget extends BaseWidget
                         ->descriptionIcon('heroicon-m-banknotes')
                         ->color($remainingBalanceGlobal >= 0 ? 'success' : 'danger'),
 
-                    // Total Income (Monthly)
-                    Stat::make('Uang Masuk (Bulan Ini)', 'Rp ' . number_format($totalIncomingMonthly, 0, ',', '.'))
+                    // Total Income (Today)
+                    Stat::make('Uang Masuk (Hari Ini)', 'Rp ' . number_format($totalIncomingToday, 0, ',', '.'))
                         ->description(sprintf(
                             "Bayar Hutang: Rp %s\nBayar Sisa: Rp %s\nOperasional: Rp %s",
-                            number_format($incomingFundsMonthly->total_debt_payments, 0, ',', '.'),
-                            number_format($incomingFundsMonthly->remaining_payments, 0, ',', '.'),
-                            number_format($operationalIncomeMonthly, 0, ',', '.')
+                            number_format($incomingFundsToday->total_debt_payments, 0, ',', '.'),
+                            number_format($incomingFundsToday->remaining_payments, 0, ',', '.'),
+                            number_format($operationalIncomeToday, 0, ',', '.')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-up')
                         ->color('success'),
 
-                    // Total Expenditure (Monthly)
-                    Stat::make('Pengeluaran (Bulan Ini)', 'Rp ' . number_format($totalExpenditureMonthly, 0, ',', '.'))
+                    // Total Expenditure (Today)
+                    Stat::make('Pengeluaran (Hari Ini)', 'Rp ' . number_format($totalExpenditureToday, 0, ',', '.'))
                         ->description(sprintf(
                             "DO: Rp %s\nOperasional: Rp %s",
-                            number_format($totalDOMonthly, 0, ',', '.'),
-                            number_format($totalOperationalMonthly, 0, ',', '.')
+                            number_format($totalDOToday, 0, ',', '.'),
+                            number_format($totalOperationalToday, 0, ',', '.')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-down')
                         ->color('danger'),
 
-                    Stat::make('Transaksi (Bulan Ini)', TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->count())
+                    Stat::make('Transaksi (Hari Ini)', TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->count())
                         ->description(sprintf(
                             "tunai: %d | transfer: %d\ncair: %d | belum: %d",
-                            TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->where('cara_bayar', 'tunai')->count(),
-                            TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->where('cara_bayar', 'transfer')->count(),
-                            TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->where('cara_bayar', 'cair di luar')->count(),
-                            TransaksiDo::where('perusahaan_id', $tenantId)->currentMonth()->where('cara_bayar', 'belum dibayar')->count()
+                            TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'tunai')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'transfer')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'cair di luar')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'belum dibayar')->count()
                         ))
                         ->descriptionIcon('heroicon-m-document-text')
                         ->color('primary'),

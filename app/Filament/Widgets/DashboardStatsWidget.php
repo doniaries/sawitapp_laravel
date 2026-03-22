@@ -24,21 +24,20 @@ class DashboardStatsWidget extends BaseWidget
         $tenant = Filament::getTenant();
         $tenantId = $tenant->id;
         
-        $startOfMonth = now()->startOfMonth();
-        $endOfMonth = now()->endOfMonth();
+        $today = now();
 
         // 1. Current Balance (Tenant Scoped)
         $currentBalance = (float) $tenant->saldo;
 
-        // 2. Monthly Income Breakdown
-        $monthlyIncomeQuery = JurnalKeuangan::query()
+        // 2. Daily Income Breakdown
+        $dailyIncomeQuery = JurnalKeuangan::query()
             ->where('perusahaan_id', $tenantId)
-            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+            ->whereDate('tanggal', $today)
             ->where('jenis_transaksi', 'Pemasukan');
 
-        $totalIncomeMonthly = (float) $monthlyIncomeQuery->sum('nominal');
+        $totalIncomeDaily = (float) $dailyIncomeQuery->sum('nominal');
         
-        $incomeStats = $monthlyIncomeQuery->select([
+        $incomeStats = $dailyIncomeQuery->select([
             'kategori',
             'sub_kategori',
             DB::raw('SUM(nominal) as total')
@@ -48,15 +47,15 @@ class DashboardStatsWidget extends BaseWidget
         $sisaIncome = $incomeStats->where('sub_kategori', 'Pembayaran DO')->sum('total');
         $operasionalIncome = $incomeStats->where('kategori', 'Operasional')->sum('total');
 
-        // 3. Monthly Expense Breakdown
-        $monthlyExpenseQuery = JurnalKeuangan::query()
+        // 3. Daily Expense Breakdown
+        $dailyExpenseQuery = JurnalKeuangan::query()
             ->where('perusahaan_id', $tenantId)
-            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+            ->whereDate('tanggal', $today)
             ->where('jenis_transaksi', 'Pengeluaran');
 
-        $totalExpenseMonthly = (float) $monthlyExpenseQuery->sum('nominal');
+        $totalExpenseDaily = (float) $dailyExpenseQuery->sum('nominal');
 
-        $expenseStats = $monthlyExpenseQuery->select([
+        $expenseStats = $dailyExpenseQuery->select([
             'kategori',
             DB::raw('SUM(nominal) as total')
         ])->groupBy('kategori')->get();
@@ -65,12 +64,12 @@ class DashboardStatsWidget extends BaseWidget
         $operasionalExpense = $expenseStats->where('kategori', 'Operasional')->sum('total');
 
         // 4. Transaction Count
-        $monthlyTransactions = JurnalKeuangan::where('perusahaan_id', $tenantId)
-            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+        $dailyTransactions = JurnalKeuangan::where('perusahaan_id', $tenantId)
+            ->whereDate('tanggal', $today)
             ->count();
 
         // Format date range for display
-        $dateRange = "Periode: {$startOfMonth->format('d M Y')} - {$endOfMonth->format('d M Y')}";
+        $dateRange = "Hari ini: {$today->format('d M Y')}";
 
         return [
             Stat::make('Sisa Saldo', 'Rp ' . number_format($currentBalance, 0, ',', '.'))
@@ -78,7 +77,7 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-banknotes')
                 ->color($currentBalance >= 0 ? 'success' : 'danger'),
 
-            Stat::make('Pemasukan Bulan Ini', 'Rp ' . number_format($totalIncomeMonthly, 0, ',', '.'))
+            Stat::make('Pemasukan Hari Ini', 'Rp ' . number_format($totalIncomeDaily, 0, ',', '.'))
                 ->description(sprintf(
                     "Hutang: Rp %s Sisa: Rp %s\nOperasional: Rp %s",
                     number_format($hutangIncome, 0, ',', '.'),
@@ -88,7 +87,7 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-arrow-trending-up')
                 ->color('success'),
 
-            Stat::make('Pengeluaran Bulan Ini', 'Rp ' . number_format($totalExpenseMonthly, 0, ',', '.'))
+            Stat::make('Pengeluaran Hari Ini', 'Rp ' . number_format($totalExpenseDaily, 0, ',', '.'))
                 ->description(sprintf(
                     "DO: Rp %s Operasional: Rp %s",
                     number_format($doExpense, 0, ',', '.'),
@@ -97,7 +96,7 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-arrow-trending-down')
                 ->color('danger'),
 
-            Stat::make('Total Transaksi', $monthlyTransactions)
+            Stat::make('Total Transaksi', $dailyTransactions)
                 ->description($dateRange)
                 ->icon('heroicon-m-document-text')
                 ->color('primary'),

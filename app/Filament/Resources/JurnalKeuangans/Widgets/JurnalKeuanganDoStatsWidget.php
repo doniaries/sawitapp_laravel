@@ -19,14 +19,14 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
     // State untuk filter
     public $startDate;
     public $endDate;
-    public $activeTab = 'semua'; // Default tab
+    public $activeTab = 'hari_ini'; // Default tab
 
     // Initialize default dates on mount
     // Initialize default dates & tab saat mount
     public function mount(): void
     {
-        $this->startDate = now()->subDays(30); // Default 30 hari terakhir
-        $this->endDate = now();
+        $this->startDate = now()->startOfDay(); // Default hari ini
+        $this->endDate = now()->endOfDay();
     }
 
     //update stats saldo
