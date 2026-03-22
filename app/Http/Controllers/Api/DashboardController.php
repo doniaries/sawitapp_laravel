@@ -8,6 +8,8 @@ use App\Models\Penjual;
 use App\Models\Supir;
 use App\Models\PengajuanDana;
 use App\Models\Perusahaan;
+use App\Models\Pekerja;
+use App\Models\Kendaraan;
 
 use App\Models\JurnalKeuangan;
 use App\Models\TransaksiDo;
@@ -25,67 +27,63 @@ class DashboardController extends Controller
         
         $totalSellers = Penjual::where('perusahaan_id', $perusahaanId)->count();
         $totalDrivers = Supir::where('perusahaan_id', $perusahaanId)->count();
+        $totalWorkers = Pekerja::where('perusahaan_id', $perusahaanId)->count();
+        $totalVehicles = Kendaraan::where('perusahaan_id', $perusahaanId)->count();
         $totalJurnal = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->count();
-        $totalDana = PengajuanDana::where('perusahaan_id', $perusahaanId)
+        $totalOperasional = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->count();
+        
+        $totalDanaValue = PengajuanDana::where('perusahaan_id', $perusahaanId)
             ->where('status', 'pending')
             ->sum('nominal');
+        $countDana = PengajuanDana::where('perusahaan_id', $perusahaanId)
+            ->where('status', 'pending')
+            ->count();
 
         $month = Carbon::now()->month;
         $year = Carbon::now()->year;
         $today = Carbon::today();
 
-        // Pemasukan Hari Ini (Hanya dari Operasional yang jenisnya pemasukan)
-        $operasionalMasukToday = TransaksiOperasional::where('operasional', 'pemasukan')->whereDate('tanggal', $today)->sum('nominal');
-        $countOpMasukToday = TransaksiOperasional::where('operasional', 'pemasukan')->whereDate('tanggal', $today)->count();
+        // Pemasukan Hari Ini
+        $pemasukanTodayTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pemasukan')->whereDate('tanggal', $today)->sum('nominal');
+        $pemasukanTodayCount = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pemasukan')->whereDate('tanggal', $today)->count();
         
-        $pemasukanTodayTotal = $operasionalMasukToday;
-        $pemasukanTodayCount = $countOpMasukToday;
-
         // Pemasukan Bulan Ini
-        $operasionalMasukMonth = TransaksiOperasional::where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
-        $countOpMasukMonth = TransaksiOperasional::where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
-        
-        $pemasukanMonthTotal = $operasionalMasukMonth;
-        $pemasukanMonthCount = $countOpMasukMonth;
+        $pemasukanMonthTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
+        $pemasukanMonthCount = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
 
         // Pengeluaran Hari Ini (Operasional Keluar + DO cash payment)
-        $pembayaranHutangToday = TransaksiDo::whereDate('tanggal', $today)->sum('pembayaran_hutang');
-        $countHutangToday = TransaksiDo::whereDate('tanggal', $today)->where('pembayaran_hutang', '>', 0)->count();
-        $operasionalKeluarToday = TransaksiOperasional::where('operasional', 'pengeluaran')->whereDate('tanggal', $today)->sum('nominal');
-        $countOpKeluarToday = TransaksiOperasional::where('operasional', 'pengeluaran')->whereDate('tanggal', $today)->count();
+        $pembayaranHutangToday = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $today)->sum('pembayaran_hutang');
+        $countHutangToday = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $today)->where('pembayaran_hutang', '>', 0)->count();
+        $operasionalKeluarToday = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pengeluaran')->whereDate('tanggal', $today)->sum('nominal');
+        $countOpKeluarToday = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pengeluaran')->whereDate('tanggal', $today)->count();
         
         $pengeluaranTodayTotal = $pembayaranHutangToday + $operasionalKeluarToday;
         $pengeluaranTodayCount = $countHutangToday + $countOpKeluarToday;
 
         // Pengeluaran Bulan Ini
-        $pembayaranHutangMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('pembayaran_hutang');
-        $countHutangMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('pembayaran_hutang', '>', 0)->count();
-        $operasionalKeluarMonth = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
-        $countOpKeluarMonth = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
-        
-        $pengeluaranMonthTotal = $pembayaranHutangMonth + $operasionalKeluarMonth;
-        $pengeluaranMonthCount = $countHutangMonth + $countOpKeluarMonth;
-
-        // Pengeluaran Bulan Ini
-        $doPengeluaranMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('sisa_bayar');
-        $countDoPengeluaranMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('sisa_bayar', '>', 0)->count();
-        $operasionalKeluarMonth = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
-        $countOpKeluarMonth = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
+        $doPengeluaranMonth = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('sisa_bayar');
+        $countDoPengeluaranMonth = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('sisa_bayar', '>', 0)->count();
+        $operasionalKeluarMonth = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
+        $countOpKeluarMonth = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
         
         $pengeluaranMonthTotal = $doPengeluaranMonth + $operasionalKeluarMonth;
         $pengeluaranMonthCount = $countDoPengeluaranMonth + $countOpKeluarMonth;
 
         // Transaksi (DO)
-        $totalTransaksiToday = TransaksiDo::whereDate('tanggal', $today)->count();
-        $totalTransaksiMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
+        $totalTransaksiToday = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $today)->count();
+        $totalTransaksiMonth = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
 
         return response()->json([
             'saldo' => $perusahaan?->saldo ?? 0,
             'total_penjual' => $totalSellers,
             'total_supir' => $totalDrivers,
+            'total_pekerja' => $totalWorkers,
+            'total_kendaraan' => $totalVehicles,
             'total_jurnal_keuangan' => $totalJurnal,
-            'total_pengajuan_dana' => $totalDana,
-            'transactions' => TransaksiDo::with(['penjual:id,nama', 'supir:id,nama'])->latest()->limit(5)->get()->map(function($tx) {
+            'total_operasional' => $totalOperasional,
+            'total_pengajuan_dana' => $totalDanaValue,
+            'total_pengajuan_count' => $countDana,
+            'transactions' => TransaksiDo::where('perusahaan_id', $perusahaanId)->with(['penjual:id,nama', 'supir:id,nama'])->latest()->limit(5)->get()->map(function($tx) {
                 return [
                     'id' => $tx->id,
                     'nomor' => $tx->nomor,

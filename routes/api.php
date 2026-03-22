@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AppSettingsController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LogistikController;
 use App\Http\Controllers\Api\OperasionalController;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Route;
  * Public Routes
  */
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/app-settings', [AppSettingsController::class, 'index']);
 Route::get('/login', function () {
     return response()->json([
         'message' => 'Silakan gunakan metode POST untuk login.',
