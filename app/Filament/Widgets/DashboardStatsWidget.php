@@ -4,6 +4,9 @@ namespace App\Filament\Widgets;
 
 use App\Models\{Perusahaan, Penjual, TransaksiDo, JurnalKeuangan};
 use App\Filament\Resources\JurnalKeuangans\JurnalKeuanganResource;
+use App\Filament\Resources\Supirs\SupirResource;
+use App\Filament\Resources\Penjuals\PenjualResource;
+use App\Filament\Resources\Pekerjas\PekerjaResource;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Carbon\Carbon;
@@ -113,6 +116,24 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-document-text')
                 ->color('primary')
                 ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'hari_ini'])),
+
+            Stat::make('Total Supir', \App\Models\Supir::count())
+                ->description('Total supir terdaftar')
+                ->icon('heroicon-m-user-group')
+                ->color('info')
+                ->url(SupirResource::getUrl('index')),
+
+            Stat::make('Total Penjual', \App\Models\Penjual::count())
+                ->description('Total penjual terdaftar')
+                ->icon('heroicon-m-shopping-bag')
+                ->color('info')
+                ->url(PenjualResource::getUrl('index')),
+
+            Stat::make('Total Pekerja', \App\Models\Pekerja::count())
+                ->description('Total pekerja terdaftar')
+                ->icon('heroicon-m-briefcase')
+                ->color('info')
+                ->url(PekerjaResource::getUrl('index')),
         ];
     }
 }
