@@ -34,32 +34,37 @@ class DashboardController extends Controller
         $year = Carbon::now()->year;
         $today = Carbon::today();
 
-        // Pemasukan Hari Ini
-        $pembayaranHutangToday = TransaksiDo::whereDate('tanggal', $today)->sum('pembayaran_hutang');
-        $countHutangToday = TransaksiDo::whereDate('tanggal', $today)->where('pembayaran_hutang', '>', 0)->count();
+        // Pemasukan Hari Ini (Hanya dari Operasional yang jenisnya pemasukan)
         $operasionalMasukToday = TransaksiOperasional::where('operasional', 'pemasukan')->whereDate('tanggal', $today)->sum('nominal');
         $countOpMasukToday = TransaksiOperasional::where('operasional', 'pemasukan')->whereDate('tanggal', $today)->count();
         
-        $pemasukanTodayTotal = $pembayaranHutangToday + $operasionalMasukToday;
-        $pemasukanTodayCount = $countHutangToday + $countOpMasukToday;
+        $pemasukanTodayTotal = $operasionalMasukToday;
+        $pemasukanTodayCount = $countOpMasukToday;
 
         // Pemasukan Bulan Ini
-        $pembayaranHutangMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('pembayaran_hutang');
-        $countHutangMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('pembayaran_hutang', '>', 0)->count();
         $operasionalMasukMonth = TransaksiOperasional::where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
         $countOpMasukMonth = TransaksiOperasional::where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
         
-        $pemasukanMonthTotal = $pembayaranHutangMonth + $operasionalMasukMonth;
-        $pemasukanMonthCount = $countHutangMonth + $countOpMasukMonth;
+        $pemasukanMonthTotal = $operasionalMasukMonth;
+        $pemasukanMonthCount = $countOpMasukMonth;
 
-        // Pengeluaran Hari Ini
-        $doPengeluaranToday = TransaksiDo::whereDate('tanggal', $today)->sum('sisa_bayar');
-        $countDoPengeluaranToday = TransaksiDo::whereDate('tanggal', $today)->where('sisa_bayar', '>', 0)->count();
+        // Pengeluaran Hari Ini (Operasional Keluar + DO cash payment)
+        $pembayaranHutangToday = TransaksiDo::whereDate('tanggal', $today)->sum('pembayaran_hutang');
+        $countHutangToday = TransaksiDo::whereDate('tanggal', $today)->where('pembayaran_hutang', '>', 0)->count();
         $operasionalKeluarToday = TransaksiOperasional::where('operasional', 'pengeluaran')->whereDate('tanggal', $today)->sum('nominal');
         $countOpKeluarToday = TransaksiOperasional::where('operasional', 'pengeluaran')->whereDate('tanggal', $today)->count();
         
-        $pengeluaranTodayTotal = $doPengeluaranToday + $operasionalKeluarToday;
-        $pengeluaranTodayCount = $countDoPengeluaranToday + $countOpKeluarToday;
+        $pengeluaranTodayTotal = $pembayaranHutangToday + $operasionalKeluarToday;
+        $pengeluaranTodayCount = $countHutangToday + $countOpKeluarToday;
+
+        // Pengeluaran Bulan Ini
+        $pembayaranHutangMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('pembayaran_hutang');
+        $countHutangMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('pembayaran_hutang', '>', 0)->count();
+        $operasionalKeluarMonth = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
+        $countOpKeluarMonth = TransaksiOperasional::where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
+        
+        $pengeluaranMonthTotal = $pembayaranHutangMonth + $operasionalKeluarMonth;
+        $pengeluaranMonthCount = $countHutangMonth + $countOpKeluarMonth;
 
         // Pengeluaran Bulan Ini
         $doPengeluaranMonth = TransaksiDo::whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('sisa_bayar');

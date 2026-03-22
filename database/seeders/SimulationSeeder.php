@@ -50,7 +50,7 @@ class SimulationSeeder extends Seeder
             $currentDate = clone $startDate;
 
             while ($currentDate < now()->startOfDay()) {
-                $count = rand(15, 30);
+                $count = rand(2, 5);
                 $daysInMonth = $currentDate->daysInMonth;
 
                 for ($i = 1; $i <= $count; $i++) {
@@ -81,7 +81,7 @@ class SimulationSeeder extends Seeder
 
     private function createMonthlyTransaction($tanggal, $index, $penjualIds, $supirIds, $perusahaanId)
     {
-        $tonase = rand(1000, 10000);
+        $tonase = rand(100, 1000);
         $harga = rand(3000, 3500);
         $subTotal = $tonase * $harga;
         $caraBayar = ['tunai', 'transfer', 'cair di luar', 'belum dibayar'][rand(0, 3)];

@@ -3,12 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\TransaksiOperasional;
-use App\Models\Penjual;
-use App\Models\Supir;
-use App\Models\Pekerja;
-use App\Models\Perusahaan;
-use App\Models\User;
+use App\Models\{TransaksiOperasional, Perusahaan, JurnalKeuangan, Penjual, Supir, Pekerja, User};
+use App\Observers\JurnalKeuanganObserver;
 use App\Enums\KategoriOperasional;
 use App\Actions\Finance\ProcessDebtPayment;
 use Carbon\Carbon;
@@ -31,64 +27,105 @@ class OperasionalSeeder extends Seeder
             $this->command->info("Starting Operasional simulation for: {$perusahaan->name}");
             $perusahaanId = $perusahaan->id;
 
-            // 1. Generate Daily Expenses for last 6 months
+            // 1. Generate Daily Transactions for last 6 months
             $startDate = now()->subMonths(6)->startOfMonth();
             $currentDate = clone $startDate;
 
             while ($currentDate < now()->startOfDay()) {
                 $daysInMonth = $currentDate->daysInMonth;
                 
-                // Expense frequency: 5-10 times per month
-                $expenseCount = rand(5, 10);
+                // Frequency: 10-15 times per month
+                $expenseCount = rand(10, 15);
                 for ($i = 0; $i < $expenseCount; $i++) {
                     $tanggal = (clone $currentDate)->setDay(rand(1, $daysInMonth))->setHour(rand(8, 17));
                     if ($tanggal >= now()) continue;
 
-                    $this->seedRandomExpense($tanggal, $perusahaanId);
+                    $this->seedRandomExpense($perusahaan, $tanggal);
                 }
-
-                // Standalone Debt Payments: 2-5 times per month
-                $this->seedMonthlyPayments($currentDate, $perusahaanId, $daysInMonth);
 
                 $currentDate->addMonth();
             }
 
             // Yesterday & Today
-            for ($i = 0; $i < rand(1, 3); $i++) {
+            for ($i = 0; $i < 5; $i++) {
                 $tanggal = now()->subDay()->setHour(rand(8, 17))->setMinute(rand(0, 59));
-                $this->seedRandomExpense($tanggal, $perusahaanId);
+                $this->seedRandomExpense($perusahaan, $tanggal);
             }
 
-            for ($i = 0; $i < rand(1, 3); $i++) {
+            for ($i = 0; $i < 10; $i++) { // More transactions for today
                 $maxMinutes = max(1, now()->diffInMinutes(now()->startOfDay()));
                 $tanggal = now()->startOfDay()->addMinutes(rand(0, $maxMinutes));
-                $this->seedRandomExpense($tanggal, $perusahaanId);
+                $this->seedRandomExpense($perusahaan, $tanggal);
             }
         }
 
         $this->command->info("Simulasi Operasional & Pembayaran Hutang berhasil dibuat!");
     }
 
-    private function seedRandomExpense($tanggal, $perusahaanId)
+    private function seedRandomExpense(Perusahaan $perusahaan, Carbon $date): void
     {
-        $categories = [
-            KategoriOperasional::BAHAN_BAKAR,
-            KategoriOperasional::PERAWATAN,
-            KategoriOperasional::LAIN_LAIN,
-            KategoriOperasional::UANG_JALAN,
-        ];
-        $kat = $categories[array_rand($categories)];
+        $isToday = $date->isToday();
+        $admin = User::where('perusahaan_id', $perusahaan->id)->first() ?? User::first();
+        
+        if (!$admin) return;
 
-        TransaksiOperasional::create([
-            'tanggal' => $tanggal,
-            'operasional' => 'pengeluaran',
-            'kategori' => $kat,
-            'nominal' => rand(50000, 500000),
-            'keterangan' => "Biaya {$kat->label()} (Simulasi)",
-            'perusahaan_id' => $perusahaanId,
-            'pihak_type' => User::class,
-            'pihak_id' => 1, // Admin
-        ]);
+        // Tambahkan Modal Awal jika belum ada
+        if ($date->format('Y-m-d') === Carbon::now()->subMonths(6)->startOfMonth()->format('Y-m-d')) {
+             TransaksiOperasional::create([
+                'perusahaan_id' => $perusahaan->id,
+                'tanggal' => $date,
+                'operasional' => 'pemasukan',
+                'kategori' => KategoriOperasional::TAMBAH_SALDO->value,
+                'nominal' => 1000000000,
+                'keterangan' => 'Suntikan Modal Awal Perusahaan',
+                'tipe_nama' => 'user',
+                'user_id' => $admin->id,
+            ]);
+        }
+
+        $incomeChance = $isToday ? 0.7 : 0.2; 
+        
+        if (rand(1, 100) <= ($incomeChance * 100)) {
+            TransaksiOperasional::create([
+                'perusahaan_id' => $perusahaan->id,
+                'tanggal' => $date,
+                'operasional' => 'pemasukan',
+                'kategori' => KategoriOperasional::TAMBAH_SALDO->value,
+                'nominal' => rand(50, 200) * 1000000,
+                'keterangan' => 'Hasil Penjualan CPO/Inti Sawit',
+                'tipe_nama' => 'user',
+                'user_id' => $admin->id,
+            ]);
+            
+            if ($isToday) {
+                TransaksiOperasional::create([
+                    'perusahaan_id' => $perusahaan->id,
+                    'tanggal' => $date,
+                    'operasional' => 'pemasukan',
+                    'kategori' => KategoriOperasional::TAMBAH_SALDO->value,
+                    'nominal' => rand(10, 50) * 1000000,
+                    'keterangan' => 'Bonus Pencapaian Target Pabrik',
+                    'tipe_nama' => 'user',
+                    'user_id' => $admin->id,
+                ]);
+            }
+        }
+
+        $expenseCount = rand(1, 2);
+        for ($i = 0; $i < $expenseCount; $i++) {
+            $nominal = rand(5, 50) * 100000;
+
+            TransaksiOperasional::create([
+                'perusahaan_id' => $perusahaan->id,
+                'tanggal' => $date,
+                'operasional' => 'pengeluaran',
+                'kategori' => KategoriOperasional::LAIN_LAIN->value,
+                'nominal' => $nominal,
+                'keterangan' => 'Biaya ATK dan Listrik Kantor',
+                'tipe_nama' => 'user',
+                'user_id' => $admin->id,
+            ]);
+        }
     }
 
     private function seedMonthlyPayments($monthDate, $perusahaanId, $daysInMonth)

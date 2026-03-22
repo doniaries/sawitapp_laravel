@@ -242,8 +242,8 @@ class TransaksiOperasionalObserver
         if ($operasional->operasional === 'pemasukan') {
             $perusahaan->increment('saldo', $operasional->nominal);
         } else {
-            // Validasi saldo cukup untuk pengeluaran
-            if ($operasional->nominal > $perusahaan->saldo) {
+            // Validasi saldo cukup untuk pengeluaran (Lewati jika seeding)
+            if (!app()->runningInConsole() && $operasional->nominal > $perusahaan->saldo) {
                 throw new \Exception(
                     "Saldo tidak mencukupi untuk pengeluaran.\n" .
                         "Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "\n" .

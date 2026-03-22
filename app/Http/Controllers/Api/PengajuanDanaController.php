@@ -57,7 +57,7 @@ class PengajuanDanaController extends Controller
     public function approve($id, Request $request)
     {
         $request->validate([
-            'bukti_transfer' => 'required|string',
+            'bukti_transfer' => 'nullable|string',
             'catatan_pimpinan' => 'nullable|string',
         ]);
 
