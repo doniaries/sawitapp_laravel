@@ -25,36 +25,25 @@ class TransaksiOperasionalForm
                         Section::make('Informasi Operasional')
                             ->description('Detail transaksi pemasukan atau pengeluaran')
                             ->components([
-                                Select::make('operasional')
-                                    ->label('Jenis')
-                                    ->options([
-                                        'pemasukan' => 'Pemasukan',
-                                        'pengeluaran' => 'Pengeluaran',
-                                    ])
-                                    ->required()
-                                    ->live()
-                                    ->afterStateUpdated(fn($state, Set $set) => $set('kategori', null)),
-
                                 Select::make('kategori')
                                     ->label('Kategori')
-                                    ->options(function (Get $get) {
-                                        return match ($get('operasional')) {
-                                            'pemasukan' => KategoriOperasional::forPemasukan(),
-                                            'pengeluaran' => KategoriOperasional::forPengeluaran(),
-                                            default => []
-                                        };
-                                    })
-                                    ->required(),
-
-                                TextInput::make('nominal')
-                                    ->label('Nominal')
+                                    ->options(array_merge(
+                                        KategoriOperasional::forPemasukan(),
+                                        KategoriOperasional::forPengeluaran()
+                                    ))
                                     ->required()
-                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                    ->prefix('Rp')
-                                    ->numeric(),
-
+                                    ->searchable()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Set $set) {
+                                        if ($state) {
+                                            $kat = KategoriOperasional::tryFrom($state);
+                                            if ($kat) {
+                                                $set('operasional', $kat->getJenisOperasional());
+                                            }
+                                        }
+                                    }),
                                 Select::make('pihak_type')
-                                    ->label('Tipe Profil')
+                                    ->label('Jenis Pihak')
                                     ->options([
                                         'App\Models\Penjual' => 'Penjual',
                                         'App\Models\Supir' => 'Supir',
@@ -64,16 +53,16 @@ class TransaksiOperasionalForm
                                     ->required()
                                     ->live()
                                     ->afterStateUpdated(fn(Set $set) => $set('pihak_id', null)),
-
                                 Select::make('pihak_id')
-                                    ->label('Pihak Terkait')
+                                    ->label('Nama')
                                     ->options(function (Get $get) {
                                         $type = $get('pihak_type');
                                         if (!$type) return [];
-                                        
+
                                         // Gunakan query builder untuk efisiensi dan auto-scoping via Trait
                                         return $type::query()
-                                            ->when($type === 'App\Models\User', 
+                                            ->when(
+                                                $type === 'App\Models\User',
                                                 fn($q) => $q->pluck('name', 'id'),
                                                 fn($q) => $q->pluck('nama', 'id')
                                             );
@@ -81,6 +70,15 @@ class TransaksiOperasionalForm
                                     ->searchable()
                                     ->required()
                                     ->visible(fn(Get $get) => !!$get('pihak_type')),
+                                TextInput::make('nominal')
+                                    ->label('Nominal')
+                                    ->required()
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
+                                    ->prefix('Rp')
+                                    ->numeric(),
+                                TextInput::make('keterangan')
+                                    ->label('Keterangan')
+                                    ->columnSpanFull(),
                             ])->columns(2),
                     ]),
 
@@ -90,6 +88,16 @@ class TransaksiOperasionalForm
                         Section::make('Waktu & Catatan')
                             ->description('Konteks operasional')
                             ->components([
+                                Select::make('operasional')
+                                    ->label('Jenis Operasional')
+                                    ->options([
+                                        'pemasukan' => 'Pemasukan',
+                                        'pengeluaran' => 'Pengeluaran',
+                                    ])
+                                    ->required()
+                                    ->disabled()
+                                    ->dehydrated(),
+
                                 DateTimePicker::make('tanggal')
                                     ->label('Tanggal')
                                     ->readOnly()
@@ -98,8 +106,7 @@ class TransaksiOperasionalForm
                                     ->default(now())
                                     ->required(),
 
-                                TextInput::make('keterangan')
-                                    ->label('Keterangan')
+
                             ]),
                     ]),
             ]);
