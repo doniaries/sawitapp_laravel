@@ -78,8 +78,7 @@ class PengajuanDanasTable
                     ->visible(fn($record) => $record->status === 'pending')
                     ->form([
                         TextInput::make('bukti_transfer')
-                            ->label('Link/Nomor Bukti Transfer')
-                            ->required(),
+                            ->label('Link/Nomor Bukti Transfer'),
                         Textarea::make('catatan_pimpinan')
                             ->label('Catatan'),
                     ])
