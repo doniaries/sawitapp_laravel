@@ -106,6 +106,35 @@ class Supir extends Model
 
     // Add relationship with kendaraan
 
-    // Add total hutang accessor
+    // Tambahkan relasi ke riwayat pembayaran
+    public function riwayatPembayaran()
+    {
+        return $this->hasMany(PembayaranHutang::class, 'supir_id')
+            ->orderBy('tanggal', 'desc');
+    }
 
+    // Method untuk get total pembayaran
+    public function getTotalPembayaranAttribute(): float
+    {
+        return $this->riwayatPembayaran()
+            ->sum('nominal');
+    }
+
+    // Method untuk get sisa hutang real-time
+    public function getSisaHutangAttribute(): float
+    {
+        return $this->hutang - $this->total_pembayaran;
+    }
+
+    // Method untuk validasi pembayaran
+    public function validatePayment(float $nominal): bool
+    {
+        if ($nominal > $this->sisa_hutang) {
+            throw new \Exception(
+                "Pembayaran Rp " . number_format($nominal, 0, ',', '.') .
+                    " melebihi sisa hutang Rp " . number_format($this->sisa_hutang, 0, ',', '.')
+            );
+        }
+        return true;
+    }
 }

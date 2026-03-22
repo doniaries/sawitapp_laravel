@@ -36,7 +36,7 @@ class PenjualTable
                     ->label('Telepon')
                     ->searchable(),
 
-                TextColumn::make('hutang')
+                TextColumn::make('sisa_hutang')
                     ->label('Total Hutang')
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->alignment('right')
@@ -61,14 +61,14 @@ class PenjualTable
                     ->label('Bayar Hutang')
                     ->icon('heroicon-o-banknotes')
                     ->color('success')
-                    ->visible(fn($record) => $record->hutang > 0)
+                    ->visible(fn($record) => $record->sisa_hutang > 0)
                     ->form([
                         TextInput::make('nominal')
                             ->label('Nominal Pembayaran')
                             ->numeric()
                             ->required()
                             ->prefix('Rp')
-                            ->default(fn($record) => $record->hutang),
+                            ->default(fn($record) => $record->sisa_hutang),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pembayaran')
                             ->default(now())
@@ -119,7 +119,7 @@ class PenjualTable
                         ->requiresConfirmation()
                         ->action(function (\Illuminate\Support\Collection $records) {
                             $records->each(function ($record) {
-                                if ($record->hutang > 0) {
+                                if ($record->sisa_hutang > 0) {
                                     throw new \Exception("Penjual {$record->nama} masih memiliki hutang. Tidak dapat dihapus.");
                                 }
                             });

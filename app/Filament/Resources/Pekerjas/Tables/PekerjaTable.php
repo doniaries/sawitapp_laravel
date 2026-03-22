@@ -34,7 +34,8 @@ class PekerjaTable
                 TextColumn::make('pendapatan')
                     ->money('IDR')
                     ->sortable(),
-                TextColumn::make('total_hutang')
+                TextColumn::make('sisa_hutang')
+                    ->label('Total hutang')
                     ->money('IDR')
                     ->sortable(),
 
@@ -65,14 +66,14 @@ class PekerjaTable
                     ->label('Bayar Hutang')
                     ->icon('heroicon-o-banknotes')
                     ->color('success')
-                    ->visible(fn($record) => $record->hutang > 0)
+                    ->visible(fn($record) => $record->sisa_hutang > 0)
                     ->form([
                         TextInput::make('nominal')
                             ->label('Nominal Pembayaran')
                             ->numeric()
                             ->required()
                             ->prefix('Rp')
-                            ->default(fn($record) => $record->hutang),
+                            ->default(fn($record) => $record->sisa_hutang),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pembayaran')
                             ->default(now())
