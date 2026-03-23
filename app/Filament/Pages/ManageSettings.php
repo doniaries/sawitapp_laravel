@@ -41,6 +41,13 @@ class ManageSettings extends SettingsPage
                         TextInput::make('app_creator')
                             ->label('Nama Pembuat')
                             ->required(),
+                        \Filament\Forms\Components\FileUpload::make('app_logo')
+                            ->label('Logo Aplikasi (Default)')
+                            ->image()
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('settings')
+                            ->maxSize(2048),
                     ]),
             ]);
     }

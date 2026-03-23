@@ -8,6 +8,7 @@ class GeneralSettings extends Settings
 {
     public string $app_version;
     public string $app_creator;
+    public ?string $app_logo;
 
     public static function group(): string
     {

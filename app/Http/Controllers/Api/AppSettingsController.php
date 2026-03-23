@@ -15,6 +15,7 @@ class AppSettingsController extends Controller
             'data' => [
                 'app_version' => $settings->app_version,
                 'app_creator' => $settings->app_creator,
+                'app_logo_url' => $settings->app_logo ? asset('storage/' . $settings->app_logo) : null,
             ],
         ]);
     }

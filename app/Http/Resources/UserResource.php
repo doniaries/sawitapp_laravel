@@ -23,6 +23,7 @@ class UserResource extends JsonResource
             'is_active' => $this->is_active,
             'photo' => $this->photo,
             'photo_url' => $this->photo ? asset('storage/' . $this->photo) : null,
+            'perusahaan_logo_url' => $this->perusahaan?->logo,
             'roles' => $this->roles->pluck('name'),
         ];
     }
