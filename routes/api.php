@@ -86,4 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Jurnal Keuangan
     Route::get('/jurnal-keuangan', [JurnalKeuanganController::class, 'index']);
+
+    // App Settings (Update)
+    Route::post('/app-settings', [AppSettingsController::class, 'update']);
 });

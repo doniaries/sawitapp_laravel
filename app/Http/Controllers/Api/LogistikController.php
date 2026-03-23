@@ -63,9 +63,8 @@ class LogistikController extends Controller
 
     public function kendaraan(Request $request)
     {
-        $perPage = $request->get('per_page', 20);
-        $kendaraan = Kendaraan::latest()->paginate($perPage);
-        return response()->json($kendaraan);
+        $perusahaanId = $request->user()->perusahaan_id;
+        return Kendaraan::where('perusahaan_id', $perusahaanId)->latest()->paginate($request->per_page ?? 10);
     }
 
     public function showKendaraan($id, Request $request)

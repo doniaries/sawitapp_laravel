@@ -105,6 +105,7 @@ class DashboardController extends Controller
                 ];
             }),
             'perusahaan_name' => $perusahaan?->name ?? '-',
+            'latest_operasional' => TransaksiOperasional::where('perusahaan_id', $perusahaanId)->latest()->limit(5)->get(),
             'stats' => [
                 'pemasukan' => [
                     'today' => [

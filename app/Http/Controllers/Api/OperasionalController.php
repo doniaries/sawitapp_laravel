@@ -10,13 +10,14 @@ class OperasionalController extends Controller
 {
     public function index(Request $request)
     {
-        $perusahaan_id = $request->user()->perusahaan_id;
-        $perPage = $request->get('per_page', 20);
-        $operasional = TransaksiOperasional::where('perusahaan_id', $perusahaan_id)
-            ->with(['pihak'])
-            ->latest()
-            ->paginate($perPage);
-        return response()->json($operasional);
+        $perusahaanId = $request->user()->perusahaan_id;
+        $query = TransaksiOperasional::where('perusahaan_id', $perusahaanId);
+
+        if ($request->has('tanggal')) {
+            $query->whereDate('tanggal', $request->tanggal);
+        }
+
+        return $query->latest()->paginate($request->per_page ?? 10);
     }
 
     public function show($id, Request $request)

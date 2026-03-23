@@ -30,7 +30,7 @@ class JurnalKeuanganController extends Controller
             $query->whereBetween('tanggal', [$request->start_date, $request->end_date]);
         }
 
-        $perPage = $request->get('per_page', 20);
+        $perPage = $request->get('per_page', 10);
         return response()->json($query->orderBy('tanggal', 'desc')->paginate($perPage));
     }
 

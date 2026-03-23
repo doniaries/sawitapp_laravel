@@ -10,9 +10,8 @@ class PengajuanDanaController extends Controller
 {
     public function index(Request $request)
     {
-        $perusahaan_id = $request->user()->perusahaan_id;
-        
-        $query = PengajuanDana::where('perusahaan_id', $perusahaan_id);
+        $perusahaanId = $request->user()->perusahaan_id;
+        $query = PengajuanDana::where('perusahaan_id', $perusahaanId);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);

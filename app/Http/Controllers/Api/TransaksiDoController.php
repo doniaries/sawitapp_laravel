@@ -10,18 +10,15 @@ class TransaksiDoController extends Controller
 {
     public function index(Request $request)
     {
-        $perusahaan_id = $request->user()->perusahaan_id;
-        
-        $query = TransaksiDo::where('perusahaan_id', $perusahaan_id);
+        $perusahaanId = $request->user()->perusahaan_id;
+        $query = TransaksiDo::where('perusahaan_id', $perusahaanId)
+            ->with(['penjual:id,nama', 'supir:id,nama']);
 
         if ($request->has('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
         }
 
-        $perPage = $request->get('per_page', 20);
-        return response()->json(
-            $query->with(['supir', 'kendaraan', 'penjual'])->latest()->paginate($perPage)
-        );
+        return $query->latest()->paginate($request->per_page ?? 10);
     }
 
     public function show($id, Request $request)

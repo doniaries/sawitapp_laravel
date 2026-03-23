@@ -11,9 +11,14 @@ class PekerjaController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 20);
-        $pekerja = Pekerja::latest()->paginate($perPage);
-        return response()->json($pekerja);
+        $perusahaanId = $request->user()->perusahaan_id;
+        $query = Pekerja::where('perusahaan_id', $perusahaanId);
+        
+        if ($request->has('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+
+        return $query->latest()->paginate(10);
     }
 
     public function show($id, Request $request)

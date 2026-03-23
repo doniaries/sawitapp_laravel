@@ -11,9 +11,14 @@ class PenjualController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 20);
-        $penjual = Penjual::latest()->paginate($perPage);
-        return response()->json($penjual);
+        $perusahaanId = $request->user()->perusahaan_id;
+        $query = Penjual::where('perusahaan_id', $perusahaanId);
+        
+        if ($request->has('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+
+        return $query->latest()->paginate($request->per_page ?? 10);
     }
 
     public function show($id, Request $request)
