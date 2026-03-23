@@ -16,6 +16,21 @@ class JurnalKeuanganObserver
         $this->financeAction = $financeAction;
     }
 
+    public function created(JurnalKeuangan $jurnalKeuangan): void
+    {
+        $this->syncSaldoPerusahaan($jurnalKeuangan->perusahaan_id);
+    }
+
+    public function updated(JurnalKeuangan $jurnalKeuangan): void
+    {
+        $this->syncSaldoPerusahaan($jurnalKeuangan->perusahaan_id);
+    }
+
+    public function deleted(JurnalKeuangan $jurnalKeuangan): void
+    {
+        $this->syncSaldoPerusahaan($jurnalKeuangan->perusahaan_id);
+    }
+
     protected function createLaporan(array $data): void
     {
         try {
@@ -165,19 +180,18 @@ class JurnalKeuanganObserver
         }
     }
 
-    // di JurnalKeuanganObserver.php
-
-    public function syncSaldoPerusahaan(): void
+    public function syncSaldoPerusahaan(int $perusahaanId): void
     {
         try {
             DB::beginTransaction();
 
-            $perusahaan = Perusahaan::lockForUpdate()->firstOrFail();
+            $perusahaan = Perusahaan::lockForUpdate()->findOrFail($perusahaanId);
 
             // Calculate based on TransaksiDoStatWidget logic
 
             // 1. Get incoming funds from transaksi_do
             $incomingFunds = DB::table('transaksi_do')
+                ->where('perusahaan_id', $perusahaanId)
                 ->whereNull('deleted_at')
                 ->select([
                     DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
@@ -190,25 +204,28 @@ class JurnalKeuanganObserver
 
             // 2. Get operational income
             $operationalIncome = DB::table('transaksi_operasional')
+                ->where('perusahaan_id', $perusahaanId)
                 ->whereNull('deleted_at')
                 ->where('operasional', 'pemasukan')
                 ->sum('nominal');
 
             // 3. Get approved Pengajuan Dana income
             $pengajuanIncome = DB::table('pengajuan_dana')
+                ->where('perusahaan_id', $perusahaanId)
                 ->whereNull('deleted_at')
                 ->where('status', 'disetujui')
                 ->sum('nominal');
 
             // 4. Get standalone debt payments (not via DO)
             $standaloneDebtIncome = DB::table('pembayaran_hutang')
+                ->where('perusahaan_id', $perusahaanId)
                 ->whereNull('deleted_at')
                 ->sum('nominal');
 
             // Total Income components
-            $pembayaranHutang = $incomingFunds->total_debt_payments; // Rp 2,000,000
-            $pembayaranSisa = $incomingFunds->remaining_payments;    // Rp 164,128,680
-            $pemasukanOperasional = $operationalIncome;             // Rp 265,647,000
+            $pembayaranHutang = $incomingFunds->total_debt_payments; 
+            $pembayaranSisa = $incomingFunds->remaining_payments;    
+            $pemasukanOperasional = $operationalIncome;             
             $pemasukanPengajuan = $pengajuanIncome;
             $pemasukanHutangMandiri = $standaloneDebtIncome;
 
@@ -218,19 +235,21 @@ class JurnalKeuanganObserver
             // Calculate expenditure
             // 1. Total DO expenses
             $pengeluaranDO = DB::table('transaksi_do')
+                ->where('perusahaan_id', $perusahaanId)
                 ->whereNull('deleted_at')
-                ->sum('sub_total'); // Rp 296,694,980
+                ->sum('sub_total'); 
 
             // 2. Total operational expenses
             $pengeluaranOperasional = DB::table('transaksi_operasional')
+                ->where('perusahaan_id', $perusahaanId)
                 ->whereNull('deleted_at')
                 ->where('operasional', 'pengeluaran')
-                ->sum('nominal'); // Rp 204,000
+                ->sum('nominal'); 
 
-            // Total Expenditure (Rp 296,898,980)
+            // Total Expenditure
             $totalPengeluaran = $pengeluaranDO + $pengeluaranOperasional;
 
-            // Final Balance (Rp 134,876,700)
+            // Final Balance
             $saldoAkhir = $totalPemasukan - $totalPengeluaran;
 
             // Update saldo

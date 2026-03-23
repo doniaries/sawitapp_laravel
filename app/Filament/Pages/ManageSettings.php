@@ -25,7 +25,7 @@ class ManageSettings extends SettingsPage
 
     public static function isScopedToTenant(): bool
     {
-        return false;
+        return true;
     }
 
     public function form(Schema $schema): Schema
