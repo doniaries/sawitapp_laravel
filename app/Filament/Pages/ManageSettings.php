@@ -18,8 +18,8 @@ class ManageSettings extends SettingsPage
 
     public static function canAccess(): bool
     {
-        $user = auth()->user();
-        return $user instanceof \App\Models\User && $user->hasRole('super_admin');
+        $user = \Illuminate\Support\Facades\Auth::user();
+        return $user instanceof \App\Models\User && $user->isSuperAdmin();
     }
 
     public static function isScopedToTenant(): bool

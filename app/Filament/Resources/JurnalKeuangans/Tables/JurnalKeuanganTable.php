@@ -128,29 +128,7 @@ class JurnalKeuanganTable
                         }
                     })
                     ->hidden(fn($livewire) => $livewire->activeTab === 'semua'),
-                Action::make('syncSaldo')
-                    ->label('Sync Saldo')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Sinkronisasi Saldo')
-                    ->modalDescription('Yakin ingin mensinkronkan ulang saldo?')
-                    ->modalSubmitActionLabel('Ya, Sinkronkan')
-                    ->action(function () {
-                        try {
-                            app(JurnalKeuanganObserver::class)->syncSaldoPerusahaan();
-                            Notification::make()
-                                ->title('Saldo Berhasil Disinkronkan')
-                                ->success()
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Gagal Sinkronisasi')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    }),
+
                 Action::make('downloadPdf')
                     ->label('Download PDF')
                     ->icon('heroicon-o-document-arrow-down')

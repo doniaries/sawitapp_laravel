@@ -18,17 +18,14 @@ class JurnalKeuanganObserver
 
     public function created(JurnalKeuangan $jurnalKeuangan): void
     {
-        $this->syncSaldoPerusahaan($jurnalKeuangan->perusahaan_id);
     }
 
     public function updated(JurnalKeuangan $jurnalKeuangan): void
     {
-        $this->syncSaldoPerusahaan($jurnalKeuangan->perusahaan_id);
     }
 
     public function deleted(JurnalKeuangan $jurnalKeuangan): void
     {
-        $this->syncSaldoPerusahaan($jurnalKeuangan->perusahaan_id);
     }
 
     protected function createLaporan(array $data): void
@@ -180,112 +177,5 @@ class JurnalKeuanganObserver
         }
     }
 
-    public function syncSaldoPerusahaan(int $perusahaanId): void
-    {
-        try {
-            DB::beginTransaction();
 
-            $perusahaan = Perusahaan::lockForUpdate()->findOrFail($perusahaanId);
-
-            // Calculate based on TransaksiDoStatWidget logic
-
-            // 1. Get incoming funds from transaksi_do
-            $incomingFunds = DB::table('transaksi_do')
-                ->where('perusahaan_id', $perusahaanId)
-                ->whereNull('deleted_at')
-                ->select([
-                    DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
-                    DB::raw('COALESCE(SUM(CASE
-                        WHEN cara_bayar IN ("transfer", "cair di luar", "belum dibayar")
-                        THEN sisa_bayar
-                        ELSE 0
-                    END), 0) as remaining_payments')
-                ])->first();
-
-            // 2. Get operational income
-            $operationalIncome = DB::table('transaksi_operasional')
-                ->where('perusahaan_id', $perusahaanId)
-                ->whereNull('deleted_at')
-                ->where('operasional', 'pemasukan')
-                ->sum('nominal');
-
-            // 3. Get approved Pengajuan Dana income
-            $pengajuanIncome = DB::table('pengajuan_dana')
-                ->where('perusahaan_id', $perusahaanId)
-                ->whereNull('deleted_at')
-                ->where('status', 'disetujui')
-                ->sum('nominal');
-
-            // 4. Get standalone debt payments (not via DO)
-            $standaloneDebtIncome = DB::table('pembayaran_hutang')
-                ->where('perusahaan_id', $perusahaanId)
-                ->whereNull('deleted_at')
-                ->sum('nominal');
-
-            // Total Income components
-            $pembayaranHutang = $incomingFunds->total_debt_payments; 
-            $pembayaranSisa = $incomingFunds->remaining_payments;    
-            $pemasukanOperasional = $operationalIncome;             
-            $pemasukanPengajuan = $pengajuanIncome;
-            $pemasukanHutangMandiri = $standaloneDebtIncome;
-
-            // Total Income
-            $totalPemasukan = $pembayaranHutang + $pembayaranSisa + $pemasukanOperasional + $pemasukanPengajuan + $pemasukanHutangMandiri;
-
-            // Calculate expenditure
-            // 1. Total DO expenses
-            $pengeluaranDO = DB::table('transaksi_do')
-                ->where('perusahaan_id', $perusahaanId)
-                ->whereNull('deleted_at')
-                ->sum('sub_total'); 
-
-            // 2. Total operational expenses
-            $pengeluaranOperasional = DB::table('transaksi_operasional')
-                ->where('perusahaan_id', $perusahaanId)
-                ->whereNull('deleted_at')
-                ->where('operasional', 'pengeluaran')
-                ->sum('nominal'); 
-
-            // Total Expenditure
-            $totalPengeluaran = $pengeluaranDO + $pengeluaranOperasional;
-
-            // Final Balance
-            $saldoAkhir = $totalPemasukan - $totalPengeluaran;
-
-            // Update saldo
-            $perusahaan->update(['saldo' => $saldoAkhir]);
-
-            // Log detail untuk tracking
-            Log::info('Sync Saldo:', [
-                'pemasukan_operasional' => $pemasukanOperasional,
-                'pembayaran_hutang' => $pembayaranHutang,
-                'pembayaran_sisa' => $pembayaranSisa,
-                'total_masuk' => $totalPemasukan,
-                'pengeluaran_do' => $pengeluaranDO,
-                'pengeluaran_operasional' => $pengeluaranOperasional,
-                'total_keluar' => $totalPengeluaran,
-                'saldo_akhir' => $saldoAkhir
-            ]);
-
-            DB::commit();
-
-            Notification::make()
-                ->title('Saldo Berhasil Disinkronkan')
-                ->body(sprintf(
-                    "Saldo akhir: Rp %s\n" .
-                        "Total Masuk: Rp %s\n" .
-                        "Total Keluar: Rp %s",
-                    number_format($saldoAkhir, 0, ',', '.'),
-                    number_format($totalPemasukan, 0, ',', '.'),
-                    number_format($totalPengeluaran, 0, ',', '.')
-                ))
-                ->success()
-                ->duration(5000)
-                ->send();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error sync saldo: ' . $e->getMessage());
-            throw $e;
-        }
-    }
 }

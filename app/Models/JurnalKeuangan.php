@@ -157,13 +157,7 @@ class JurnalKeuangan extends Model
 
         // Auto sync setelah setiap transaksi kas
         static::created(function ($model) {
-            if ($model->mempengaruhi_kas) {
-                try {
-                    app(JurnalKeuanganObserver::class)->syncSaldoPerusahaan();
-                } catch (\Exception $e) {
-                    Log::error('Auto-sync error: ' . $e->getMessage());
-                }
-            }
+            // Logika sync saldo dihilangkan sesuai permintaan
         });
 
         // Sync juga untuk update & delete
