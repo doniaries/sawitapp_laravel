@@ -81,9 +81,9 @@ class UserForm
                                     })
                                     ->afterStateHydrated(function (Select $component, ?User $record) {
                                         if ($record) {
-                                            $role = $record->roles()->first();
-                                            if ($role) {
-                                                $component->state($role->name);
+                                            $roleName = $record->getRoleNames()->first();
+                                            if ($roleName) {
+                                                $component->state($roleName);
                                             }
                                         }
                                     })
