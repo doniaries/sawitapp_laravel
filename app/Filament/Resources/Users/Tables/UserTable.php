@@ -32,8 +32,6 @@ class UserTable
                 ImageColumn::make('photo')
                     ->label('Avatar')
                     ->disk('public')
-                    ->width(50)
-                    ->height(50)
                     ->circular(),
                 TextColumn::make('name')
                     ->label('Nama')
