@@ -56,7 +56,7 @@ class PengajuanDanaController extends Controller
     public function approve($id, Request $request)
     {
         $request->validate([
-            'bukti_transfer' => 'nullable|string',
+            'bukti_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'catatan_pimpinan' => 'nullable|string',
         ]);
 
@@ -68,11 +68,20 @@ class PengajuanDanaController extends Controller
         }
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($pengajuan, $request) {
+            $buktiPath = $pengajuan->bukti_transfer;
+            
+            if ($request->hasFile('bukti_transfer')) {
+                $file = $request->file('bukti_transfer');
+                $filename = 'transfer_' . time() . '_' . $pengajuan->id . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('storage/bukti_transfer'), $filename);
+                $buktiPath = 'storage/bukti_transfer/' . $filename;
+            }
+
             $pengajuan->update([
                 'status' => 'disetujui',
                 'tanggal_proses' => now(),
                 'proses_by' => $request->user()->id,
-                'bukti_transfer' => $request->bukti_transfer,
+                'bukti_transfer' => $buktiPath,
                 'catatan_pimpinan' => $request->catatan_pimpinan,
             ]);
 
