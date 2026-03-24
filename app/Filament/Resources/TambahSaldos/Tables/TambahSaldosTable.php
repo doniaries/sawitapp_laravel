@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\PengajuanDanas\Tables;
+namespace App\Filament\Resources\TambahSaldos\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -16,8 +16,10 @@ use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\JurnalKeuangan;
+use App\Models\Perusahaan;
+use App\Enums\TipeNama;
 
-class PengajuanDanasTable
+class TambahSaldosTable
 {
     public static function configure(Table $table): Table
     {
@@ -92,20 +94,29 @@ class PengajuanDanasTable
                                 'catatan_pimpinan' => $data['catatan_pimpinan'],
                             ]);
 
-                            // Catat ke Jurnal Keuangan (Ini akan mentrigger sync saldo di Observer)
+                            // 1. Tambah Saldo Perusahaan
+                            $perusahaan = Perusahaan::findOrFail($record->perusahaan_id);
+                            $saldoAwal = $perusahaan->saldo;
+                            $perusahaan->increment('saldo', $record->nominal);
+                            $saldoAkhir = $perusahaan->saldo;
+
+                            // 2. Catat ke Jurnal Keuangan
                             JurnalKeuangan::create([
                                 'perusahaan_id' => $record->perusahaan_id,
                                 'tanggal' => now(),
                                 'jenis_transaksi' => 'Pemasukan',
-                                'kategori' => 'Saldo',
-                                'sub_kategori' => 'Tambah Saldo',
+                                'kategori' => JurnalKeuangan::KATEGORI_TRANSAKSI['SALDO'],
+                                'sub_kategori' => JurnalKeuangan::SUB_KATEGORI_SALDO['TAMBAH'],
                                 'nominal' => $record->nominal,
+                                'saldo_awal' => $saldoAwal,
+                                'saldo_akhir' => $saldoAkhir,
                                 'referensi_id' => $record->id,
-                                'sumber_transaksi' => 'Pengajuan Dana',
-                                'tipe_pihak' => 'user',
+                                'nomor_referensi' => 'TS-' . $record->id,
+                                'sumber_transaksi' => 'Tambah Saldo',
+                                'tipe_pihak' => TipeNama::USER,
                                 'cara_pembayaran' => 'transfer',
                                 'pihak_terkait' => $record->user?->name,
-                                'keterangan' => 'Penambahan saldo dari pengajuan dana #' . $record->id . ': ' . $record->keperluan,
+                                'keterangan' => 'Top up saldo: ' . $record->keperluan,
                                 'mempengaruhi_kas' => true,
                             ]);
                         });

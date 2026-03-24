@@ -97,9 +97,9 @@ class JurnalKeuangan extends Model
         return $this->belongsTo(TransaksiOperasional::class, 'referensi_id');
     }
 
-    public function pengajuanDana(): EloquentBelongsTo
+    public function tambahSaldo(): EloquentBelongsTo
     {
-        return $this->belongsTo(PengajuanDana::class, 'referensi_id');
+        return $this->belongsTo(TambahSaldo::class, 'referensi_id');
     }
 
     public function createdBy()

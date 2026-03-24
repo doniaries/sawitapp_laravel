@@ -12,10 +12,10 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $perusahaan1 = Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
-        $perusahaan2 = Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
+        $perusahaan2 = Perusahaan::where('name', 'PT Andalas Integrasi Global')->first();
 
-        // ========== Perusahaan 1: CV SUCCESS MANDIRI & Perusahaan 2: PT Andala Integrasi Global ==========
-        if ($perusahaan1 && $perusahaan2) {
+        // ========== Perusahaan 1: CV SUCCESS MANDIRI ==========
+        if ($perusahaan1) {
             // Utama: Yondra sebagai Admin di kedua perusahaan
             $yondra = User::firstOrCreate(
                 ['email' => 'yondra@gmail.com'],
@@ -50,7 +50,10 @@ class UserSeeder extends Seeder
             setPermissionsTeamId($perusahaan1->id);
             $kasir->syncRoles(['kasir']);
             $kasir->perusahaans()->syncWithoutDetaching([$perusahaan1->id]);
+        }
 
+        // ========== Perusahaan 2: PT Andalas Integrasi Global ==========
+        if ($perusahaan2) {
             // Kasir 2 di Perusahaan 2
             $wendy = User::firstOrCreate(
                 ['email' => 'kasir2@gmail.com'],

@@ -138,7 +138,7 @@ class PenjualSeeder extends Seeder
         ];
 
         $perusahaan1 = \App\Models\Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
-        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
+        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andalas Integrasi Global')->first();
 
         foreach ($penjuals as $index => $penjualData) {
             unset($penjualData['id']); // Let database handle ID

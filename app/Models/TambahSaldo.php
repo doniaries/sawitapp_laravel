@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\BelongsToTenant;
 
-class PengajuanDana extends Model
+class TambahSaldo extends Model
 {
     use SoftDeletes, BelongsToTenant;
 
-    protected $table = 'pengajuan_dana';
+    protected $table = 'tambah_saldo';
 
     protected $fillable = [
         'perusahaan_id',

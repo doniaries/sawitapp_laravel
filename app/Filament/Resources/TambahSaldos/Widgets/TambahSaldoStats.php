@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\PengajuanDanas\Widgets;
+namespace App\Filament\Resources\TambahSaldos\Widgets;
 
-use App\Models\PengajuanDana;
+use App\Models\TambahSaldo as PengajuanDana;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Number;
 
-class PengajuanDanaStats extends StatsOverviewWidget
+class TambahSaldoStats extends StatsOverviewWidget
 {
     protected ?string $pollingInterval = '10s'; // Update setiap 10 detik
 
@@ -21,16 +21,16 @@ class PengajuanDanaStats extends StatsOverviewWidget
             ->sum('nominal');
 
         return [
-            Stat::make('Pengajuan Pending', $pendingCount)
-                ->description('Menunggu persetujuan')
+            Stat::make('Topup Pending', $pendingCount)
+                ->description('Menunggu konfirmasi')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
-            Stat::make('Total Dana Pending', 'Rp ' . number_format($pendingNominal, 0, ',', '.'))
-                ->description('Total nominal yang diajukan')
-                ->descriptionIcon('heroicon-m-banknotes')
+            Stat::make('Total Nominal Pending', 'Rp ' . number_format($pendingNominal, 0, ',', '.'))
+                ->description('Total top up pending')
+                ->descriptionIcon('heroicon-m-wallet')
                 ->color('warning'),
-            Stat::make('Total Cair Bulan Ini', 'Rp ' . number_format($approvedMonth, 0, ',', '.'))
-                ->description('Dana yang disetujui bulan ini')
+            Stat::make('Total Topup Bulan Ini', 'Rp ' . number_format($approvedMonth, 0, ',', '.'))
+                ->description('Saldo masuk bulan ini')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success'),
         ];

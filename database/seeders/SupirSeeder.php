@@ -146,7 +146,7 @@ class SupirSeeder extends Seeder
         ];
 
         $perusahaan1 = \App\Models\Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
-        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
+        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andalas Integrasi Global')->first();
 
         foreach ($supirs as $index => $supirData) {
             unset($supirData['id']); // Let database handle ID

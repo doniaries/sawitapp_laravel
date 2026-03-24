@@ -11,7 +11,7 @@ class PekerjaSeeder extends Seeder
     public function run(): void
     {
         $perusahaan1 = Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
-        $perusahaan2 = Perusahaan::where('name', 'PT Andala Integrasi Global')->first();
+        $perusahaan2 = Perusahaan::where('name', 'PT Andalas Integrasi Global')->first();
 
         if ($perusahaan1) {
             $pekerjaCV = [

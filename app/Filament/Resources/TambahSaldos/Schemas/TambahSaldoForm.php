@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\PengajuanDanas\Schemas;
+namespace App\Filament\Resources\TambahSaldos\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -8,7 +8,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
-class PengajuanDanaForm
+class TambahSaldoForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -42,7 +42,7 @@ class PengajuanDanaForm
                     ->dehydrated()
                     ->required(),
                 TextInput::make('bukti_transfer')
-                    ->placeholder('Akan diisi setelah disetujui')
+                    ->placeholder('Diisi setelah disetujui')
                     ->disabled(),
             ]);
     }

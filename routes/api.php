@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\LogistikController;
 use App\Http\Controllers\Api\OperasionalController;
 use App\Http\Controllers\Api\PenjualController;
 use App\Http\Controllers\Api\TransaksiDoController;
-use App\Http\Controllers\Api\PengajuanDanaController;
+use App\Http\Controllers\Api\TambahSaldoController;
 use App\Http\Controllers\Api\JurnalKeuanganController;
 use App\Http\Controllers\Api\PekerjaController;
 use App\Http\Resources\UserResource;
@@ -48,12 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/transaksi-do/{id}', [TransaksiDoController::class, 'show']);
     Route::post('/transaksi-do', [TransaksiDoController::class, 'store']);
 
-    // Pengajuan Dana
-    Route::get('/pengajuan-dana', [PengajuanDanaController::class, 'index']);
-    Route::get('/pengajuan-dana/{id}', [PengajuanDanaController::class, 'show']);
-    Route::post('/pengajuan-dana', [PengajuanDanaController::class, 'store']);
-    Route::post('/pengajuan-dana/{id}/approve', [PengajuanDanaController::class, 'approve']);
-    Route::post('/pengajuan-dana/{id}/reject', [PengajuanDanaController::class, 'reject']);
+    // Tambah Saldo
+    Route::get('/tambah-saldo', [TambahSaldoController::class, 'index']);
+    Route::post('/tambah-saldo', [TambahSaldoController::class, 'store']);
+    Route::get('/tambah-saldo/{id}', [TambahSaldoController::class, 'show']);
+    Route::post('/tambah-saldo/{id}/approve', [TambahSaldoController::class, 'approve']);
+    Route::post('/tambah-saldo/{id}/reject', [TambahSaldoController::class, 'reject']);
 
     // Penjual
     Route::get('/penjual', [PenjualController::class, 'index']);
