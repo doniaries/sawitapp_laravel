@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\JurnalKeuangan;
+use App\Models\Kendaraan;
+use App\Models\Pekerja;
 use App\Models\Penjual;
+use App\Models\Perusahaan;
 use App\Models\Supir;
 use App\Models\TambahSaldo;
-use App\Models\Perusahaan;
-use App\Models\Pekerja;
-use App\Models\Kendaraan;
-
-use App\Models\JurnalKeuangan;
 use App\Models\TransaksiDo;
 use App\Models\TransaksiOperasional;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -24,14 +24,14 @@ class DashboardController extends Controller
         $perusahaanId = $user->perusahaan_id;
 
         $perusahaan = Perusahaan::find($perusahaanId);
-        
+
         $totalSellers = Penjual::where('perusahaan_id', $perusahaanId)->count();
         $totalDrivers = Supir::where('perusahaan_id', $perusahaanId)->count();
         $totalWorkers = Pekerja::where('perusahaan_id', $perusahaanId)->count();
         $totalVehicles = Kendaraan::where('perusahaan_id', $perusahaanId)->count();
         $totalJurnal = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->count();
         $totalOperasional = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->count();
-        
+
         $totalDanaValue = TambahSaldo::where('perusahaan_id', $perusahaanId)
             ->where('status', 'pending')
             ->sum('nominal');
@@ -46,7 +46,7 @@ class DashboardController extends Controller
         // Pemasukan Hari Ini
         $pemasukanTodayTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pemasukan')->whereDate('tanggal', $today)->sum('nominal');
         $pemasukanTodayCount = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pemasukan')->whereDate('tanggal', $today)->count();
-        
+
         // Pemasukan Bulan Ini
         $pemasukanMonthTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
         $pemasukanMonthCount = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pemasukan')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
@@ -56,7 +56,7 @@ class DashboardController extends Controller
         $countHutangToday = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $today)->where('pembayaran_hutang', '>', 0)->count();
         $operasionalKeluarToday = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pengeluaran')->whereDate('tanggal', $today)->sum('nominal');
         $countOpKeluarToday = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pengeluaran')->whereDate('tanggal', $today)->count();
-        
+
         $pengeluaranTodayTotal = $pembayaranHutangToday + $operasionalKeluarToday;
         $pengeluaranTodayCount = $countHutangToday + $countOpKeluarToday;
 
@@ -65,7 +65,7 @@ class DashboardController extends Controller
         $countDoPengeluaranMonth = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('sisa_bayar', '>', 0)->count();
         $operasionalKeluarMonth = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
         $countOpKeluarMonth = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->where('operasional', 'pengeluaran')->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
-        
+
         $pengeluaranMonthTotal = $doPengeluaranMonth + $operasionalKeluarMonth;
         $pengeluaranMonthCount = $countDoPengeluaranMonth + $countOpKeluarMonth;
 
@@ -83,7 +83,8 @@ class DashboardController extends Controller
             'total_operasional' => $totalOperasional,
             'total_pengajuan_dana' => $totalDanaValue,
             'total_pengajuan_count' => $countDana,
-            'transactions' => TransaksiDo::where('perusahaan_id', $perusahaanId)->with(['penjual:id,nama', 'supir:id,nama'])->latest()->limit(5)->get()->map(function($tx) {
+            'total_user' => User::where('perusahaan_id', $perusahaanId)->count(),
+            'transactions' => TransaksiDo::where('perusahaan_id', $perusahaanId)->with(['penjual:id,nama', 'supir:id,nama'])->latest()->limit(5)->get()->map(function ($tx) {
                 return [
                     'id' => $tx->id,
                     'nomor' => $tx->nomor,
