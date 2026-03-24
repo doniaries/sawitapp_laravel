@@ -81,7 +81,22 @@ class UserForm
                                     })
                                     ->afterStateHydrated(function (Select $component, ?User $record) {
                                         if ($record) {
+                                            $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+                                            
+                                            // Coba ambil role di tenant saat ini
+                                            if ($tenantId) {
+                                                setPermissionsTeamId($tenantId);
+                                            }
                                             $roleName = $record->getRoleNames()->first();
+
+                                            // Fallback: Coba ambil role global jika tidak ada di tenant
+                                            if (!$roleName && $tenantId) {
+                                                setPermissionsTeamId(null);
+                                                $roleName = $record->getRoleNames()->first();
+                                                // Reset kembali ke tenant
+                                                setPermissionsTeamId($tenantId);
+                                            }
+
                                             if ($roleName) {
                                                 $component->state($roleName);
                                             }
