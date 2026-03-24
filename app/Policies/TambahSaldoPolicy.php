@@ -5,42 +5,42 @@ namespace App\Policies;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class PengajuanDanaPolicy
+class TambahSaldoPolicy
 {
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool
     {
-        return $user->can('ViewAny:PengajuanDana');
+        return $user->can('ViewAny:TambahSaldo');
     }
 
     public function view(User $user): bool
     {
-        return $user->can('View:PengajuanDana');
+        return $user->can('View:TambahSaldo');
     }
 
     public function create(User $user): bool
     {
-        return $user->can('Create:PengajuanDana');
+        return $user->can('Create:TambahSaldo');
     }
 
     public function update(User $user): bool
     {
-        return $user->can('Update:PengajuanDana');
+        return $user->can('Update:TambahSaldo');
     }
 
     public function delete(User $user): bool
     {
-        return $user->can('Delete:PengajuanDana');
+        return $user->can('Delete:TambahSaldo');
     }
 
     public function restore(User $user): bool
     {
-        return $user->can('Restore:PengajuanDana');
+        return $user->can('Restore:TambahSaldo');
     }
 
     public function forceDelete(User $user): bool
     {
-        return $user->can('ForceDelete:PengajuanDana');
+        return $user->can('ForceDelete:TambahSaldo');
     }
 }

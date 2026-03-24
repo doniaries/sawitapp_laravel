@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Penjual;
 use App\Models\Supir;
-use App\Models\PengajuanDana;
+use App\Models\TambahSaldo;
 use App\Models\Perusahaan;
 use App\Models\Pekerja;
 use App\Models\Kendaraan;
@@ -32,10 +32,10 @@ class DashboardController extends Controller
         $totalJurnal = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->count();
         $totalOperasional = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->count();
         
-        $totalDanaValue = PengajuanDana::where('perusahaan_id', $perusahaanId)
+        $totalDanaValue = TambahSaldo::where('perusahaan_id', $perusahaanId)
             ->where('status', 'pending')
             ->sum('nominal');
-        $countDana = PengajuanDana::where('perusahaan_id', $perusahaanId)
+        $countDana = TambahSaldo::where('perusahaan_id', $perusahaanId)
             ->where('status', 'pending')
             ->count();
 
