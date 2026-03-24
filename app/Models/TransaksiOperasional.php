@@ -39,6 +39,11 @@ class TransaksiOperasional extends Model
 
     // [HAPUS] $dates karena sudah tercover oleh SoftDeletes dan casts
 
+    protected $appends = [
+        'kategori_label',
+        'nama',
+    ];
+
     const JENIS_OPERASIONAL = [ // [TETAP] Masih digunakan untuk validasi
         'pemasukan' => 'Pemasukan',
         'pengeluaran' => 'Pengeluaran',
