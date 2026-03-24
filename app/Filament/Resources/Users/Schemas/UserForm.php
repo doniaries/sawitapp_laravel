@@ -10,8 +10,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 
 class UserForm
 {
@@ -75,57 +75,52 @@ class UserForm
                             ->components([
                                 Select::make('roles')
                                     ->label('Hak Akses')
-                                    ->options(function () {
-                                        return Role::pluck('name', 'name')
-                                            ->toArray();
+                                    ->relationship('roles', 'name', function (Builder $query) {
+                                        $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+                                        return $query->where(function ($q) use ($tenantId) {
+                                            if ($tenantId) {
+                                                $q->where('roles.perusahaan_id', $tenantId)
+                                                    ->orWhereNull('roles.perusahaan_id');
+                                            }
+                                        });
                                     })
-                                    ->afterStateHydrated(function (Select $component, ?User $record) {
+                                    ->loadStateFromRelationshipsUsing(function (Select $component, ?User $record) {
                                         if ($record) {
                                             $tenantId = \Filament\Facades\Filament::getTenant()?->id;
-                                            
-                                            // Coba ambil role di tenant saat ini
                                             if ($tenantId) {
                                                 setPermissionsTeamId($tenantId);
                                             }
-                                            $roleName = $record->getRoleNames()->first();
-
-                                            // Fallback: Coba ambil role global jika tidak ada di tenant
-                                            if (!$roleName && $tenantId) {
-                                                setPermissionsTeamId(null);
-                                                $roleName = $record->getRoleNames()->first();
-                                                // Reset kembali ke tenant
-                                                setPermissionsTeamId($tenantId);
-                                            }
-
-                                            if ($roleName) {
-                                                $component->state($roleName);
+                                            $role = $record->roles()->first();
+                                            if ($role) {
+                                                $component->state($role->id);
                                             }
                                         }
                                     })
                                     ->saveRelationshipsUsing(function (User $record, $state) {
                                         if (filled($state)) {
-                                            $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+                                            $role = \Spatie\Permission\Models\Role::find($state);
+                                            if ($role) {
+                                                $tenantId = \Filament\Facades\Filament::getTenant()?->id;
 
-                                            // Handle Role Assignment
-                                            if ($tenantId) {
-                                                setPermissionsTeamId($tenantId);
-                                            }
-                                            $record->syncRoles([$state]);
-
-                                            // Handle Global Access for Admin
-                                            if ($state === 'admin') {
-                                                $allPerusahaanIds = \App\Models\Perusahaan::pluck('id')->toArray();
-                                                $record->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
-
-                                                // Ensure Admin role in all companies
-                                                foreach ($allPerusahaanIds as $pId) {
-                                                    setPermissionsTeamId($pId);
-                                                    $record->assignRole('admin');
-                                                }
-
-                                                // Reset back to current tenant
+                                                // Role assignment for current tenant
                                                 if ($tenantId) {
                                                     setPermissionsTeamId($tenantId);
+                                                }
+                                                $record->syncRoles([$role->name]);
+
+                                                // Global Access for Admin
+                                                if ($role->name === 'admin' || $role->name === 'super_admin') {
+                                                    $allPerusahaanIds = \App\Models\Perusahaan::pluck('id')->toArray();
+                                                    $record->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
+
+                                                    foreach ($allPerusahaanIds as $pId) {
+                                                        setPermissionsTeamId($pId);
+                                                        $record->assignRole($role->name);
+                                                    }
+
+                                                    if ($tenantId) {
+                                                        setPermissionsTeamId($tenantId);
+                                                    }
                                                 }
                                             }
                                         }
@@ -133,14 +128,11 @@ class UserForm
                                     ->preload()
                                     ->searchable()
                                     ->required(),
-
                                 FileUpload::make('photo')
                                     ->label('Foto')
                                     ->disk('public')
                                     ->directory('users')
-                                    ->visibility('public')
-                                    ->required(),
-
+                                    ->visibility('public'),
                                 Toggle::make('is_active')
                                     ->label('Status Aktif')
                                     ->default(true)

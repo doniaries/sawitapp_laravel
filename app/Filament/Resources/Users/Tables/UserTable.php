@@ -56,7 +56,13 @@ class UserTable
                     ->selectablePlaceholder(false)
                     ->disabled(fn($record) => $record->isSuperAdmin())
                     // State di-get dari ID role pertama user (sudah terscope ke tenant oleh Spatie)
-                    ->state(fn($record) => $record->roles->first()?->id)
+                    ->state(function ($record) {
+                        $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+                        if ($tenantId) {
+                            setPermissionsTeamId($tenantId);
+                        }
+                        return $record->roles()->first()?->id;
+                    })
                     // Update role menggunakan ID
                     ->updateStateUsing(function ($record, $state) {
                         $role = \Spatie\Permission\Models\Role::find($state);
