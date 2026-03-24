@@ -49,6 +49,8 @@ class TransaksiDo extends Model
         'sisa_hutang_penjual',  // Updated
         'cara_bayar',
         'sisa_bayar',
+        'bukti_transfer',
+        'keterangan_pembayaran',
         // 'file_do',
         // 'status_bayar',
         // 'catatan',

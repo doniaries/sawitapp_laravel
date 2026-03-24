@@ -59,7 +59,7 @@ class TransaksiDoTable
                     ->sortable(),
 
                 TextColumn::make('no_polisi')
-                    ->label('No Polisi')
+                    ->label('No Kendaraan')
                     ->searchable(),
 
                 TextColumn::make('tonase')

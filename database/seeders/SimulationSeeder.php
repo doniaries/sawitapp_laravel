@@ -88,6 +88,8 @@ class SimulationSeeder extends Seeder
 
         $penjualId = $penjualIds[array_rand($penjualIds)];
         $supirId = $supirIds[array_rand($supirIds)];
+        $nopolList = ['BH 8021 SM', 'BH 8112 MA', 'BH 9090 KT', 'B 1234 ABC', 'B 5678 DEF', 'BH 7777 SS'];
+        $noPolisi = $nopolList[array_rand($nopolList)];
         $nomor = 'DO-' . $perusahaanId . '-' . $tanggal->format('Ymd') . '-' . Str::padLeft($index, 4, '0');
 
         // Observer will handle JurnalKeuangan and MutasiHutang
@@ -96,7 +98,7 @@ class SimulationSeeder extends Seeder
             'tanggal' => $tanggal,
             'penjual_id' => $penjualId,
             'supir_id' => $supirId,
-            'no_polisi' => 'B ' . rand(1000, 9999) . ' XYZ',
+            'no_polisi' => $noPolisi,
             'tonase' => $tonase,
             'harga_satuan' => $harga,
             'sub_total' => $subTotal,

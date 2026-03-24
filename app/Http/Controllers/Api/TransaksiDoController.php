@@ -46,7 +46,14 @@ class TransaksiDoController extends Controller
             'keterangan_biaya_lain' => 'nullable|string',
             'pembayaran_hutang' => 'nullable|numeric|min:0',
             'cara_bayar' => 'required|in:tunai,transfer,cair di luar,belum dibayar',
+            'bukti_transfer' => 'nullable|image|max:2048',
+            'keterangan_pembayaran' => 'nullable|string',
         ]);
+
+        $bukti_transfer_path = null;
+        if ($request->hasFile('bukti_transfer')) {
+            $bukti_transfer_path = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
+        }
 
         $penjual = \App\Models\Penjual::findOrFail($request->penjual_id);
         
@@ -72,6 +79,8 @@ class TransaksiDoController extends Controller
             'keterangan_biaya_lain' => $request->keterangan_biaya_lain,
             'pembayaran_hutang' => $pembayaran_hutang,
             'cara_bayar' => $request->cara_bayar,
+            'bukti_transfer' => $bukti_transfer_path,
+            'keterangan_pembayaran' => $request->keterangan_pembayaran,
         ]);
 
         return response()->json($transaksi->load(['penjual', 'supir']), 201);
