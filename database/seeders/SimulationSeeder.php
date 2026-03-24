@@ -85,6 +85,15 @@ class SimulationSeeder extends Seeder
         $harga = rand(3000, 3500);
         $subTotal = $tonase * $harga;
         $caraBayar = ['tunai', 'transfer', 'cair di luar', 'belum dibayar'][rand(0, 3)];
+        
+        $keteranganPembayaran = null;
+        if ($caraBayar === 'transfer') {
+            $keteranganPembayaran = 'Transfer via Bank Mandiri';
+        } elseif ($caraBayar === 'cair di luar') {
+            $keteranganPembayaran = 'Cair di agen ' . rand(1, 5);
+        } elseif ($caraBayar === 'belum dibayar') {
+            $keteranganPembayaran = 'Jatuh tempo ' . $tanggal->addDays(7)->format('d/m/Y');
+        }
 
         $penjualId = $penjualIds[array_rand($penjualIds)];
         $supirId = $supirIds[array_rand($supirIds)];
@@ -107,6 +116,7 @@ class SimulationSeeder extends Seeder
             'sisa_bayar' => $subTotal,
             'pembayaran_hutang' => 0, // Simplified for seeder to avoid balance/debt complexity
             'cara_bayar' => $caraBayar,
+            'keterangan_pembayaran' => $keteranganPembayaran,
             'perusahaan_id' => $perusahaanId,
         ]);
     }
