@@ -84,7 +84,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        /** @var \Laravel\Sanctum\PersonalAccessToken $token */
+        $token = $request->user()->currentAccessToken();
+        if ($token) {
+            $token->delete();
+        }
 
         return response()->json([
             'message' => 'Berhasil logout.'
@@ -116,5 +120,39 @@ class AuthController extends Controller
         }
 
         return response()->json(['message' => 'Gagal mengunggah foto.'], 400);
+    }
+
+    public function updateCompanyLogo(Request $request)
+    {
+        $request->validate([
+            'logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        $user = $request->user();
+        $perusahaan = $user->perusahaan;
+
+        if (!$perusahaan) {
+            return response()->json(['message' => 'Anda tidak memiliki unit bisnis yang aktif.'], 403);
+        }
+
+        if ($request->hasFile('logo')) {
+            // Hapus logo lama jika ada file fisiknya
+            // Gunakan getRawOriginal karena attribute 'logo' mengembalikan URL lengkap
+            $oldPath = $perusahaan->getRawOriginal('logo');
+            if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
+
+            $path = $request->file('logo')->store('company_logos', 'public');
+            $perusahaan->update(['logo' => $path]);
+
+            return response()->json([
+                'message' => 'Logo unit bisnis berhasil diperbarui.',
+                'logo_url' => $perusahaan->logo_url,
+                'user' => new UserResource($user->refresh())
+            ]);
+        }
+
+        return response()->json(['message' => 'Gagal mengunggah logo.'], 400);
     }
 }

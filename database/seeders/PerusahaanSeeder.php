@@ -41,7 +41,7 @@ class PerusahaanSeeder extends Seeder
 
         // Create the second perusahaan
         $perusahaan2 = Perusahaan::firstOrCreate(
-            ['name' => 'PT Andala Integrasi Global'],
+            ['name' => 'PT Andalas Integrasi Global'],
             [
                 'alamat' => 'Jl. Lintas Sumatera No. 45',
                 'telepon' => '+62 812-3456-7890',

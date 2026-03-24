@@ -49,17 +49,23 @@ class Perusahaan extends Model implements HasMedia
         return 'Active team';
     }
 
-    protected function logo(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected $appends = [
+        'formatted_saldo',
+        'logo_url',
+    ];
+
+    protected function logoUrl(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: function ($value) {
-                if (empty($value)) {
+            get: function ($value, $attributes) {
+                $logo = $attributes['logo'] ?? null;
+                if (empty($logo)) {
                     return url('/images/default-logo.png');
                 }
 
-                /** @var \Illuminate\Contracts\Filesystem\Filesystem $disk */
+                /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
                 $disk = Storage::disk('public');
-                return $disk->url($value);
+                return $disk->url($logo);
             },
         );
     }
