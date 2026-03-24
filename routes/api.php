@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\OperasionalController;
 use App\Http\Controllers\Api\PenjualController;
 use App\Http\Controllers\Api\TransaksiDoController;
 use App\Http\Controllers\Api\TambahSaldoController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\JurnalKeuanganController;
 use App\Http\Controllers\Api\PekerjaController;
 use App\Http\Resources\UserResource;
@@ -37,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/user/photo', [AuthController::class, 'updatePhoto']);
+    Route::get('/users', [UserController::class, 'index']);
 
     // Multi-Tenancy (Perusahaan)
     Route::get('/perusahaans', [AuthController::class, 'getPerusahaans']);
