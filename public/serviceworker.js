@@ -31,6 +31,11 @@ self.addEventListener('activate', event => {
 
 // Serve from Cache
 self.addEventListener("fetch", event => {
+    // Skip interception for PDF routes and Admin panel logic
+    if (event.request.url.indexOf('/pdf') !== -1 || event.request.url.indexOf('/admin') !== -1) {
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then(response => {

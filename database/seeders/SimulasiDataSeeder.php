@@ -20,15 +20,15 @@ class SimulasiDataSeeder extends Seeder
 
         $perusahaanId = $perusahaan->id;
         // Tanggal simulasi untuk dashboard Hari Ini
-        $tanggalSimulasi = Carbon::create(2026, 3, 26, 0, 0, 0);
+        $tanggalSimulasi = Carbon::today();
 
         // Bersihkan data lama untuk tanggal ini agar tidak duplikat
         TransaksiDo::where('perusahaan_id', $perusahaanId)
-            ->whereDate('tanggal', '2026-03-26')
+            ->whereDate('tanggal', Carbon::today())
             ->forceDelete();
             
         TransaksiOperasional::where('perusahaan_id', $perusahaanId)
-            ->whereDate('tanggal', '2026-03-26')
+            ->whereDate('tanggal', Carbon::today())
             ->forceDelete();
 
         // **PENTING: Reset Saldo agar simulasi akurat**
@@ -128,7 +128,7 @@ class SimulasiDataSeeder extends Seeder
                     'pembayaran_hutang' => $bayarHutang,
                     'sisa_bayar' => $sisaBayar,
                     'cara_bayar' => $item['cara_bayar'] ?? 'tunai',
-                    'keterangan_pembayaran' => 'Lap 25/03 - Row ' . ($index + 1),
+                    'keterangan_pembayaran' => 'Lap ' . Carbon::today()->format('d/m') . ' - Row ' . ($index + 1),
                 ]);
             } catch (\Exception $e) {
                 $this->command->error("Gagal pada baris " . ($index + 1) . ": " . $e->getMessage());

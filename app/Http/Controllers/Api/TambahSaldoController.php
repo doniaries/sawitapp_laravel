@@ -46,16 +46,52 @@ class TambahSaldoController extends Controller
             'tanggal_pengajuan' => 'required|date',
         ]);
 
-        $pengajuan = PengajuanDana::create([
-            'perusahaan_id' => $request->user()->perusahaan_id,
-            'user_id' => $request->user()->id,
-            'nominal' => $request->nominal,
-            'keperluan' => $request->keperluan,
-            'tanggal_pengajuan' => $request->tanggal_pengajuan,
-            'status' => PengajuanDana::STATUS_PENDING,
-        ]);
+        $user = $request->user();
+        $role = strtolower($user->role ?? '');
+        $isDirect = in_array($role, ['admin', 'pimpinan', 'super_admin']);
 
-        return response()->json($pengajuan, 201);
+        return DB::transaction(function () use ($request, $user, $isDirect) {
+            $pengajuan = PengajuanDana::create([
+                'perusahaan_id' => $user->perusahaan_id,
+                'user_id' => $user->id,
+                'nominal' => $request->nominal,
+                'keperluan' => $request->keperluan,
+                'tanggal_pengajuan' => $request->tanggal_pengajuan,
+                'status' => $isDirect ? PengajuanDana::STATUS_DISETUJUI : PengajuanDana::STATUS_PENDING,
+                'tanggal_proses' => $isDirect ? now() : null,
+                'proses_by' => $isDirect ? $user->id : null,
+            ]);
+
+            if ($isDirect) {
+                // Tambah Saldo Perusahaan Langsung
+                $perusahaan = Perusahaan::findOrFail($user->perusahaan_id);
+                $saldoAwal = $perusahaan->saldo;
+                $perusahaan->increment('saldo', $pengajuan->nominal);
+                $saldoAkhir = $perusahaan->saldo;
+
+                // Catat di Jurnal Keuangan
+                JurnalKeuangan::create([
+                    'perusahaan_id' => $pengajuan->perusahaan_id,
+                    'tanggal' => now(),
+                    'jenis_transaksi' => 'Pemasukan',
+                    'kategori' => JurnalKeuangan::KATEGORI_TRANSAKSI['SALDO'],
+                    'sub_kategori' => JurnalKeuangan::SUB_KATEGORI_SALDO['TAMBAH'],
+                    'nominal' => $pengajuan->nominal,
+                    'saldo_awal' => $saldoAwal,
+                    'saldo_akhir' => $saldoAkhir,
+                    'sumber_transaksi' => 'Tambah Saldo',
+                    'referensi_id' => $pengajuan->id,
+                    'nomor_referensi' => $pengajuan->nomor ?? ('TS-' . $pengajuan->id),
+                    'pihak_terkait' => $user->name,
+                    'tipe_pihak' => TipeNama::USER,
+                    'cara_pembayaran' => 'transfer',
+                    'keterangan' => 'Top up saldo langsung: ' . $pengajuan->keperluan,
+                    'mempengaruhi_kas' => true,
+                ]);
+            }
+
+            return response()->json($pengajuan, 201);
+        });
     }
 
     public function approve($id, Request $request)
@@ -67,7 +103,7 @@ class TambahSaldoController extends Controller
         }
 
         $request->validate([
-            'bukti_transfer' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'bukti_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'catatan_pimpinan' => 'nullable|string',
         ]);
 

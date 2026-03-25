@@ -116,16 +116,16 @@
         </tr>
         <tr>
             <td>Nama Penjual</td>
-            <td>{{ optional($transaksi->penjual)->nama }}</td>
+            <td>{{ $transaksi->penjual?->nama ?? 'N/A' }}</td>
         </tr>
         <tr>
             <td>Nama Supir</td>
-            <td>{{ optional($transaksi->supir)->nama }}</td>
+            <td>{{ $transaksi->supir?->nama ?? 'N/A' }}</td>
         </tr>
 
         <tr>
             <td>Nomor Polisi</td>
-            <td>{{ optional($transaksi->kendaraan)->no_polisi }}</td>
+            <td>{{ $transaksi->no_polisi ?? 'N/A' }}</td>
         </tr>
         <tr>
             <td>Tonase (Kg)</td>
@@ -133,31 +133,31 @@
         </tr>
         <tr>
             <td>Harga Satuan</td>
-            <td>Rp {{ number_format($transaksi->harga_satuan, 0, ',', '.') }}</td>
+            <td>Rp{{ number_format($transaksi->harga_satuan, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Sub Total</td>
-            <td>Rp {{ number_format($transaksi->total, 0, ',', '.') }}</td>
+            <td>Rp{{ number_format($transaksi->total, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Upah Bongkar</td>
-            <td>Rp {{ number_format($transaksi->upah_bongkar, 0, ',', '.') }}</td>
+            <td>Rp{{ number_format($transaksi->upah_bongkar, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Biaya Lain</td>
-            <td>Rp {{ number_format($transaksi->biaya_lain, 0, ',', '.') }}</td>
+            <td>Rp{{ number_format($transaksi->biaya_lain, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Hutang Awal</td>
-            <td>Rp {{ number_format($transaksi->hutang_awal, 0, ',', '.') }}</td>
+            <td>Rp{{ number_format($transaksi->hutang_awal, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Pembayaran Hutang</td>
-            <td>Rp {{ number_format($transaksi->pembayaran_hutang, 0, ',', '.') }}</td>
+            <td>Rp{{ number_format($transaksi->pembayaran_hutang, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Sisa Hutang</td>
-            <td><strong>Rp {{ number_format($transaksi->sisa_hutang_penjual, 0, ',', '.') }}</strong></td>
+            <td><strong>Rp{{ number_format($transaksi->sisa_hutang_penjual, 0, ',', '.') }}</strong></td>
         </tr>
         <tr>
             <td>Cara Bayar</td>
@@ -165,7 +165,7 @@
         </tr>
         <tr>
             <td>Sisa Bayar</td>
-            <td><strong>Rp {{ number_format($transaksi->sisa_bayar, 0, ',', '.') }}</strong></td>
+            <td><strong>Rp{{ number_format($transaksi->sisa_bayar, 0, ',', '.') }}</strong></td>
         </tr>
 
     </table>

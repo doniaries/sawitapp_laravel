@@ -27,7 +27,7 @@ class TransaksiDo extends Model
     use HasFactory, SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait, GenerateMonthlyNumber, BelongsToTenant;
 
     protected $table = 'transaksi_do';
-    protected $with = ['penjual:id', 'supir:id', 'kendaraan']; // Default eager loading
+    protected $with = ['penjual', 'supir', 'kendaraan']; // Default eager loading
 
 
     protected $fillable = [

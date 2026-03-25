@@ -30,7 +30,7 @@ class ListJurnalKeuangans extends ListRecords
         return [
             'hari_ini' => Tab::make('Hari Ini')
                 ->icon('heroicon-o-calendar')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', now()))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', today()))
                 ->badge($this->getTabCount('hari_ini')),
 
             'bulan_ini' => Tab::make('Bulan Ini')
@@ -55,7 +55,7 @@ class ListJurnalKeuangans extends ListRecords
         $query = JurnalKeuangan::query();
 
         return match ($tab) {
-            'hari_ini' => $query->whereDate('tanggal', now())->count(),
+            'hari_ini' => $query->whereDate('tanggal', today())->count(),
             'bulan_ini' => $query->whereMonth('tanggal', now()->month)->whereYear('tanggal', now()->year)->count(),
             'tahun_ini' => $query->whereYear('tanggal', now()->year)->count(),
             default => $query->count(),

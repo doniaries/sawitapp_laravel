@@ -122,9 +122,13 @@ class JurnalKeuanganTable
                             $pdf = Pdf::loadView('laporan.keuangan-harian', $viewData);
                             $pdf->setPaper('a4', 'landscape');
 
-                            return response()->streamDownload(
+                            return response()->stream(
                                 fn() => print($pdf->output()),
-                                "rekap-{$livewire->activeTab}-" . now()->format('Y-m-d') . ".pdf"
+                                200,
+                                [
+                                    'Content-Type' => 'application/pdf',
+                                    'Content-Disposition' => 'inline; filename="rekap-'.$livewire->activeTab.'.pdf"',
+                                ]
                             );
                         } catch (\Exception $e) {
                             Log::error('Quick Print Error: ' . $e->getMessage());
@@ -134,7 +138,7 @@ class JurnalKeuanganTable
 
                 Action::make('downloadPdf')
                     ->label('Download PDF')
-                    ->icon('heroicon-o-document-arrow-down')
+                    ->icon('heroicon-o-arrow-down-tray')
                     ->schema([
                         Grid::make()
                             ->schema([
@@ -174,6 +178,55 @@ class JurnalKeuanganTable
                                 ->danger()
                                 ->title('Error')
                                 ->body('Gagal membuat laporan: ' . $e->getMessage())
+                                ->send();
+                        }
+                    }),
+
+                Action::make('previewPdf')
+                    ->label('Preview Laporan')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->schema([
+                        Grid::make()
+                            ->schema([
+                                DatePicker::make('start_date')
+                                    ->label('Dari Tanggal')
+                                    ->required()
+                                    ->default(now()->startOfMonth())
+                                    ->displayFormat('d/m/Y')
+                                    ->native(false),
+                                DatePicker::make('end_date')
+                                    ->label('Sampai Tanggal')
+                                    ->required()
+                                    ->default(now())
+                                    ->displayFormat('d/m/Y')
+                                    ->native(false),
+                            ])
+                            ->columns(2)
+                    ])
+                    ->action(function (array $data) {
+                        try {
+                            $startDate = Carbon::parse($data['start_date'])->startOfDay();
+                            $endDate = Carbon::parse($data['end_date'])->endOfDay();
+                            $service = app(JurnalKeuanganService::class);
+                            $viewData = $service->generatePdfReport($startDate, $endDate);
+                            $pdf = Pdf::loadView('laporan.keuangan-harian', $viewData);
+                            $pdf->setPaper('a4', 'landscape');
+
+                            return response()->stream(
+                                fn() => print($pdf->output()),
+                                200,
+                                [
+                                    'Content-Type' => 'application/pdf',
+                                    'Content-Disposition' => 'inline; filename="preview-laporan.pdf"',
+                                ]
+                            );
+                        } catch (\Exception $e) {
+                            Log::error('Error previewing PDF:', ['error' => $e->getMessage()]);
+                            Notification::make()
+                                ->danger()
+                                ->title('Error Preview')
+                                ->body($e->getMessage())
                                 ->send();
                         }
                     })

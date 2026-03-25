@@ -24,16 +24,13 @@ class TransaksiDoTable
         return $table
             ->poll('30s')
             ->deferLoading()
-            ->contentGrid([
-                'md' => 2,
-                'xl' => 3,
-            ])
             ->columns([
                 TextColumn::make('nomor')
                     ->label('Nomor')
                     ->searchable()
                     ->sortable()
                     ->copyable()
+                    ->wrap()
                     ->badge()
                     ->color(Color::Blue),
 
@@ -43,28 +40,22 @@ class TransaksiDoTable
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
 
-                TextColumn::make('cara_bayar')
-                    ->label('Cara Bayar')
-                    ->searchable()
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'tunai' => 'success',
-                        'transfer' => 'info',
-                        'tunai & transfer' => 'info',
-                        'cair di luar' => 'warning',
-                        'belum dibayar' => 'danger',
-                        default => 'gray',
-                    })
-                    ->description(fn(string $state): ?string => $state === 'cair di luar' ? '⚠️ Perhatian Pimpinan' : null),
-
                 TextColumn::make('penjual.nama')
                     ->label('Penjual')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->wrap(),
+
+                TextColumn::make('supir.nama')
+                    ->label('Supir')
+                    ->searchable()
+                    ->sortable()
+                    ->wrap(),
 
                 TextColumn::make('no_polisi')
                     ->label('No Kendaraan')
-                    ->searchable(),
+                    ->searchable()
+                    ->wrap(),
 
                 TextColumn::make('tonase')
                     ->label('Tonase')
@@ -76,7 +67,7 @@ class TransaksiDoTable
                     ->sortable(),
 
                 TextColumn::make('harga_satuan')
-                    ->label('Harga Satuan')
+                    ->label('Harga')
                     ->numeric(0, ',', '.')
                     ->prefix('Rp ')
                     ->sortable(),
@@ -93,6 +84,78 @@ class TransaksiDoTable
                             ->prefix('Rp ')
                     ])
                     ->sortable(),
+
+                TextColumn::make('upah_bongkar')
+                    ->label('Bongkar')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
+                    ->summarize([
+                        Sum::make()
+                            ->numeric(0, ',', '.')
+                            ->prefix('Rp ')
+                    ])
+                    ->sortable(),
+
+                TextColumn::make('biaya_lain')
+                    ->label('Biaya Lain/Pengambilan')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
+                    ->summarize([
+                        Sum::make()
+                            ->numeric(0, ',', '.')
+                            ->prefix('Rp ')
+                    ])
+                    ->sortable(),
+
+                TextColumn::make('pembayaran_hutang')
+                    ->label('Bayar Hutang')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
+                    ->summarize([
+                        Sum::make()
+                            ->numeric(0, ',', '.')
+                            ->prefix('Rp ')
+                    ])
+                    ->sortable(),
+
+                TextColumn::make('sisa_bayar')
+                    ->label('Sisa Bayar')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
+                    ->color(Color::Green)
+                    ->weight('bold')
+                    ->summarize([
+                        Sum::make()
+                            ->numeric(0, ',', '.')
+                            ->prefix('Rp ')
+                    ])
+                    ->sortable(),
+
+                TextColumn::make('nominal_tunai')
+                    ->label('Tunai (Split)')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
+                    ->description(fn($record) => $record->cara_bayar === 'tunai & transfer' ? 'Dari total sisa bayar' : null)
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('cara_bayar')
+                    ->label('Metode')
+                    ->searchable()
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'tunai' => 'success',
+                        'transfer' => 'info',
+                        'tunai & transfer' => 'info',
+                        'cair di luar' => 'warning',
+                        'belum dibayar' => 'danger',
+                        default => 'gray',
+                    }),
+
+                TextColumn::make('catatan')
+                    ->label('Catatan')
+                    ->wrap()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([

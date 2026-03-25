@@ -159,7 +159,7 @@ class TransaksiDoForm
                                     ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
 
                                 TextInput::make('biaya_lain')
-                                    ->label('Biaya Lain')
+                                    ->label('Biaya Lain/Pengambilan')
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
                                     ->default(0)
@@ -275,9 +275,9 @@ class TransaksiDoForm
 
                                                 $cekNominal = 0;
                                                 if ($value === 'tunai') {
-                                                     $cekNominal = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
+                                                    $cekNominal = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
                                                 } elseif ($value === 'tunai & transfer') {
-                                                     $cekNominal = (int) str_replace(['.', ','], '', $get('nominal_tunai') ?? 0);
+                                                    $cekNominal = (int) str_replace(['.', ','], '', $get('nominal_tunai') ?? 0);
                                                 }
 
                                                 if ($cekNominal > 0 && $cekNominal > $perusahaan->saldo) {
