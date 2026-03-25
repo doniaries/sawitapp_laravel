@@ -8,9 +8,15 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class PenjualStatsWidget extends BaseWidget
 {
+    protected static bool $isLazy = true;
+
     protected function getStats(): array
     {
-        return [
+        $tenantId = \Filament\Facades\Filament::getTenant()->id;
+        $cacheKey = "penjual_stats_tenant_{$tenantId}_" . now()->format('YmdH');
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () {
+            return [
             Stat::make('Total Penjual', Penjual::count())
                 ->description('Total penjual terdaftar')
                 ->icon('heroicon-m-shopping-bag')
@@ -23,6 +29,7 @@ class PenjualStatsWidget extends BaseWidget
                 ->description('Pernah mencicil hutang')
                 ->icon('heroicon-m-check-circle')
                 ->color('success'),
-        ];
+            ];
+        });
     }
 }

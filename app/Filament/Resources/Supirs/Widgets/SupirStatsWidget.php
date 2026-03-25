@@ -8,9 +8,15 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class SupirStatsWidget extends BaseWidget
 {
+    protected static bool $isLazy = true;
+
     protected function getStats(): array
     {
-        return [
+        $tenantId = \Filament\Facades\Filament::getTenant()->id;
+        $cacheKey = "supir_stats_tenant_{$tenantId}_" . now()->format('YmdH');
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () {
+            return [
             Stat::make('Total Supir', Supir::count())
                 ->description('Total supir terdaftar')
                 ->icon('heroicon-m-user-group')
@@ -23,6 +29,7 @@ class SupirStatsWidget extends BaseWidget
                 ->description('Pernah mencicil hutang')
                 ->icon('heroicon-m-check-circle')
                 ->color('success'),
-        ];
+            ];
+        });
     }
 }

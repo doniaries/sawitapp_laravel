@@ -15,6 +15,8 @@ use Filament\Facades\Filament;
 
 class DashboardStatsWidget extends BaseWidget
 {
+    protected static bool $isLazy = true;
+
     public static function shouldRegister(): bool
     {
         return \App\Providers\Filament\AdminPanelProvider::$dashboardWidgets['stats'] ?? true;
@@ -26,9 +28,12 @@ class DashboardStatsWidget extends BaseWidget
     public function getStats(): array
     {
         $tenant = Filament::getTenant();
-        $tenantId = $tenant->id;
-        
-        $today = now();
+        $cacheKey = "dashboard_stats_tenant_{$tenant->id}_" . now()->format('YmdH');
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($tenant) {
+            $today = now();
+            
+            // 2. Daily Income Breakdown
 
         // 1. Current Balance (Tenant Scoped)
         $currentBalance = (float) $tenant->saldo;
@@ -73,49 +78,50 @@ class DashboardStatsWidget extends BaseWidget
         // Format date range for display
         $dateRange = "Hari ini: {$today->format('d M Y')}";
 
-        return [
-            Stat::make('Sisa Saldo', 'Rp ' . number_format($currentBalance, 0, ',', '.'))
-                ->description('Total saldo masuk - Total pengeluaran (Kumulatif)')
-                ->icon('heroicon-m-banknotes')
-                ->color($currentBalance >= 0 ? 'success' : 'danger')
-                ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'semua'])),
+            return [
+                Stat::make('Sisa Saldo', 'Rp ' . number_format($currentBalance, 0, ',', '.'))
+                    ->description('Total saldo masuk - Total pengeluaran (Kumulatif)')
+                    ->icon('heroicon-m-banknotes')
+                    ->color($currentBalance >= 0 ? 'success' : 'danger')
+                    ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'semua'])),
 
-            Stat::make('Pemasukan Hari Ini', 'Rp ' . number_format($totalIncomeDaily, 0, ',', '.'))
-                ->description(sprintf(
-                    "Hutang: Rp %s Sisa: Rp %s\nOperasional: Rp %s",
-                    number_format($hutangIncome, 0, ',', '.'),
-                    number_format($sisaIncome, 0, ',', '.'),
-                    number_format($operasionalIncome, 0, ',', '.')
-                ))
-                ->icon('heroicon-m-arrow-trending-up')
-                ->color('success')
-                ->url(JurnalKeuanganResource::getUrl('index', [
-                    'activeTab' => 'hari_ini',
-                    'tableFilters' => [
-                        'jenis_transaksi' => ['value' => 'Pemasukan']
-                    ]
-                ])),
+                Stat::make('Pemasukan Hari Ini', 'Rp ' . number_format($totalIncomeDaily, 0, ',', '.'))
+                    ->description(sprintf(
+                        "Hutang: Rp %s Sisa: Rp %s\nOperasional: Rp %s",
+                        number_format($hutangIncome, 0, ',', '.'),
+                        number_format($sisaIncome, 0, ',', '.'),
+                        number_format($operasionalIncome, 0, ',', '.')
+                    ))
+                    ->icon('heroicon-m-arrow-trending-up')
+                    ->color('success')
+                    ->url(JurnalKeuanganResource::getUrl('index', [
+                        'activeTab' => 'hari_ini',
+                        'tableFilters' => [
+                            'jenis_transaksi' => ['value' => 'Pemasukan']
+                        ]
+                    ])),
 
-            Stat::make('Pengeluaran Hari Ini', 'Rp ' . number_format($totalExpenseDaily, 0, ',', '.'))
-                ->description(sprintf(
-                    "DO: Rp %s Operasional: Rp %s",
-                    number_format($doExpense, 0, ',', '.'),
-                    number_format($operasionalExpense, 0, ',', '.')
-                ))
-                ->icon('heroicon-m-arrow-trending-down')
-                ->color('danger')
-                ->url(JurnalKeuanganResource::getUrl('index', [
-                    'activeTab' => 'hari_ini',
-                    'tableFilters' => [
-                        'jenis_transaksi' => ['value' => 'Pengeluaran']
-                    ]
-                ])),
+                Stat::make('Pengeluaran Hari Ini', 'Rp ' . number_format($totalExpenseDaily, 0, ',', '.'))
+                    ->description(sprintf(
+                        "DO: Rp %s Operasional: Rp %s",
+                        number_format($doExpense, 0, ',', '.'),
+                        number_format($operasionalExpense, 0, ',', '.')
+                    ))
+                    ->icon('heroicon-m-arrow-trending-down')
+                    ->color('danger')
+                    ->url(JurnalKeuanganResource::getUrl('index', [
+                        'activeTab' => 'hari_ini',
+                        'tableFilters' => [
+                            'jenis_transaksi' => ['value' => 'Pengeluaran']
+                        ]
+                    ])),
 
-            Stat::make('Total Transaksi', $dailyTransactions)
-                ->description($dateRange)
-                ->icon('heroicon-m-document-text')
-                ->color('primary')
-                ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'hari_ini'])),
-        ];
+                Stat::make('Total Transaksi', $dailyTransactions)
+                    ->description($dateRange)
+                    ->icon('heroicon-m-document-text')
+                    ->color('primary')
+                    ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'hari_ini'])),
+            ];
+        });
     }
 }
