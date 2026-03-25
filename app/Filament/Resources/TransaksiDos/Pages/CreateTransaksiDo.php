@@ -6,6 +6,7 @@ use App\Filament\Resources\TransaksiDos\TransaksiDoResource;
 use App\Models\{Penjual};
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
@@ -123,6 +124,26 @@ class CreateTransaksiDo extends CreateRecord
             //     ->duration(3000) // Set durasi 3 detik
             //     ->persistent(false) // Notifikasi akan otomatis hilang
             //     ->send();
+
+            // Notifikasi ke Admin/Pimpinan (Terutama jika Cair di Luar)
+            $users = \App\Models\User::whereHas('roles', fn($q) => $q->whereIn('name', ['super_admin', 'pimpinan']))->get();
+            
+            $isCairLuar = $record->cara_bayar === 'cair di luar';
+            $notif = Notification::make()
+                ->title($isCairLuar ? '⚠️ Transaksi Cair di Luar!' : 'Transaksi DO Baru')
+                ->body("DO #{$record->nomor} oleh " . ($record->penjual?->nama ?? 'N/A') . "\nTotal: Rp " . number_format($record->sub_total, 0, ',', '.'))
+                ->success()
+                ->icon($isCairLuar ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-document-text')
+                ->color($isCairLuar ? 'warning' : 'success')
+                ->actions([
+                    NotificationAction::make('lihat')
+                        ->button()
+                        ->url(TransaksiDoResource::getUrl('edit', ['record' => $record, 'tenant' => $record->perusahaan->slug])),
+                ]);
+
+            foreach ($users as $user) {
+                $notif->sendToDatabase($user);
+            }
 
             DB::commit();
         } catch (\Exception $e) {

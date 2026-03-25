@@ -10,9 +10,11 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Filament\Actions\Action;
+use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\JurnalKeuangan;
@@ -121,6 +123,20 @@ class TambahSaldosTable
                                 'keterangan' => 'Top up saldo: ' . $record->keperluan,
                                 'mempengaruhi_kas' => true,
                             ]);
+
+                            // 3. Notifikasi ke User
+                            if ($record->user) {
+                                Notification::make()
+                                    ->title('Tambah Saldo Disetujui')
+                                    ->body("Pengajuan saldo sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " telah disetujui.")
+                                    ->success()
+                                    ->actions([
+                                        NotificationAction::make('lihat')
+                                            ->button()
+                                            ->url(route('filament.admin.resources.tambah-saldo.index', ['tenant' => $record->perusahaan->slug])),
+                                    ])
+                                    ->sendToDatabase($record->user);
+                            }
                         });
                     })
                     ->requiresConfirmation(),
@@ -141,6 +157,15 @@ class TambahSaldosTable
                             'proses_by' => Auth::id(),
                             'catatan_pimpinan' => $data['catatan_pimpinan'],
                         ]);
+
+                        // Notifikasi ke User
+                        if ($record->user) {
+                            Notification::make()
+                                ->title('Tambah Saldo Ditolak')
+                                ->body("Pengajuan saldo sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " ditolak. Alasan: " . $data['catatan_pimpinan'])
+                                ->danger()
+                                ->sendToDatabase($record->user);
+                        }
                     })
                     ->requiresConfirmation(),
             ])

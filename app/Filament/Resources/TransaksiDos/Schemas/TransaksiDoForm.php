@@ -241,7 +241,20 @@ class TransaksiDoForm
                                                 $set('supir_id', $supir->id);
                                             }
                                         }
-                                    }),
+                                    })
+                                    ->rules([
+                                        function (Get $get) {
+                                            return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                if (in_array($value, ['tunai', 'transfer'])) {
+                                                    $sisaBayar = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
+                                                    $perusahaan = \Filament\Facades\Filament::getTenant();
+                                                    if ($perusahaan && $sisaBayar > $perusahaan->saldo) {
+                                                        $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . ")");
+                                                    }
+                                                }
+                                            };
+                                        },
+                                    ]),
                             ]),
 
                         Section::make('Informasi Saldo')

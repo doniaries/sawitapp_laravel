@@ -52,7 +52,8 @@ class TransaksiDoTable
                         'cair di luar' => 'warning',
                         'belum dibayar' => 'danger',
                         default => 'gray',
-                    }),
+                    })
+                    ->description(fn(string $state): ?string => $state === 'cair di luar' ? '⚠️ Perhatian Pimpinan' : null),
 
                 TextColumn::make('penjual.nama')
                     ->label('Penjual')

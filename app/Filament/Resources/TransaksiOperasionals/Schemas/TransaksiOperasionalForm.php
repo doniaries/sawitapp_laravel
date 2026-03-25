@@ -75,7 +75,19 @@ class TransaksiOperasionalForm
                                     ->required()
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
-                                    ->numeric(),
+                                    ->numeric()
+                                    ->rules([
+                                        function (Get $get) {
+                                            return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                if ($get('operasional') === 'pengeluaran') {
+                                                    $perusahaan = \Filament\Facades\Filament::getTenant();
+                                                    if ($perusahaan && $value > $perusahaan->saldo) {
+                                                        $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . ")");
+                                                    }
+                                                }
+                                            };
+                                        },
+                                    ]),
                                 TextInput::make('keterangan')
                                     ->label('Keterangan')
                                     ->columnSpanFull(),

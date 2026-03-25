@@ -30,7 +30,7 @@ class ListTransaksiDos extends ListRecords
     // Handle filter date changes
     public function updatedTableFilters(): void
     {
-        $filter = $this->getTableFilters()['created_at'] ?? null;
+        $filter = $this->tableFilters['created_at'] ?? null;
         if ($filter) {
             $this->dispatch('filter-transaksi', [
                 'startDate' => $filter->getState()['created_from'],
@@ -84,7 +84,7 @@ class ListTransaksiDos extends ListRecords
             'semua' => Tab::make('Semua Transaksi')
                 ->icon('heroicon-o-clipboard-document-list')
                 ->badge(fn() => TransaksiDo::query()
-                    ->when($this->getTableFilters()['created_at'] ?? null, function ($query, $filter) {
+                    ->when($this->tableFilters['created_at'] ?? null, function ($query, $filter) {
                         $data = $filter->getState();
                         if (!empty($data['created_from']) && !empty($data['created_to'])) {
                             return $query->whereDate('tanggal', '>=', $data['created_from'])
@@ -100,7 +100,7 @@ class ListTransaksiDos extends ListRecords
                 ->icon('heroicon-o-banknotes')
                 ->badge(fn() => TransaksiDo::query()
                     ->where('cara_bayar', 'tunai')
-                    ->when($this->getTableFilters()['created_at'] ?? null, function ($query, $filter) {
+                    ->when($this->tableFilters['created_at'] ?? null, function ($query, $filter) {
                         $data = $filter->getState();
                         if (!empty($data['created_from']) && !empty($data['created_to'])) {
                             return $query->whereDate('tanggal', '>=', $data['created_from'])
@@ -116,7 +116,7 @@ class ListTransaksiDos extends ListRecords
                 ->icon('heroicon-o-credit-card')
                 ->badge(fn() => TransaksiDo::query()
                     ->where('cara_bayar', 'transfer')
-                    ->when($this->getTableFilters()['created_at'] ?? null, function ($query, $filter) {
+                    ->when($this->tableFilters['created_at'] ?? null, function ($query, $filter) {
                         $data = $filter->getState();
                         if (!empty($data['created_from']) && !empty($data['created_to'])) {
                             return $query->whereBetween('tanggal', [$data['created_from'], $data['created_to']]);
@@ -131,7 +131,7 @@ class ListTransaksiDos extends ListRecords
                 ->icon('heroicon-o-banknotes')
                 ->badge(fn() => TransaksiDo::query()
                     ->where('cara_bayar', 'cair di luar')
-                    ->when($this->getTableFilters()['created_at'] ?? null, function ($query, $filter) {
+                    ->when($this->tableFilters['created_at'] ?? null, function ($query, $filter) {
                         $data = $filter->getState();
                         if (!empty($data['created_from']) && !empty($data['created_to'])) {
                             return $query->whereBetween('tanggal', [$data['created_from'], $data['created_to']]);
@@ -146,7 +146,7 @@ class ListTransaksiDos extends ListRecords
                 ->icon('heroicon-o-banknotes')
                 ->badge(fn() => TransaksiDo::query()
                     ->where('cara_bayar', 'belum dibayar')
-                    ->when($this->getTableFilters()['created_at'] ?? null, function ($query, $filter) {
+                    ->when($this->tableFilters['created_at'] ?? null, function ($query, $filter) {
                         $data = $filter->getState();
                         if (!empty($data['created_from']) && !empty($data['created_to'])) {
                             return $query->whereBetween('tanggal', [$data['created_from'], $data['created_to']]);
