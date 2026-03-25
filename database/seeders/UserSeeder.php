@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
 
         // ========== Perusahaan 1: CV SUCCESS MANDIRI ==========
         if ($perusahaan1) {
-            // Utama: Yondra sebagai Admin di kedua perusahaan
+            // Yondra sebagai Pimpinan di semua perusahaan
             $yondra = User::firstOrCreate(
                 ['email' => 'yondra@gmail.com'],
                 [
@@ -24,17 +24,17 @@ class UserSeeder extends Seeder
                     'password' => Hash::make('password'),
                     'is_active' => true,
                     'email_verified_at' => now(),
-                    'perusahaan_id' => $perusahaan1->id, // Fallback
+                    'perusahaan_id' => $perusahaan1->id, 
                 ]
             );
 
-            // Admin: Akun Admin secara otomatis terhubung ke SEMUA perusahaan (Best Practice)
+            // Akses ke SEMUA perusahaan
             $allPerusahaanIds = Perusahaan::pluck('id')->toArray();
             $yondra->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
  
-            // Berikan role admin secara GLOBAL (Akses semua perusahaan)
+            // Role pimpinan secara GLOBAL
             setPermissionsTeamId(null);
-            $yondra->syncRoles(['admin']);
+            $yondra->syncRoles(['pimpinan']);
 
             // Taufik: Kasir di Perusahaan 1 saja
             $kasir = User::firstOrCreate(
@@ -52,22 +52,20 @@ class UserSeeder extends Seeder
             $kasir->perusahaans()->syncWithoutDetaching([$perusahaan1->id]);
         }
 
-        // ========== Perusahaan 2: PT Andalas Integrasi Global ==========
-        if ($perusahaan2) {
-            // Kasir 2 di Perusahaan 2
-            $wendy = User::firstOrCreate(
-                ['email' => 'kasir2@gmail.com'],
-                [
-                    'name' => 'Kasir 2',
-                    'password' => Hash::make('password'),
-                    'is_active' => true,
-                    'email_verified_at' => now(),
-                    'perusahaan_id' => $perusahaan2->id,
-                ]
-            );
-            setPermissionsTeamId($perusahaan2->id);
-            $wendy->syncRoles(['kasir']);
-            $wendy->perusahaans()->syncWithoutDetaching([$perusahaan2->id]);
-        }
+        // ========== Admin Kedua: Wendi ==========
+        $wendi = User::firstOrCreate(
+            ['email' => 'wendi@gmail.com'],
+            [
+                'name' => 'Wendi',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'perusahaan_id' => $perusahaan1->id ?? null,
+            ]
+        );
+        $allPerusahaanIds = Perusahaan::all()->pluck('id');
+        $wendi->perusahaans()->syncWithoutDetaching($allPerusahaanIds);
+        setPermissionsTeamId(null);
+        $wendi->syncRoles(['admin']);
     }
 }

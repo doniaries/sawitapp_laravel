@@ -85,7 +85,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
             ->where('model_has_roles.model_id', $this->id)
             ->where('model_has_roles.model_type', static::class)
-            ->whereIn('roles.name', ['super_admin', 'admin'])
+            ->whereIn('roles.name', ['super_admin', 'admin', 'pimpinan'])
             ->exists();
     }
 

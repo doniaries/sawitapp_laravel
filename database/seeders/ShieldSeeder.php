@@ -29,7 +29,7 @@ class ShieldSeeder extends Seeder
             "Page:Dashboard", "Page:Tenancy\EditPerusahaanProfile", "Page:Tenancy\RegisterPerusahaan"
         ];
 
-        // Admin & Kasir: Semua kecuali Role management
+        // Admin, Pimpinan & Kasir: Semua kecuali Role management
         $limitedPermissions = collect($allPermissions)->filter(function ($permission) {
             return !str_contains($permission, ':Role');
         })->toArray();
@@ -42,6 +42,11 @@ class ShieldSeeder extends Seeder
             ],
             [
                 'name' => 'admin',
+                'guard_name' => 'web',
+                'permissions' => $limitedPermissions
+            ],
+            [
+                'name' => 'pimpinan',
                 'guard_name' => 'web',
                 'permissions' => $limitedPermissions
             ],
