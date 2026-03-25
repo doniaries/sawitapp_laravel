@@ -141,13 +141,14 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
         $stats = $query->select([
             DB::raw('COUNT(*) as total_transaksi'),
             
-            // Logika baru: Inklusi Operasional Secara Menyeluruh
+            // Logika baru (Sesuai Gambar Ref: Defisit -94jt)
             // Header Pengeluaran = Gross DO (Pembelian Buah) + Semua Pengeluaran Operasional (Jurnal)
             DB::raw('COALESCE(SUM(CASE WHEN kategori = "DO" AND sub_kategori = "Pembelian Buah" THEN nominal ELSE 0 END), 0) as total_pengeluaran_do'),
             DB::raw('COALESCE(SUM(CASE WHEN jenis_transaksi = "Pengeluaran" AND (kategori != "DO" OR sub_kategori != "Pembelian Buah") THEN nominal ELSE 0 END), 0) as total_pengeluaran_op'),
             
-            // Header Uang Masuk = Semua Pemasukan (Jurnal) + Pengeluaran Non-Tunai DO (Transfer/Cair)
-            DB::raw('COALESCE(SUM(CASE WHEN jenis_transaksi = "Pemasukan" THEN nominal ELSE 0 END), 0) as total_pemasukan_jurnal'),
+            // Header Uang Masuk = Hanya Potongan DO (Hutang) + Non-Tunai DO (Transfer/Cair Luar)
+            // Ini untuk menunjukkan defisit operasional DO per hari (-94jt)
+            DB::raw('COALESCE(SUM(CASE WHEN kategori = "DO" AND sub_kategori = "Potong Hutang" THEN nominal ELSE 0 END), 0) as masuk_do_hutang'),
             DB::raw('COALESCE(SUM(CASE WHEN kategori = "DO" AND cara_pembayaran IN ("transfer", "cair di luar") AND jenis_transaksi = "Pengeluaran" THEN nominal ELSE 0 END), 0) as masuk_do_nontunai'),
 
             // Counts for DO Unique (19 Transaksi)
@@ -158,9 +159,9 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
             DB::raw('COUNT(DISTINCT CASE WHEN sumber_transaksi = "DO" AND (cara_pembayaran IS NULL OR cara_pembayaran = "") THEN referensi_id END) as count_do_belum_bayar'),
         ])->first();
 
-        // Formula Sinkronisasi Menyeluruh (Inklusi Tambah Saldo & Fee)
-        // Uang Masuk Header = Semua Pemasukan (termasuk Tambah Saldo & Bongkar) + Transfer DO
-        $totalPemasukanHeader = (float) $stats->total_pemasukan_jurnal + (float) $stats->masuk_do_nontunai;
+        // Formula Sinkronisasi Dashboard & Laporan (Step Id: 1761 Image Ref)
+        // Uang Masuk Header = Potongan Hutang + Transfer (agar Selisih matches -94m)
+        $totalPemasukanHeader = (float) $stats->masuk_do_hutang + (float) $stats->masuk_do_nontunai;
         $totalPengeluaranHeader = (float) $stats->total_pengeluaran_do + (float) $stats->total_pengeluaran_op;
 
         return [

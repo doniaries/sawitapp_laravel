@@ -99,45 +99,15 @@ class JurnalKeuanganTable
             ])
             ->headerActions([
                 Action::make('cetakRekap')
-                    ->label(fn($livewire) => 'Cetak Rekap ' . ($livewire->activeTab === 'hari_ini' ? 'Hari Ini' : ($livewire->activeTab === 'bulan_ini' ? 'Bulan Ini' : 'Terpilih')))
-                    ->icon('heroicon-o-printer')
+                    ->label(fn($livewire) => 'Cetak Laporan ' . ($livewire->activeTab === 'hari_ini' ? 'Hari Ini' : ($livewire->activeTab === 'bulan_ini' ? 'Bulan Ini' : 'Terpilih')))
+                    ->icon('heroicon-o-eye')
                     ->color('success')
-                    ->action(function (JurnalKeuanganService $service, $livewire) {
-                        $startDate = now();
-                        $endDate = now();
-
-                        if ($livewire->activeTab === 'bulan_ini') {
-                            $startDate = now()->startOfMonth();
-                            $endDate = now()->endOfMonth();
-                        } elseif ($livewire->activeTab === 'tahun_ini') {
-                            $startDate = now()->startOfYear();
-                            $endDate = now()->endOfYear();
-                        } elseif ($livewire->activeTab === 'semua' || empty($livewire->activeTab)) {
-                            $startDate = now()->startOfMonth();
-                            $endDate = now()->endOfMonth();
-                        }
-
-                        try {
-                            $viewData = $service->generatePdfReport($startDate, $endDate);
-                            $pdf = Pdf::loadView('laporan.keuangan-harian', $viewData);
-                            $pdf->setPaper('a4', 'landscape');
-
-                            return response()->stream(
-                                fn() => print($pdf->output()),
-                                200,
-                                [
-                                    'Content-Type' => 'application/pdf',
-                                    'Content-Disposition' => 'inline; filename="rekap-'.$livewire->activeTab.'.pdf"',
-                                ]
-                            );
-                        } catch (\Exception $e) {
-                            Log::error('Quick Print Error: ' . $e->getMessage());
-                        }
-                    })
+                    ->url(fn($livewire) => route('jurnal-keuangan.rekap', ['tab' => $livewire->activeTab]))
+                    ->openUrlInNewTab()
                     ->hidden(fn($livewire) => $livewire->activeTab === 'semua'),
 
                 Action::make('cetakLaporan')
-                    ->label('Cetak Laporan (Rentang)')
+                    ->label('Preview Laporan (Rentang)')
                     ->icon('heroicon-o-printer')
                     ->color('info')
                     ->schema([
@@ -159,30 +129,13 @@ class JurnalKeuanganTable
                             ->columns(2)
                     ])
                     ->action(function (array $data) {
-                        try {
-                            $startDate = Carbon::parse($data['start_date'])->startOfDay();
-                            $endDate = Carbon::parse($data['end_date'])->endOfDay();
-                            $service = app(JurnalKeuanganService::class);
-                            $viewData = $service->generatePdfReport($startDate, $endDate);
-                            $pdf = Pdf::loadView('laporan.keuangan-harian', $viewData);
-                            $pdf->setPaper('a4', 'landscape');
+                        $url = route('jurnal-keuangan.rekap', [
+                            'start_date' => $data['start_date'],
+                            'end_date' => $data['end_date'],
+                        ]);
 
-                            return response()->stream(
-                                fn() => print($pdf->output()),
-                                200,
-                                [
-                                    'Content-Type' => 'application/pdf',
-                                    'Content-Disposition' => 'inline; filename="laporan-keuangan.pdf"',
-                                ]
-                            );
-                        } catch (\Exception $e) {
-                            Log::error('Error generating PDF preview:', ['error' => $e->getMessage()]);
-                            Notification::make()
-                                ->danger()
-                                ->title('Error Preview')
-                                ->body($e->getMessage())
-                                ->send();
-                        }
+                        // Gunakan script untuk buka tab baru karena redirect() biasa tidak bisa open in new tab
+                        return redirect()->to($url);
                     }),
             ])
             ->defaultSort('created_at', 'desc')
