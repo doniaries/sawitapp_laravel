@@ -22,6 +22,7 @@ class TransaksiDoTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->poll('30s')
             ->deferLoading()
             ->contentGrid([
                 'md' => 2,
@@ -49,6 +50,7 @@ class TransaksiDoTable
                     ->color(fn(string $state): string => match ($state) {
                         'tunai' => 'success',
                         'transfer' => 'info',
+                        'tunai & transfer' => 'info',
                         'cair di luar' => 'warning',
                         'belum dibayar' => 'danger',
                         default => 'gray',

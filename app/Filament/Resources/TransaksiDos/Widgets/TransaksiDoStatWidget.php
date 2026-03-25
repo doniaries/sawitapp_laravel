@@ -14,7 +14,7 @@ class TransaksiDoStatWidget extends BaseWidget
 {
     // Widget configuration
     protected static ?int $sort = 1;
-    protected ?string $pollingInterval = '10s';
+    protected ?string $pollingInterval = '30s';
     protected static bool $isLazy = true;
     protected int | string | array $columnSpan = 'full';
 
