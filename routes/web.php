@@ -15,6 +15,10 @@ use App\Filament\Pages\Settings\ManageSettings;
 //production
 Route::redirect('/', '/admin');
 
+Route::get('login', function () {
+    return redirect()->route('filament.admin.auth.login');
+})->name('login');
+
 Route::middleware(['auth', 'check.perusahaan'])->group(function () {
     // routes yang membutuhkan data perusahaan
 });

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 /**
  * Public Routes
  */
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/app-settings', [AppSettingsController::class, 'index']);
 Route::get('/login', function () {
     return response()->json([
