@@ -3,11 +3,7 @@
 namespace App\Filament\Resources\JurnalKeuangans\Tables;
 
 
-use App\Observers\JurnalKeuanganObserver;
-use App\Services\JurnalKeuanganService;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use Filament\Notifications\Notification;
+
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -24,7 +20,6 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Log;
 
 class JurnalKeuanganTable
 {
