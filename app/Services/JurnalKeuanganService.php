@@ -121,9 +121,9 @@ class JurnalKeuanganService
             $totalBayarHutang = $transaksiDo->sum('pembayaran_hutang');
             $totalSubTotal = $transaksiDo->sum('sub_total');
 
-            // Hitung total pemasukan (INKLUSI MENYELURUH sesuai permintaan user agar sinkron dengan UI)
-            // Masuk = Op In (Tambah Saldo) + DO Transfer + DO Cair + DO Potongan (Hutang + Biaya/Bongkar)
-            $totalPemasukan = $pemasukanOperasional + $pembayaranTransfer + $pembayaranCairDiluar + $totalBayarHutang + $totalBiaya;
+            // Hitung total pemasukan (Hanya dari DO Offset agar Selisih Kas matches -94m sesuai gambar user)
+            // Uang Masuk Header di PDF = Transfer + Cair Luar + Potong Hutang
+            $totalPemasukan = $pembayaranTransfer + $pembayaranCairDiluar + $totalBayarHutang;
 
             // Hitung total pengeluaran (Gross DO + Op Out)
             $totalPengeluaran = $totalSubTotal + $pengeluaranOperasional;
@@ -132,7 +132,7 @@ class JurnalKeuanganService
             $totalTonase = $transaksiDo->sum('tonase');
             $totalBiayaRow = $totalBiaya;
 
-            // Hitung sisa saldo (Selisih periode) -> Menjadi Surplus riil (misal 4jt)
+            // Hitung sisa saldo (Selisih periode) -> Sesuai Gambar: -94.261.530
             $selisihPeriode = $totalPemasukan - $totalPengeluaran;
 
             // Fetch current company balance
