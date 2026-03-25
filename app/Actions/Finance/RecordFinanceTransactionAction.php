@@ -34,12 +34,13 @@ class RecordFinanceTransactionAction
             $nominal = (float) $data['nominal'];
             $jenis = $data['jenis_transaksi']; // Pemasukan / Pengeluaran
 
-            // Update company balance
-            if ($jenis === 'Pemasukan') {
-                $perusahaan->increment('saldo', $nominal);
-            } else {
-                // Opsional: Cek apakah saldo cukup jika diperlukan
-                $perusahaan->decrement('saldo', $nominal);
+            // Update company balance only if it affects cash
+            if ($data['mempengaruhi_kas'] ?? true) {
+                if ($jenis === 'Pemasukan') {
+                    $perusahaan->increment('saldo', $nominal);
+                } else {
+                    $perusahaan->decrement('saldo', $nominal);
+                }
             }
 
             $saldoAkhir = (float) $perusahaan->fresh()->saldo;

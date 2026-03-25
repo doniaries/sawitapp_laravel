@@ -76,56 +76,12 @@ class TransaksiDoStatWidget extends BaseWidget
 
                 $totalExpenditureToday = $totalDOToday + $totalOperationalToday;
 
-                // --- GLOBAL CALCULATIONS (Cumulative - Scoped) ---
-                $incomingFundsGlobal = DB::table('transaksi_do')
-                    ->where('perusahaan_id', $tenantId)
-                    ->whereNull('deleted_at')
-                    ->select([
-                        DB::raw('COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments'),
-                        DB::raw('COALESCE(SUM(CASE
-                            WHEN cara_bayar IN ("transfer", "cair di luar", "belum dibayar")
-                            THEN sisa_bayar
-                            ELSE 0
-                        END), 0) as remaining_payments')
-                    ])->first();
-
-                $operationalIncomeGlobal = DB::table('transaksi_operasional')
-                    ->where('perusahaan_id', $tenantId)
-                    ->whereNull('deleted_at')
-                    ->where('operasional', 'pemasukan')
-                    ->sum('nominal');
-
-                $totalIncomingGlobal = $incomingFundsGlobal->total_debt_payments +
-                    $incomingFundsGlobal->remaining_payments +
-                    $operationalIncomeGlobal;
-
-                $totalDOGlobal = DB::table('transaksi_do')
-                    ->where('perusahaan_id', $tenantId)
-                    ->whereNull('deleted_at')
-                    ->sum('sub_total');
-
-                $totalOperationalGlobal = DB::table('transaksi_operasional')
-                    ->where('perusahaan_id', $tenantId)
-                    ->whereNull('deleted_at')
-                    ->where('operasional', 'pengeluaran')
-                    ->sum('nominal');
-
-                $totalExpenditureGlobal = $totalDOGlobal + $totalOperationalGlobal;
-                $remainingBalanceGlobal = $totalIncomingGlobal - $totalExpenditureGlobal;
-
                 return [
                     Stat::make('DO Hari Ini', $todayStats->count ?? 0)
                         ->description('Total: Rp ' . number_format($todayStats->total ?? 0, 0, ',', '.'))
                         ->descriptionIcon('heroicon-m-clock')
                         ->color('info')
                         ->url(TransaksiDoResource::getUrl('index', ['activeTab' => 'hari_ini'])),
-
-                    // Remaining Balance (Global/Cumulative)
-                    Stat::make('Sisa Saldo', 'Rp ' . number_format($remainingBalanceGlobal, 0, ',', '.'))
-                        ->description('Total saldo (Kumulatif)')
-                        ->descriptionIcon('heroicon-m-banknotes')
-                        ->color($remainingBalanceGlobal >= 0 ? 'success' : 'danger')
-                        ->url(JurnalKeuanganResource::getUrl('index', ['activeTab' => 'semua'])),
 
                     // Total Income (Today)
                     Stat::make('Uang Masuk (Hari Ini)', 'Rp ' . number_format($totalIncomingToday, 0, ',', '.'))

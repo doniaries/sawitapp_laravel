@@ -245,7 +245,7 @@ class TransaksiDoForm
                                     ->rules([
                                         function (Get $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
-                                                if (in_array($value, ['tunai', 'transfer'])) {
+                                                if ($value === 'tunai') {
                                                     $sisaBayar = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
                                                     $perusahaan = \Filament\Facades\Filament::getTenant();
                                                     if ($perusahaan && $sisaBayar > $perusahaan->saldo) {

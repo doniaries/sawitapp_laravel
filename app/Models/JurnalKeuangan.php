@@ -38,6 +38,7 @@ class JurnalKeuangan extends Model
         'cara_pembayaran',
         'keterangan',
         'perusahaan_id',
+        'mempengaruhi_kas',
     ];
 
     protected $casts = [

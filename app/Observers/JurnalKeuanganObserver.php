@@ -89,6 +89,8 @@ class JurnalKeuanganObserver
                 return;
             }
 
+            $mempengaruhiKas = $transaksiDo->cara_bayar === 'tunai';
+            
             // 2. Record GROSS EXPENDITURE (The cost of buying the fruit)
             $this->createLaporan([
                 'perusahaan_id' => $transaksiDo->perusahaan_id,
@@ -104,7 +106,7 @@ class JurnalKeuanganObserver
                 'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                 'cara_pembayaran' => $transaksiDo->cara_bayar,
                 'keterangan' => "Pembelian DO #{$transaksiDo->nomor} (Bruto)",
-                'mempengaruhi_kas' => true
+                'mempengaruhi_kas' => $mempengaruhiKas
             ]);
 
             // 3. Record INCOME COMPONENTS (Deductions that return to company)
@@ -125,7 +127,7 @@ class JurnalKeuanganObserver
                     'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                     'cara_pembayaran' => $transaksiDo->cara_bayar,
                     'keterangan' => "Potongan Upah Bongkar DO #{$transaksiDo->nomor}",
-                    'mempengaruhi_kas' => true
+                    'mempengaruhi_kas' => $mempengaruhiKas
                 ]);
             }
 
@@ -145,7 +147,7 @@ class JurnalKeuanganObserver
                     'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                     'cara_pembayaran' => $transaksiDo->cara_bayar,
                     'keterangan' => "Potongan Biaya Lain DO #{$transaksiDo->nomor}",
-                    'mempengaruhi_kas' => true
+                    'mempengaruhi_kas' => $mempengaruhiKas
                 ]);
             }
 
@@ -165,7 +167,7 @@ class JurnalKeuanganObserver
                     'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                     'cara_pembayaran' => $transaksiDo->cara_bayar,
                     'keterangan' => "Potongan Hutang via DO #{$transaksiDo->nomor}",
-                    'mempengaruhi_kas' => true
+                    'mempengaruhi_kas' => $mempengaruhiKas
                 ]);
             }
 
