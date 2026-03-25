@@ -24,6 +24,7 @@ class TambahSaldosTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->columns([
                 TextColumn::make('perusahaan.name')
                     ->searchable(),
@@ -33,7 +34,8 @@ class TambahSaldosTable
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('nominal')
-                    ->numeric()
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()

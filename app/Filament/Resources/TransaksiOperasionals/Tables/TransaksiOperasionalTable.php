@@ -19,6 +19,7 @@ class TransaksiOperasionalTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->columns([
                 TextColumn::make('tanggal')
                     ->label('Tanggal')
@@ -46,10 +47,13 @@ class TransaksiOperasionalTable
 
                 TextColumn::make('nominal')
                     ->label('Nominal')
-                    ->currency('IDR')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->alignRight()
                     ->sortable()
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->currency('IDR')),
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()
+                        ->numeric(0, ',', '.')
+                        ->prefix('Rp ')),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([

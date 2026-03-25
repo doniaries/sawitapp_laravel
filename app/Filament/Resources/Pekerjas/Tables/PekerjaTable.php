@@ -33,11 +33,13 @@ class PekerjaTable
                 TextColumn::make('telepon')
                     ->searchable(),
                 TextColumn::make('pendapatan')
-                    ->money('IDR')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->sortable(),
                 TextColumn::make('sisa_hutang')
                     ->label('Total hutang')
-                    ->money('IDR')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->sortable(),
 
                 TextColumn::make('created_at')

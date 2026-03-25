@@ -39,7 +39,8 @@ class PenjualTable
 
                 TextColumn::make('sisa_hutang')
                     ->label('Total Hutang')
-                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->alignment('right')
                     ->sortable()
                     ->color(fn($state) => $state > 0 ? 'danger' : 'success')
