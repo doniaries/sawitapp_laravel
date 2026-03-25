@@ -49,6 +49,7 @@ class SupirResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withCount(['transaksiDo'])
+            ->withSum('riwayatPembayaran as riwayat_pembayaran_sum_nominal', 'nominal')
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);

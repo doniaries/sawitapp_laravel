@@ -21,6 +21,7 @@ class PenjualTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->columns([
                 TextColumn::make('nama')
                     ->label('Nama')

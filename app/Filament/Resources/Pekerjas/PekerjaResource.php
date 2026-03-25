@@ -49,6 +49,7 @@ class PekerjaResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            ->withSum('riwayatPembayaran as riwayat_pembayaran_sum_nominal', 'nominal')
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
