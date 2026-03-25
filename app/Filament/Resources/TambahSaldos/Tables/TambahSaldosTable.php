@@ -2,17 +2,17 @@
 
 namespace App\Filament\Resources\TambahSaldos\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Table;
-use Filament\Tables\Actions\Action;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Notifications\Actions\Action as NotificationAction;
 use Illuminate\Support\Facades\Auth;
@@ -131,7 +131,7 @@ class TambahSaldosTable
                                     ->body("Pengajuan saldo sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " telah disetujui.")
                                     ->success()
                                     ->actions([
-                                        NotificationAction::make('lihat')
+                                        \Filament\Notifications\Actions\Action::make('lihat')
                                             ->button()
                                             ->url(route('filament.admin.resources.tambah-saldo.index', ['tenant' => $record->perusahaan->slug])),
                                     ])
