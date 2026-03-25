@@ -63,7 +63,6 @@ class TransaksiDoForm
                                     ->searchable()
                                     ->live()
                                     ->required()
-                                    // ... createOptionForm omitted but preserved in reality ...
                                     ->createOptionForm([
                                         TextInput::make('nama')
                                             ->label('Nama Penjual')
@@ -226,6 +225,27 @@ class TransaksiDoForm
                                     ->dehydrated()
                                     ->extraInputAttributes(['class' => 'font-bold text-lg leading-loose']),
 
+                                TextInput::make('nominal_tunai')
+                                    ->label('Nominal Tunai')
+                                    ->helperText('Jumlah yang diambil cash oleh penjual')
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
+                                    ->prefix('Rp')
+                                    ->numeric()
+                                    ->required()
+                                    ->live()
+                                    ->visible(fn(Get $get) => $get('cara_bayar') === 'tunai & transfer')
+                                    ->rules([
+                                        function (Get $get) {
+                                            return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                $sisaBayar = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
+                                                $val = (int) str_replace(['.', ','], '', $value ?? 0);
+                                                if ($val > $sisaBayar) {
+                                                    $fail("Nominal tunai tidak boleh melebihi sisa bayar (Rp " . number_format($sisaBayar, 0, ',', '.') . ")");
+                                                }
+                                            };
+                                        },
+                                    ]),
+
                                 Select::make('cara_bayar')
                                     ->label('Cara Bayar')
                                     ->options(TransaksiDo::CARA_BAYAR)
@@ -241,16 +261,27 @@ class TransaksiDoForm
                                                 $set('supir_id', $supir->id);
                                             }
                                         }
+
+                                        // Reset nominal_tunai if not split
+                                        if ($state !== 'tunai & transfer') {
+                                            $set('nominal_tunai', 0);
+                                        }
                                     })
                                     ->rules([
                                         function (Get $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                $perusahaan = \Filament\Facades\Filament::getTenant();
+                                                if (!$perusahaan) return;
+
+                                                $cekNominal = 0;
                                                 if ($value === 'tunai') {
-                                                    $sisaBayar = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
-                                                    $perusahaan = \Filament\Facades\Filament::getTenant();
-                                                    if ($perusahaan && $sisaBayar > $perusahaan->saldo) {
-                                                        $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . ")");
-                                                    }
+                                                     $cekNominal = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
+                                                } elseif ($value === 'tunai & transfer') {
+                                                     $cekNominal = (int) str_replace(['.', ','], '', $get('nominal_tunai') ?? 0);
+                                                }
+
+                                                if ($cekNominal > 0 && $cekNominal > $perusahaan->saldo) {
+                                                    $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . ")");
                                                 }
                                             };
                                         },

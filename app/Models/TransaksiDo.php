@@ -48,6 +48,7 @@ class TransaksiDo extends Model
         'pembayaran_hutang',    // Updated
         'sisa_hutang_penjual',  // Updated
         'cara_bayar',
+        'nominal_tunai',
         'sisa_bayar',
         'bukti_transfer',
         'keterangan_pembayaran',
@@ -75,6 +76,7 @@ class TransaksiDo extends Model
         'hutang_awal' => 'decimal:0',         // Updated
         'pembayaran_hutang' => 'decimal:0',   // Updated
         'sisa_hutang_penjual' => 'decimal:0', // Updated
+        'nominal_tunai' => 'decimal:0',
         'sisa_bayar' => 'decimal:0',
         // 'status_bayar' => 'string',
     ];
@@ -86,6 +88,7 @@ class TransaksiDo extends Model
         'hutang_awal' => 0,           // Updated
         'pembayaran_hutang' => 0,     // Updated
         'sisa_hutang_penjual' => 0,   // Updated
+        'nominal_tunai' => 0,
         'sisa_bayar' => 0,
         // 'status_bayar' => 'Belum Lunas',
     ];
@@ -93,6 +96,7 @@ class TransaksiDo extends Model
     const CARA_BAYAR = [
         'tunai' => 'tunai',
         'transfer' => 'transfer',
+        'tunai & transfer' => 'tunai & transfer',
         'cair di luar' => 'cair di luar',
         'belum dibayar' => 'belum dibayar',
     ];

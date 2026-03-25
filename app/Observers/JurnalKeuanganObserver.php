@@ -92,22 +92,69 @@ class JurnalKeuanganObserver
             $mempengaruhiKas = $transaksiDo->cara_bayar === 'tunai';
             
             // 2. Record GROSS EXPENDITURE (The cost of buying the fruit)
-            $this->createLaporan([
-                'perusahaan_id' => $transaksiDo->perusahaan_id,
-                'tanggal' => $transaksiDo->tanggal,
-                'jenis_transaksi' => 'Pengeluaran',
-                'kategori' => 'DO',
-                'sub_kategori' => 'Pembelian Buah',
-                'nominal' => $transaksiDo->sub_total,
-                'sumber_transaksi' => 'DO',
-                'referensi_id' => $transaksiDo->id,
-                'nomor_referensi' => $transaksiDo->nomor,
-                'pihak_terkait' => $transaksiDo->penjual?->nama,
-                'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
-                'cara_pembayaran' => $transaksiDo->cara_bayar,
-                'keterangan' => "Pembelian DO #{$transaksiDo->nomor} (Bruto)",
-                'mempengaruhi_kas' => $mempengaruhiKas
-            ]);
+            if ($transaksiDo->cara_bayar === 'tunai & transfer') {
+                // Split entries
+                $nominalTunai = (float) $transaksiDo->nominal_tunai;
+                $nominalTransfer = $transaksiDo->sub_total - $nominalTunai;
+
+                // Entry 1: Tunai
+                if ($nominalTunai > 0) {
+                    $this->createLaporan([
+                        'perusahaan_id' => $transaksiDo->perusahaan_id,
+                        'tanggal' => $transaksiDo->tanggal,
+                        'jenis_transaksi' => 'Pengeluaran',
+                        'kategori' => 'DO',
+                        'sub_kategori' => 'Pembelian Buah',
+                        'nominal' => $nominalTunai,
+                        'sumber_transaksi' => 'DO',
+                        'referensi_id' => $transaksiDo->id,
+                        'nomor_referensi' => $transaksiDo->nomor,
+                        'pihak_terkait' => $transaksiDo->penjual?->nama,
+                        'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
+                        'cara_pembayaran' => 'tunai',
+                        'keterangan' => "Pembelian DO #{$transaksiDo->nomor} (Bruto - Bagian Tunai)",
+                        'mempengaruhi_kas' => true
+                    ]);
+                }
+
+                // Entry 2: Transfer
+                if ($nominalTransfer > 0) {
+                    $this->createLaporan([
+                        'perusahaan_id' => $transaksiDo->perusahaan_id,
+                        'tanggal' => $transaksiDo->tanggal,
+                        'jenis_transaksi' => 'Pengeluaran',
+                        'kategori' => 'DO',
+                        'sub_kategori' => 'Pembelian Buah',
+                        'nominal' => $nominalTransfer,
+                        'sumber_transaksi' => 'DO',
+                        'referensi_id' => $transaksiDo->id,
+                        'nomor_referensi' => $transaksiDo->nomor,
+                        'pihak_terkait' => $transaksiDo->penjual?->nama,
+                        'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
+                        'cara_pembayaran' => 'transfer',
+                        'keterangan' => "Pembelian DO #{$transaksiDo->nomor} (Bruto - Bagian Transfer)",
+                        'mempengaruhi_kas' => false
+                    ]);
+                }
+            } else {
+                // Normal entry (full tunai or full transfer)
+                $this->createLaporan([
+                    'perusahaan_id' => $transaksiDo->perusahaan_id,
+                    'tanggal' => $transaksiDo->tanggal,
+                    'jenis_transaksi' => 'Pengeluaran',
+                    'kategori' => 'DO',
+                    'sub_kategori' => 'Pembelian Buah',
+                    'nominal' => $transaksiDo->sub_total,
+                    'sumber_transaksi' => 'DO',
+                    'referensi_id' => $transaksiDo->id,
+                    'nomor_referensi' => $transaksiDo->nomor,
+                    'pihak_terkait' => $transaksiDo->penjual?->nama,
+                    'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
+                    'cara_pembayaran' => $transaksiDo->cara_bayar,
+                    'keterangan' => "Pembelian DO #{$transaksiDo->nomor} (Bruto)",
+                    'mempengaruhi_kas' => $mempengaruhiKas
+                ]);
+            }
 
             // 3. Record INCOME COMPONENTS (Deductions that return to company)
             
