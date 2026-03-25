@@ -22,6 +22,7 @@ class TransaksiDoTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->contentGrid([
                 'md' => 2,
                 'xl' => 3,
@@ -73,16 +74,20 @@ class TransaksiDoTable
 
                 TextColumn::make('harga_satuan')
                     ->label('Harga Satuan')
-                    ->currency('IDR')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->sortable(),
 
                 TextColumn::make('sub_total')
                     ->label('Sub Total')
-                    ->currency('IDR')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->color(Color::Amber)
                     ->weight('bold')
                     ->summarize([
-                        Sum::make()->currency('IDR')
+                        Sum::make()
+                            ->numeric(0, ',', '.')
+                            ->prefix('Rp ')
                     ])
                     ->sortable(),
             ])

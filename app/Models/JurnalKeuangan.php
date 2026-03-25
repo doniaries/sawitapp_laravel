@@ -157,13 +157,18 @@ class JurnalKeuangan extends Model
 
         // Auto sync setelah setiap transaksi kas
         static::created(function ($model) {
-            // Logika sync saldo dihilangkan sesuai permintaan
+            \Illuminate\Support\Facades\Cache::forget("dashboard_stats_tenant_{$model->perusahaan_id}_" . now()->format('YmdH'));
+            \Illuminate\Support\Facades\Cache::forget("dashboard_pie_chart_tenant_{$model->perusahaan_id}_" . now()->format('YmdH'));
         });
 
-        // Sync juga untuk update & delete
-        static::updated(function ($model) { /* sama seperti created */
+        static::updated(function ($model) {
+            \Illuminate\Support\Facades\Cache::forget("dashboard_stats_tenant_{$model->perusahaan_id}_" . now()->format('YmdH'));
+            \Illuminate\Support\Facades\Cache::forget("dashboard_pie_chart_tenant_{$model->perusahaan_id}_" . now()->format('YmdH'));
         });
-        static::deleted(function ($model) { /* sama seperti created */
+
+        static::deleted(function ($model) {
+            \Illuminate\Support\Facades\Cache::forget("dashboard_stats_tenant_{$model->perusahaan_id}_" . now()->format('YmdH'));
+            \Illuminate\Support\Facades\Cache::forget("dashboard_pie_chart_tenant_{$model->perusahaan_id}_" . now()->format('YmdH'));
         });
     }
 }
