@@ -15,7 +15,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
-use Filament\Widgets\FilamentInfoWidget;
+// use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -109,7 +109,7 @@ class AdminPanelProvider extends PanelProvider
                     ->enabled(app()->environment('local'))
                     ->users([
                         'Admin' => 'superadmin@gmail.com',
-                        'User' => 'user@example.com',
+                        'Pimpinan' => 'yondra@gmail.com',
                     ]),
                 \Rupadana\ApiService\ApiServicePlugin::make()
             ])
