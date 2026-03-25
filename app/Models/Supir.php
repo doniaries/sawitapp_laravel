@@ -36,7 +36,7 @@ class Supir extends Model
     ];
 
     protected $appends = [
-        'sisa_hutang',
+        // 'sisa_hutang', // Dipindahkan ke database query level/explicit call untuk performa
     ];
 
     protected $casts = [
@@ -120,8 +120,11 @@ class Supir extends Model
     // Method untuk get total pembayaran
     public function getTotalPembayaranAttribute(): float
     {
-        return $this->riwayatPembayaran()
-            ->sum('nominal');
+        if (array_key_exists('riwayat_pembayaran_sum_nominal', $this->attributes)) {
+            return (float) $this->attributes['riwayat_pembayaran_sum_nominal'];
+        }
+        
+        return (float) $this->riwayatPembayaran()->sum('nominal');
     }
 
     // Method untuk get sisa hutang real-time
