@@ -136,55 +136,9 @@ class JurnalKeuanganTable
                     })
                     ->hidden(fn($livewire) => $livewire->activeTab === 'semua'),
 
-                Action::make('downloadPdf')
-                    ->label('Download PDF')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->schema([
-                        Grid::make()
-                            ->schema([
-                                DatePicker::make('start_date')
-                                    ->label('Dari Tanggal')
-                                    ->required()
-                                    ->default(now())
-                                    ->displayFormat('d/m/Y')
-                                    ->native(false),
-                                DatePicker::make('end_date')
-                                    ->label('Sampai Tanggal')
-                                    ->required()
-                                    ->default(now())
-                                    ->displayFormat('d/m/Y')
-                                    ->native(false),
-                            ])
-                            ->columns(2)
-                    ])
-                    ->action(function (array $data) {
-                        try {
-                            $startDate = Carbon::parse($data['start_date'])->startOfDay();
-                            $endDate = Carbon::parse($data['end_date'])->endOfDay();
-                            $service = app(JurnalKeuanganService::class);
-                            $viewData = $service->generatePdfReport($startDate, $endDate);
-                            $pdf = Pdf::loadView('laporan.keuangan-harian', $viewData);
-                            $pdf->setPaper('a4', 'landscape');
-
-                            return response()->streamDownload(
-                                fn() => print($pdf->output()),
-                                "laporan-keuangan-{$startDate->format('Y-m-d')}-{$endDate->format('Y-m-d')}.pdf"
-                            );
-                        } catch (\Exception $e) {
-                            Log::error('Error generating PDF:', [
-                                'error' => $e->getMessage()
-                            ]);
-                            Notification::make()
-                                ->danger()
-                                ->title('Error')
-                                ->body('Gagal membuat laporan: ' . $e->getMessage())
-                                ->send();
-                        }
-                    }),
-
-                Action::make('previewPdf')
-                    ->label('Preview Laporan')
-                    ->icon('heroicon-o-eye')
+                Action::make('cetakLaporan')
+                    ->label('Cetak Laporan (Rentang)')
+                    ->icon('heroicon-o-printer')
                     ->color('info')
                     ->schema([
                         Grid::make()
@@ -218,18 +172,18 @@ class JurnalKeuanganTable
                                 200,
                                 [
                                     'Content-Type' => 'application/pdf',
-                                    'Content-Disposition' => 'inline; filename="preview-laporan.pdf"',
+                                    'Content-Disposition' => 'inline; filename="laporan-keuangan.pdf"',
                                 ]
                             );
                         } catch (\Exception $e) {
-                            Log::error('Error previewing PDF:', ['error' => $e->getMessage()]);
+                            Log::error('Error generating PDF preview:', ['error' => $e->getMessage()]);
                             Notification::make()
                                 ->danger()
                                 ->title('Error Preview')
                                 ->body($e->getMessage())
                                 ->send();
                         }
-                    })
+                    }),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
