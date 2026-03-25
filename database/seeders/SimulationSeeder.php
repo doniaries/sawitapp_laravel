@@ -99,7 +99,13 @@ class SimulationSeeder extends Seeder
         $supirId = $supirIds[array_rand($supirIds)];
         $nopolList = ['BH 8021 SM', 'BH 8112 MA', 'BH 9090 KT', 'B 1234 ABC', 'B 5678 DEF', 'BH 7777 SS'];
         $noPolisi = $nopolList[array_rand($nopolList)];
+        
         $nomor = 'DO-' . $perusahaanId . '-' . $tanggal->format('Ymd') . '-' . Str::padLeft($index, 4, '0');
+        
+        // Ensure uniqueness if seeder is run multiple times or has date collisions
+        while (TransaksiDo::where('nomor', $nomor)->exists()) {
+            $nomor = 'DO-' . $perusahaanId . '-' . $tanggal->format('Ymd') . '-' . Str::padLeft($index++, 4, '0') . Str::random(2);
+        }
 
         // Observer will handle JurnalKeuangan and MutasiHutang
         $transaksi = TransaksiDo::create([

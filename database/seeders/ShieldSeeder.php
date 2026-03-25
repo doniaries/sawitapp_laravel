@@ -29,9 +29,19 @@ class ShieldSeeder extends Seeder
             "Page:Dashboard", "Page:Tenancy\EditPerusahaanProfile", "Page:Tenancy\RegisterPerusahaan"
         ];
 
-        // Admin, Pimpinan & Kasir: Semua kecuali Role management
-        $limitedPermissions = collect($allPermissions)->filter(function ($permission) {
-            return !str_contains($permission, ':Role');
+        // Fix naming mismatch: PengajuanDana -> TambahSaldo
+        $allPermissions = array_map(fn($p) => str_replace('PengajuanDana', 'TambahSaldo', $p), $allPermissions);
+
+        // Permissions for Admin & Pimpinan (No Role management, No Create TambahSaldo)
+        $adminPermissions = collect($allPermissions)->filter(function ($p) {
+            return !str_contains($p, ':Role') && !str_starts_with($p, 'Create:TambahSaldo');
+        })->toArray();
+
+        // Permissions for Kasir (No Role, User, Perusahaan management, No Update/Delete/etc TambahSaldo)
+        $kasirPermissions = collect($allPermissions)->filter(function ($p) {
+            $isRestrictedResource = str_contains($p, ':Role') || str_contains($p, ':User') || str_contains($p, ':Perusahaan');
+            $isRestrictedAction = str_starts_with($p, 'Update:TambahSaldo') || str_starts_with($p, 'Delete:TambahSaldo') || str_starts_with($p, 'Restore:TambahSaldo') || str_contains($p, 'ForceDelete:TambahSaldo');
+            return !$isRestrictedResource && !$isRestrictedAction;
         })->toArray();
 
         $rolesWithPermissions = [
@@ -43,17 +53,17 @@ class ShieldSeeder extends Seeder
             [
                 'name' => 'admin',
                 'guard_name' => 'web',
-                'permissions' => $limitedPermissions
+                'permissions' => $adminPermissions
             ],
             [
                 'name' => 'pimpinan',
                 'guard_name' => 'web',
-                'permissions' => $limitedPermissions
+                'permissions' => $adminPermissions
             ],
             [
                 'name' => 'kasir',
                 'guard_name' => 'web',
-                'permissions' => $limitedPermissions
+                'permissions' => $kasirPermissions
             ],
         ];
 
