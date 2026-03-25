@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             SupirSeeder::class,
             PekerjaSeeder::class,
             OperasionalSeeder::class,
-            SimulationSeeder::class,
+            SimulasiDataSeeder::class,
         ]);
         $this->command->info("Seeders berhasil dijalankan");
     }

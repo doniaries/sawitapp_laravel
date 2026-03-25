@@ -177,8 +177,19 @@ class TransaksiDoObserver
             return;
         }
 
-        // Validasi saldo hanya untuk transaksi tunai baru
+        // Validasi saldo hanya untuk transaksi tunai/split baru
+        $cekSaldo = false;
+        $nominalDibutuhkan = 0;
+
         if ($transaksiDo->cara_bayar === 'tunai') {
+            $cekSaldo = true;
+            $nominalDibutuhkan = $transaksiDo->sisa_bayar;
+        } elseif ($transaksiDo->cara_bayar === 'tunai & transfer') {
+            $cekSaldo = true;
+            $nominalDibutuhkan = $transaksiDo->nominal_tunai;
+        }
+
+        if ($cekSaldo) {
             $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
             if (!$perusahaan) {
                 throw new \Exception('Data perusahaan tidak ditemukan');
@@ -186,16 +197,15 @@ class TransaksiDoObserver
 
             if ($perusahaan->saldo < 0) {
                 throw new \Exception(
-                    "Tidak dapat melakukan transaksi tunai karena saldo minus.\n" .
-                        "Saldo saat ini: Rp " . number_format($perusahaan->saldo, 0, ',', '.')
+                    "Tidak dapat melakukan transaksi tunai karena saldo perusahaan saat ini minus (Rp " . number_format($perusahaan->saldo, 0, ',', '.') . ")"
                 );
             }
 
-            if ($transaksiDo->isClean() && $transaksiDo->sisa_bayar > $perusahaan->saldo) {
+            if ($nominalDibutuhkan > $perusahaan->saldo) {
                 throw new \Exception(
-                    "Saldo tidak mencukupi untuk pembayaran tunai.\n" .
-                        "Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "\n" .
-                        "Dibutuhkan: Rp " . number_format($transaksiDo->sisa_bayar, 0, ',', '.')
+                    "Saldo tidak mencukupi untuk porsi tunai transaksi ini.\n" .
+                        "Saldo Tersedia: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "\n" .
+                        "Dibutuhkan: Rp " . number_format($nominalDibutuhkan, 0, ',', '.')
                 );
             }
         }
