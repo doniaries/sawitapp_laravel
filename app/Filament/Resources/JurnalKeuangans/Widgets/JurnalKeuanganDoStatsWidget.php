@@ -25,8 +25,8 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
     // Initialize default dates & tab saat mount
     public function mount(): void
     {
-        $this->startDate = now()->startOfDay(); // Default hari ini
-        $this->endDate = now()->endOfDay();
+        $this->startDate = today(); 
+        $this->endDate = today();
     }
 
     //update stats saldo
@@ -43,7 +43,13 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
     }
 
     // Listen untuk event filter
-    #[On(['filter-laporan', 'tab-changed'])]
+    #[On('tab-changed')]
+    public function handleTabChanged($tab): void
+    {
+        $this->activeTab = $tab;
+    }
+
+    #[On('filter-laporan')]
     public function handleFilter($data = []): void
     {
         if (isset($data['startDate'])) {
@@ -147,9 +153,9 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
 
         // Apply time-based filter from tab
         match ($this->activeTab) {
-            'hari_ini' => $query->whereDate('tanggal', now()),
-            'bulan_ini' => $query->whereMonth('tanggal', now()->month)->whereYear('tanggal', now()->year),
-            'tahun_ini' => $query->whereYear('tanggal', now()->year),
+            'hari_ini' => $query->whereDate('tanggal', today()),
+            'bulan_ini' => $query->whereMonth('tanggal', today()->month)->whereYear('tanggal', today()->year),
+            'tahun_ini' => $query->whereYear('tanggal', today()->year),
             'semua' => $query->whereBetween('tanggal', [
                 $this->startDate->startOfDay(),
                 $this->endDate->endOfDay()

@@ -50,6 +50,11 @@ class ListJurnalKeuangans extends ListRecords
         ];
     }
 
+    public function updatedActiveTab(): void
+    {
+        $this->dispatch('tab-changed', tab: $this->activeTab)->to(JurnalKeuanganDoStatsWidget::class);
+    }
+
     protected function getTabCount(string $tab): int
     {
         $query = JurnalKeuangan::query();
