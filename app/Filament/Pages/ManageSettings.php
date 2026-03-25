@@ -7,9 +7,15 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Pages\SettingsPage;
+use Filament\Pages\Dashboard;
 
 class ManageSettings extends SettingsPage
 {
+    public function save(): void
+    {
+        parent::save();
+        $this->redirect(Dashboard::getUrl());
+    }
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static string | \UnitEnum | null $navigationGroup = 'Pengaturan';
