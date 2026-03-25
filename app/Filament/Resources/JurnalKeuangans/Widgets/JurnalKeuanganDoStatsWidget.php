@@ -69,80 +69,47 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
         try {
             $data = $this->getFilteredStats();
             $perusahaan = Perusahaan::first();
+            $selisih = $data['total_pemasukan'] - $data['total_pengeluaran'];
 
             return [
-                // Stat 1: Saldo & Overview
-                Stat::make('Saldo Perusahaan', fn() => 'Rp ' . number_format($perusahaan?->saldo ?? 0, 0, ',', '.'))
-                    ->description(sprintf(
-                        "Total: %d Transaksi\nDO: %d | Operasional: %d",
-                        $data['total_transaksi'],
-                        $data['count_do'],
-                        $data['count_operasional']
-                    ))
-                    ->descriptionIcon('heroicon-m-building-office-2')
-                    ->color($this->getSaldoColor($perusahaan?->saldo ?? 0)),
+                // Stat 1: Selisih Kas (Periode)
+                Stat::make('SELISIH KAS (PERIODE)', 'Rp ' . number_format($selisih, 0, ',', '.'))
+                    ->description($selisih >= 0 ? 'Surplus' : 'Defisit')
+                    ->descriptionIcon($selisih >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
+                    ->color($selisih >= 0 ? 'success' : 'danger'),
 
-                // Stat 2: Transaksi tunai
-                Stat::make('Pembayaran tunai', sprintf(
-                    "Rp %s (%d Trans.)",
-                    number_format($data['total_tunai'], 0, ',', '.'),
-                    $data['count_tunai']
-                ))
+                // Stat 2: Total Saldo / Uang Masuk
+                Stat::make('TOTAL SALDO/UANG MASUK', 'Rp ' . number_format($data['total_pemasukan'], 0, ',', '.'))
                     ->description(sprintf(
-                        "DO: Rp %s (%d)\nOperasional: Rp %s (%d)\nMempengaruhi Kas: Ya",
-                        number_format($data['tunai_do'], 0, ',', '.'),
-                        $data['count_tunai_do'],
-                        number_format($data['tunai_operasional'], 0, ',', '.'),
-                        $data['count_tunai_operasional']
+                        "Total %d Transaksi (tunai: %d, transfer: %d, cair di luar: %d, belum dibayar: %d)",
+                        $data['count_do_unique'],
+                        $data['count_do_tunai'],
+                        $data['count_do_transfer'],
+                        $data['count_do_cair_luar'],
+                        $data['count_do_belum_bayar']
                     ))
                     ->descriptionIcon('heroicon-m-banknotes')
                     ->color('success'),
 
-                // Stat 3: Non-tunai (transfer & Cair Luar)
-                Stat::make('Pembayaran Non-tunai', sprintf(
-                    "Rp %s (%d Trans.)",
-                    number_format($data['total_non_tunai'], 0, ',', '.'),
-                    $data['count_non_tunai']
-                ))
+                // Stat 3: Pengeluaran / Uang Keluar
+                Stat::make('PENGELUARAN/UANG KELUAR', 'Rp ' . number_format($data['total_pengeluaran'], 0, ',', '.'))
                     ->description(sprintf(
-                        "transfer: Rp %s (%d)\nCair Luar: Rp %s (%d)\nMempengaruhi Kas: Tidak",
-                        number_format($data['total_transfer'], 0, ',', '.'),
-                        $data['count_transfer'],
-                        number_format($data['total_cair_luar'], 0, ',', '.'),
-                        $data['count_cair_luar']
+                        "Total DO: Rp %s | Total Operasional: Rp %s",
+                        number_format($data['total_pengeluaran_do'], 0, ',', '.'),
+                        number_format($data['total_pengeluaran_op'], 0, ',', '.')
                     ))
-                    ->descriptionIcon('heroicon-m-credit-card')
-                    ->color('warning'),
+                    ->descriptionIcon('heroicon-m-shopping-cart')
+                    ->color('danger'),
 
-                // Stat 4: Ringkasan Operasional
-                Stat::make('Ringkasan Operasional', sprintf(
-                    "Rp %s (%d Trans.)",
-                    number_format($data['total_operasional'], 0, ',', '.'),
-                    $data['count_operasional']
-                ))
-                    ->description(sprintf(
-                        "Masuk: Rp %s (%d)\nKeluar: Rp %s (%d)\nBayar Hutang: Rp %s",
-                        number_format($data['operasional_in'], 0, ',', '.'),
-                        $data['count_operasional_in'],
-                        number_format($data['operasional_out'], 0, ',', '.'),
-                        $data['count_operasional_out'],
-                        number_format($data['bayar_hutang_op'], 0, ',', '.')
-                    ))
-                    ->descriptionIcon('heroicon-m-clipboard-document-list')
+                // Stat 4: Saldo Akhir Perusahaan
+                Stat::make('SALDO AKHIR PERUSAHAAN', 'Rp ' . number_format($perusahaan?->saldo ?? 0, 0, ',', '.'))
+                    ->description(sprintf("Total: %d Item Jurnal", $data['total_transaksi']))
+                    ->descriptionIcon('heroicon-m-building-office-2')
                     ->color('info')
             ];
         } catch (\Exception $e) {
-            Log::error('Widget Error:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return [
-                Stat::make('Error', 'Terjadi kesalahan memuat data')
-                    ->description('Silakan refresh halaman')
-                    ->descriptionIcon('heroicon-m-exclamation-triangle')
-                    ->color('danger')
-            ];
+            Log::error('Widget Error:', ['error' => $e->getMessage()]);
+            return [Stat::make('Error', 'Gagal memuat statistik')];
         }
     }
 
@@ -151,11 +118,16 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
     {
         $query = JurnalKeuangan::query();
 
-        // Apply time-based filter from tab
+        // Tab specific filtering
         match ($this->activeTab) {
             'hari_ini' => $query->whereDate('tanggal', today()),
+            'kemarin' => $query->whereDate('tanggal', now()->subDay()),
             'bulan_ini' => $query->whereMonth('tanggal', today()->month)->whereYear('tanggal', today()->year),
             'tahun_ini' => $query->whereYear('tanggal', today()->year),
+            'tunai' => $query->where('cara_pembayaran', 'tunai'),
+            'transfer' => $query->where('cara_pembayaran', 'transfer'),
+            'cair_luar' => $query->where('cara_pembayaran', 'cair di luar'),
+            'belum_dibayar' => $query->where('cara_pembayaran', 'belum dibayar'),
             'semua' => $query->whereBetween('tanggal', [
                 $this->startDate->startOfDay(),
                 $this->endDate->endOfDay()
@@ -167,65 +139,41 @@ class JurnalKeuanganDoStatsWidget extends BaseWidget
         };
 
         $stats = $query->select([
-            // Basic counts
             DB::raw('COUNT(*) as total_transaksi'),
-            DB::raw('COUNT(CASE WHEN kategori = "DO" THEN 1 END) as count_do'),
-            DB::raw('COUNT(CASE WHEN kategori = "Operasional" THEN 1 END) as count_operasional'),
+            
+            // Logika baru: Inklusi Operasional Secara Menyeluruh
+            // Header Pengeluaran = Gross DO (Pembelian Buah) + Semua Pengeluaran Operasional (Jurnal)
+            DB::raw('COALESCE(SUM(CASE WHEN kategori = "DO" AND sub_kategori = "Pembelian Buah" THEN nominal ELSE 0 END), 0) as total_pengeluaran_do'),
+            DB::raw('COALESCE(SUM(CASE WHEN jenis_transaksi = "Pengeluaran" AND (kategori != "DO" OR sub_kategori != "Pembelian Buah") THEN nominal ELSE 0 END), 0) as total_pengeluaran_op'),
+            
+            // Header Uang Masuk = Semua Pemasukan (Jurnal) + Pengeluaran Non-Tunai DO (Transfer/Cair)
+            DB::raw('COALESCE(SUM(CASE WHEN jenis_transaksi = "Pemasukan" THEN nominal ELSE 0 END), 0) as total_pemasukan_jurnal'),
+            DB::raw('COALESCE(SUM(CASE WHEN kategori = "DO" AND cara_pembayaran IN ("transfer", "cair di luar") AND jenis_transaksi = "Pengeluaran" THEN nominal ELSE 0 END), 0) as masuk_do_nontunai'),
 
-            // tunai transactions
-            DB::raw('COUNT(CASE WHEN cara_pembayaran = "tunai" THEN 1 END) as count_tunai'),
-            DB::raw('COUNT(CASE WHEN cara_pembayaran = "tunai" AND kategori = "DO" THEN 1 END) as count_tunai_do'),
-            DB::raw('COUNT(CASE WHEN cara_pembayaran = "tunai" AND kategori = "Operasional" THEN 1 END) as count_tunai_operasional'),
-            DB::raw('COALESCE(SUM(CASE WHEN cara_pembayaran = "tunai" THEN nominal ELSE 0 END), 0) as total_tunai'),
-            DB::raw('COALESCE(SUM(CASE WHEN cara_pembayaran = "tunai" AND kategori = "DO" THEN nominal ELSE 0 END), 0) as tunai_do'),
-            DB::raw('COALESCE(SUM(CASE WHEN cara_pembayaran = "tunai" AND kategori = "Operasional" THEN nominal ELSE 0 END), 0) as tunai_operasional'),
-
-            // Non-tunai transactions
-            DB::raw('COUNT(CASE WHEN cara_pembayaran != "tunai" THEN 1 END) as count_non_tunai'),
-            DB::raw('COALESCE(SUM(CASE WHEN cara_pembayaran != "tunai" THEN nominal ELSE 0 END), 0) as total_non_tunai'),
-
-            // transfer details
-            DB::raw('COUNT(CASE WHEN cara_pembayaran = "transfer" THEN 1 END) as count_transfer'),
-            DB::raw('COALESCE(SUM(CASE WHEN cara_pembayaran = "transfer" THEN nominal ELSE 0 END), 0) as total_transfer'),
-
-            // Cair Luar details
-            DB::raw('COUNT(CASE WHEN cara_pembayaran = "cair di luar" THEN 1 END) as count_cair_luar'),
-            DB::raw('COALESCE(SUM(CASE WHEN cara_pembayaran = "cair di luar" THEN nominal ELSE 0 END), 0) as total_cair_luar'),
-
-            // Operasional details
-            DB::raw('COUNT(CASE WHEN kategori = "Operasional" AND jenis_transaksi = "Pemasukan" THEN 1 END) as count_operasional_in'),
-            DB::raw('COUNT(CASE WHEN kategori = "Operasional" AND jenis_transaksi = "Pengeluaran" THEN 1 END) as count_operasional_out'),
-            DB::raw('COALESCE(SUM(CASE WHEN kategori = "Operasional" AND jenis_transaksi = "Pemasukan" THEN nominal ELSE 0 END), 0) as operasional_in'),
-            DB::raw('COALESCE(SUM(CASE WHEN kategori = "Operasional" AND jenis_transaksi = "Pengeluaran" THEN nominal ELSE 0 END), 0) as operasional_out'),
-            DB::raw('COALESCE(SUM(CASE WHEN kategori = "Operasional" THEN nominal ELSE 0 END), 0) as total_operasional'),
-            DB::raw('COALESCE(SUM(CASE WHEN kategori = "Operasional" AND sub_kategori = "Bayar Hutang" THEN nominal ELSE 0 END), 0) as bayar_hutang_op')
+            // Counts for DO Unique (19 Transaksi)
+            DB::raw('COUNT(DISTINCT CASE WHEN sumber_transaksi = "DO" THEN referensi_id END) as count_do_unique'),
+            DB::raw('COUNT(DISTINCT CASE WHEN sumber_transaksi = "DO" AND cara_pembayaran = "tunai" THEN referensi_id END) as count_do_tunai'),
+            DB::raw('COUNT(DISTINCT CASE WHEN sumber_transaksi = "DO" AND cara_pembayaran = "transfer" THEN referensi_id END) as count_do_transfer'),
+            DB::raw('COUNT(DISTINCT CASE WHEN sumber_transaksi = "DO" AND cara_pembayaran = "cair di luar" THEN referensi_id END) as count_do_cair_luar'),
+            DB::raw('COUNT(DISTINCT CASE WHEN sumber_transaksi = "DO" AND (cara_pembayaran IS NULL OR cara_pembayaran = "") THEN referensi_id END) as count_do_belum_bayar'),
         ])->first();
+
+        // Formula Sinkronisasi Menyeluruh (Inklusi Tambah Saldo & Fee)
+        // Uang Masuk Header = Semua Pemasukan (termasuk Tambah Saldo & Bongkar) + Transfer DO
+        $totalPemasukanHeader = (float) $stats->total_pemasukan_jurnal + (float) $stats->masuk_do_nontunai;
+        $totalPengeluaranHeader = (float) $stats->total_pengeluaran_do + (float) $stats->total_pengeluaran_op;
 
         return [
             'total_transaksi' => (int) $stats->total_transaksi,
-            'count_do' => (int) $stats->count_do,
-            'count_operasional' => (int) $stats->count_operasional,
-
-            'count_tunai' => (int) $stats->count_tunai,
-            'count_tunai_do' => (int) $stats->count_tunai_do,
-            'count_tunai_operasional' => (int) $stats->count_tunai_operasional,
-            'total_tunai' => (float) $stats->total_tunai,
-            'tunai_do' => (float) $stats->tunai_do,
-            'tunai_operasional' => (float) $stats->tunai_operasional,
-
-            'count_non_tunai' => (int) $stats->count_non_tunai,
-            'total_non_tunai' => (float) $stats->total_non_tunai,
-            'count_transfer' => (int) $stats->count_transfer,
-            'total_transfer' => (float) $stats->total_transfer,
-            'count_cair_luar' => (int) $stats->count_cair_luar,
-            'total_cair_luar' => (float) $stats->total_cair_luar,
-
-            'count_operasional_in' => (int) $stats->count_operasional_in,
-            'count_operasional_out' => (int) $stats->count_operasional_out,
-            'operasional_in' => (float) $stats->operasional_in,
-            'operasional_out' => (float) $stats->operasional_out,
-            'total_operasional' => (float) $stats->total_operasional,
-            'bayar_hutang_op' => (float) $stats->bayar_hutang_op
+            'total_pemasukan' => $totalPemasukanHeader,
+            'total_pengeluaran' => $totalPengeluaranHeader,
+            'total_pengeluaran_do' => (float) $stats->total_pengeluaran_do,
+            'total_pengeluaran_op' => (float) $stats->total_pengeluaran_op,
+            'count_do_unique' => (int) $stats->count_do_unique,
+            'count_do_tunai' => (int) $stats->count_do_tunai,
+            'count_do_transfer' => (int) $stats->count_do_transfer,
+            'count_do_cair_luar' => (int) $stats->count_do_cair_luar,
+            'count_do_belum_bayar' => (int) $stats->count_do_belum_bayar,
         ];
     }
 

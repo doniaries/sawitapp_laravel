@@ -32,7 +32,7 @@ class TransaksiDoResource extends Resource
     public static function getWidgets(): array
     {
         return [
-            TransaksiDoStatWidget::class,
+            \App\Filament\Resources\JurnalKeuangans\Widgets\JurnalKeuanganDoStatsWidget::class,
         ];
     }
 

@@ -33,20 +33,25 @@ class ListJurnalKeuangans extends ListRecords
                 ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', today()))
                 ->badge($this->getTabCount('hari_ini')),
 
+            'kemarin' => Tab::make('Kemarin')
+                ->icon('heroicon-o-calendar')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', today()->subDay()))
+                ->badge($this->getTabCount('kemarin')),
+
+            'pemasukan' => Tab::make('Pemasukan')
+                ->icon('heroicon-o-arrow-down-circle')
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('jenis_transaksi', 'Pemasukan'))
+                ->badge($this->getTabCount('pemasukan')),
+
+            'pengeluaran' => Tab::make('Pengeluaran')
+                ->icon('heroicon-o-arrow-up-circle')
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('jenis_transaksi', 'Pengeluaran'))
+                ->badge($this->getTabCount('pengeluaran')),
+
             'bulan_ini' => Tab::make('Bulan Ini')
                 ->icon('heroicon-o-calendar-days')
                 ->modifyQueryUsing(fn(Builder $query) => $query->whereMonth('tanggal', now()->month)->whereYear('tanggal', now()->year))
                 ->badge($this->getTabCount('bulan_ini')),
-
-            'tahun_ini' => Tab::make('Tahun Ini')
-                ->icon('heroicon-o-archive-box')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereYear('tanggal', now()->year))
-                ->badge($this->getTabCount('tahun_ini')),
-
-            'semua' => Tab::make('Semua')
-                ->icon('heroicon-o-clipboard-document-list')
-                ->modifyQueryUsing(fn(Builder $query) => $query)
-                ->badge($this->getTabCount('semua')),
         ];
     }
 
@@ -61,8 +66,10 @@ class ListJurnalKeuangans extends ListRecords
 
         return match ($tab) {
             'hari_ini' => $query->whereDate('tanggal', today())->count(),
+            'kemarin' => $query->whereDate('tanggal', today()->subDay())->count(),
+            'pemasukan' => $query->where('jenis_transaksi', 'Pemasukan')->count(),
+            'pengeluaran' => $query->where('jenis_transaksi', 'Pengeluaran')->count(),
             'bulan_ini' => $query->whereMonth('tanggal', now()->month)->whereYear('tanggal', now()->year)->count(),
-            'tahun_ini' => $query->whereYear('tanggal', now()->year)->count(),
             default => $query->count(),
         };
     }

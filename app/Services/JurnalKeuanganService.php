@@ -115,24 +115,24 @@ class JurnalKeuanganService
 
             $pemasukanOperasional = $operasional->where('operasional', 'pemasukan')->sum('nominal');
             $pengeluaranOperasional = $operasional->where('operasional', 'pengeluaran')->sum('nominal');
+            
+            // Hitung seluruh komponen DO
+            $totalBiaya = $transaksiDo->sum(fn($item) => ($item->biaya_lain ?? 0) + ($item->upah_bongkar ?? 0));
             $totalBayarHutang = $transaksiDo->sum('pembayaran_hutang');
+            $totalSubTotal = $transaksiDo->sum('sub_total');
 
-            // Hitung total pemasukan
-            $sisaPembayaran = $transaksiDo->whereIn('cara_bayar', ['transfer', 'cair di luar', 'belum dibayar'])->sum('sisa_bayar');
-            $totalPemasukan = $totalBayarHutang + // Total pembayaran hutang
-                $sisaPembayaran + // Sisa pembayaran (transfer, cair di luar, belum dibayar)
-                $pemasukanOperasional; // Pemasukan operasional
+            // Hitung total pemasukan (INKLUSI MENYELURUH sesuai permintaan user agar sinkron dengan UI)
+            // Masuk = Op In (Tambah Saldo) + DO Transfer + DO Cair + DO Potongan (Hutang + Biaya/Bongkar)
+            $totalPemasukan = $pemasukanOperasional + $pembayaranTransfer + $pembayaranCairDiluar + $totalBayarHutang + $totalBiaya;
 
-            // Hitung total pengeluaran
-            $totalPengeluaran = $transaksiDo->sum('sub_total') + // Total DO
-                $pengeluaranOperasional; // Pengeluaran operasional
+            // Hitung total pengeluaran (Gross DO + Op Out)
+            $totalPengeluaran = $totalSubTotal + $pengeluaranOperasional;
 
             // Hitung total lainnya
             $totalTonase = $transaksiDo->sum('tonase');
-            $totalSubTotal = $transaksiDo->sum('sub_total');
-            $totalBiaya = $transaksiDo->sum(fn($item) => ($item->biaya_lain ?? 0) + ($item->upah_bongkar ?? 0));
+            $totalBiayaRow = $totalBiaya;
 
-            // Hitung sisa saldo (Selisih periode)
+            // Hitung sisa saldo (Selisih periode) -> Menjadi Surplus riil (misal 4jt)
             $selisihPeriode = $totalPemasukan - $totalPengeluaran;
 
             // Fetch current company balance
