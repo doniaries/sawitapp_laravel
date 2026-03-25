@@ -8,7 +8,6 @@ use Filament\Notifications\Notification;
 use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Model;
 
 class CreateTransaksiDo extends CreateRecord
 {
@@ -112,22 +111,22 @@ class CreateTransaksiDo extends CreateRecord
                 //     ->send();
             }
 
-            // Notifikasi transaksi berhasil
-            // Notification::make()
-            //     ->title('Transaksi DO Berhasil')
-            //     ->body(
-            //         "DO #{$record->nomor}\n" .
-            //             "Total: Rp " . number_format($record->total, 0, ',', '.') . "\n" .
-            //             "Sisa bayar: Rp " . number_format($record->sisa_bayar, 0, ',', '.')
-            //     )
-            //     ->success()
-            //     ->duration(3000) // Set durasi 3 detik
-            //     ->persistent(false) // Notifikasi akan otomatis hilang
-            //     ->send();
+            //Notifikasi transaksi berhasil
+            Notification::make()
+                ->title('Transaksi DO Berhasil')
+                ->body(
+                    "DO #{$record->nomor}\n" .
+                        "Total: Rp " . number_format($record->total, 0, ',', '.') . "\n" .
+                        "Sisa bayar: Rp " . number_format($record->sisa_bayar, 0, ',', '.')
+                )
+                ->success()
+                ->duration(3000) // Set durasi 3 detik
+                ->persistent(false) // Notifikasi akan otomatis hilang
+                ->send();
 
             // Notifikasi ke Admin/Pimpinan (Terutama jika Cair di Luar)
             $users = \App\Models\User::whereHas('roles', fn($q) => $q->whereIn('name', ['super_admin', 'pimpinan']))->get();
-            
+
             $isCairLuar = $record->cara_bayar === 'cair di luar';
             $notif = Notification::make()
                 ->title($isCairLuar ? '⚠️ Transaksi Cair di Luar!' : 'Transaksi DO Baru')
