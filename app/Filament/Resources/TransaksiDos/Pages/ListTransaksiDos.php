@@ -19,13 +19,7 @@ class ListTransaksiDos extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\Action::make('refresh')
-                ->label('Refresh')
-                ->icon('heroicon-o-arrow-path')
-                ->color('gray')
-                ->action(fn () => $this->redirect(static::getResource()::getUrl('index'))),
-        ];
+        return [];
     }
 
     // Handle filter date changes

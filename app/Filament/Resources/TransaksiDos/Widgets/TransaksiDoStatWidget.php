@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\TransaksiDos\Widgets;
 
-use App\Models\{TransaksiDo, Perusahaan, Operasional};
+use App\Models\{TransaksiDo};
 use App\Filament\Resources\TransaksiDos\TransaksiDoResource;
 use App\Filament\Resources\JurnalKeuangans\JurnalKeuanganResource;
 use Filament\Widgets\StatsOverviewWidget\Stat;

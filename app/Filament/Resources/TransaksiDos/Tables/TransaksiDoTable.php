@@ -97,17 +97,11 @@ class TransaksiDoTable
                 TrashedFilter::make(),
             ])
             ->headerActions([
-                TablesAction::make('tambah_operasional')
-                    ->label('Tambah Operasional')
-                    ->icon('heroicon-o-document-plus')
-                    ->color('danger')
-                    ->url(fn (): string => \App\Filament\Resources\TransaksiOperasionals\TransaksiOperasionalResource::getUrl('create')),
-
-                TablesAction::make('tambah_pemasukan')
-                    ->label('Tambah Pemasukan')
-                    ->icon('heroicon-o-arrow-trending-up')
-                    ->color('success')
-                    ->url(fn (): string => \App\Filament\Resources\TambahSaldos\TambahSaldoResource::getUrl('create')),
+                TablesAction::make('refresh')
+                    ->label('Refresh Data')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('gray')
+                    ->url(fn() => \App\Filament\Resources\TransaksiDos\TransaksiDoResource::getUrl('index')),
 
                 CreateAction::make()
                     ->icon('heroicon-o-plus')
