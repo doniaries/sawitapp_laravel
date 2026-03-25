@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Penjuals\Pages;
 use App\Filament\Resources\Penjuals\PenjualResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use App\Filament\Resources\Penjuals\Widgets\PenjualStatsOverview;
 use App\Filament\Resources\Penjuals\RelationManagers\RiwayatHutangPinjamanRelationManager;
 
 
@@ -23,7 +22,7 @@ class ListPenjuals extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            PenjualStatsOverview::class,
+            \App\Filament\Resources\Penjuals\Widgets\PenjualStatsWidget::class,
         ];
     }
 
