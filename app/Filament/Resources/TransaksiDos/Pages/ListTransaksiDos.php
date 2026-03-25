@@ -17,6 +17,8 @@ class ListTransaksiDos extends ListRecords
 {
     protected static string $resource = TransaksiDoResource::class;
 
+    protected function getHeaderActions(): array
+    {
         return [
             Actions\Action::make('refresh')
                 ->label('Refresh')
@@ -24,6 +26,7 @@ class ListTransaksiDos extends ListRecords
                 ->color('gray')
                 ->action(fn () => $this->redirect(static::getResource()::getUrl('index'))),
         ];
+    }
 
     // Handle filter date changes
     public function updatedTableFilters(): void
