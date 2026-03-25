@@ -17,15 +17,13 @@ class ListTransaksiDos extends ListRecords
 {
     protected static string $resource = TransaksiDoResource::class;
 
-    protected function getHeaderActions(): array
-    {
         return [
-            // Actions\CreateAction::make()
-            //     ->icon('heroicon-o-plus')
-            //     ->color('primary')
-            //     ->label('Tambah Transaksi'),
+            Actions\Action::make('refresh')
+                ->label('Refresh')
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->action(fn () => $this->redirect(static::getResource()::getUrl('index'))),
         ];
-    }
 
     // Handle filter date changes
     public function updatedTableFilters(): void
