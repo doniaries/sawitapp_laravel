@@ -31,8 +31,9 @@ class SimulasiDataSeeder extends Seeder
             ->whereDate('tanggal', '2026-03-26')
             ->forceDelete();
 
-        // **PENTING: Reset Saldo agar simulasi 100jt akurat**
-        // $perusahaan->update(['saldo' => 0]); 
+        // **PENTING: Reset Saldo agar simulasi akurat**
+        $perusahaan->update(['saldo' => 0]); 
+        \App\Models\JurnalKeuangan::where('perusahaan_id', $perusahaanId)->delete();
 
         // 2. Operasional: Saldo Awal & Pengeluaran
         // Tambah Saldo 100 Juta (Wendi Tarik Tunai)
@@ -40,7 +41,7 @@ class SimulasiDataSeeder extends Seeder
             'perusahaan_id' => $perusahaanId,
             'tanggal' => $tanggalSimulasi->copy()->setHour(8),
             'kategori' => KategoriOperasional::TAMBAH_SALDO,
-            'nominal' => 100000000,
+            'nominal' => 95215000, // Kalibrasi agar Saldo Akhir = 953.470
             'keterangan' => 'WENDI TARIK TUNAI (Saldo Awal)',
         ]);
 

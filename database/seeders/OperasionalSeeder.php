@@ -61,23 +61,9 @@ class OperasionalSeeder extends Seeder
 
     private function seedInitialCapital(Perusahaan $perusahaan)
     {
-        $admin = User::where('perusahaan_id', $perusahaan->id)->first() ?? User::first();
-        if (!$admin) return;
-
-        DB::table('transaksi_operasional')->insert([
-            'perusahaan_id' => $perusahaan->id,
-            'tanggal' => now()->subMonths(6)->startOfMonth(),
-            'operasional' => 'pemasukan',
-            'kategori' => KategoriOperasional::TAMBAH_SALDO->value,
-            'nominal' => 1000000000,
-            'keterangan' => 'Modal Awal',
-            'pihak_id' => $admin->id,
-            'pihak_type' => User::class,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $perusahaan->increment('saldo', 1000000000);
+        // User requested to remove the 1 Billion capital.
+        // We will rely on SimulasiDataSeeder for precision.
+        return;
     }
 
     private function seedRandomExpense(Perusahaan $perusahaan, Carbon $date): void
