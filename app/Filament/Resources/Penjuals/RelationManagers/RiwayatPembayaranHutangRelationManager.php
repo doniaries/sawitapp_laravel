@@ -53,7 +53,8 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
 
                 // Kolom nominal
                 Tables\Columns\TextColumn::make('nominal')
-                    ->money('IDR')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->label('Nominal')
                     ->alignEnd()
                     ->sortable(),

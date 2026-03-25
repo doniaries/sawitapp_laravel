@@ -37,7 +37,8 @@ class RiwayatHutangPinjamanRelationManager extends RelationManager
                     }),
 
                 Tables\Columns\TextColumn::make('nominal')
-                    ->money('IDR')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->sortable()
                     ->alignEnd(),
 

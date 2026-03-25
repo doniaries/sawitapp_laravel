@@ -39,7 +39,8 @@ class PenjualHutangTertinggiWidget extends BaseWidget
 
                 Tables\Columns\TextColumn::make('hutang')
                     ->label('Total Hutang')
-                    ->money('IDR')
+                    ->numeric(0, ',', '.')
+                    ->prefix('Rp ')
                     ->alignEnd()
                     ->sortable()
                     ->color('danger')
