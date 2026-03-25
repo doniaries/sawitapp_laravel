@@ -12,27 +12,39 @@ class SimulasiDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $perusahaan = Perusahaan::first();
+        // 1. Target CV SUCCESS MANDIRI (ID: 1)
+        $perusahaan = Perusahaan::find(1);
         if (!$perusahaan) {
-            $perusahaan = Perusahaan::create(['nama' => 'SUCCESS MANDIRI']);
+            $perusahaan = Perusahaan::first();
         }
 
         $perusahaanId = $perusahaan->id;
-        $tanggalSimulasi = Carbon::create(2026, 3, 25, 0, 0, 0);
+        // Tanggal simulasi untuk dashboard Hari Ini
+        $tanggalSimulasi = Carbon::create(2026, 3, 26, 0, 0, 0);
 
-        // Bersihkan data lama untuk tanggal ini agar tidak duplikat/bentrok nomor
-        TransaksiDo::whereDate('tanggal', '2026-03-25')->forceDelete();
-        TransaksiOperasional::whereDate('tanggal', '2026-03-25')->forceDelete();
+        // Bersihkan data lama untuk tanggal ini agar tidak duplikat
+        TransaksiDo::where('perusahaan_id', $perusahaanId)
+            ->whereDate('tanggal', '2026-03-26')
+            ->forceDelete();
+            
+        TransaksiOperasional::where('perusahaan_id', $perusahaanId)
+            ->whereDate('tanggal', '2026-03-26')
+            ->forceDelete();
 
-        // 1. Operasional
+        // **PENTING: Reset Saldo agar simulasi 100jt akurat**
+        // $perusahaan->update(['saldo' => 0]); 
+
+        // 2. Operasional: Saldo Awal & Pengeluaran
+        // Tambah Saldo 100 Juta (Wendi Tarik Tunai)
         TransaksiOperasional::create([
             'perusahaan_id' => $perusahaanId,
             'tanggal' => $tanggalSimulasi->copy()->setHour(8),
             'kategori' => KategoriOperasional::TAMBAH_SALDO,
             'nominal' => 100000000,
-            'keterangan' => 'WENDI TARIK TUNAI (Penambahan Saldo)',
+            'keterangan' => 'WENDI TARIK TUNAI (Saldo Awal)',
         ]);
 
+        // Pengeluaran Belanja
         TransaksiOperasional::create([
             'perusahaan_id' => $perusahaanId,
             'tanggal' => $tanggalSimulasi->copy()->setHour(17),
@@ -41,66 +53,60 @@ class SimulasiDataSeeder extends Seeder
             'keterangan' => 'BELANJA',
         ]);
 
-        // 2. Data 19 Baris DO dari Excel
+        // 3. Data 19 Baris DO dari Laporan Keuangan Harian
         $dataDo = [
-            ['penjual' => '', 'supir' => 'PIAN', 'tonase' => 1105, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'SIANIPAR', 'tonase' => 2041, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'SAGALA', 'tonase' => 370, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'REGO', 'tonase' => 2879, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'EMEN', 'tonase' => 1159, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'MEKI', 'tonase' => 1134, 'harga' => 3500],
-            ['penjual' => '', 'supir' => '-', 'tonase' => 867, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'RIVAL', 'tonase' => 1506, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'HAKIMI', 'tonase' => 1916, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'ROPI', 'tonase' => 3503, 'harga' => 3510],
-            ['penjual' => '', 'supir' => 'NASPERI', 'tonase' => 1830, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'JOKO', 'tonase' => 591, 'harga' => 3500],
+            ['penjual' => 'Pijan', 'supir' => 'Pijan', 'tonase' => 1105, 'harga' => 3500],
+            ['penjual' => 'Sianifar', 'supir' => 'Sianifar', 'tonase' => 2041, 'harga' => 3500],
+            ['penjual' => 'Man Sagala', 'supir' => 'Man Sagala', 'tonase' => 370, 'harga' => 3500],
+            ['penjual' => 'Rego', 'supir' => 'Rego', 'tonase' => 2879, 'harga' => 3500],
+            ['penjual' => 'Emen', 'supir' => 'Emen', 'tonase' => 1159, 'harga' => 3500],
+            ['penjual' => 'Meyki', 'supir' => 'Meyki', 'tonase' => 1134, 'harga' => 3500],
+            ['penjual' => 'Meyki', 'supir' => 'Meyki', 'tonase' => 867, 'harga' => 3500],
+            ['penjual' => 'Rival', 'supir' => 'Rival', 'tonase' => 1506, 'harga' => 3500],
+            ['penjual' => 'Hakimi', 'supir' => 'Ap', 'tonase' => 1916, 'harga' => 3500],
+            ['penjual' => 'Ropi', 'supir' => 'Ropi', 'tonase' => 3503, 'harga' => 3510],
+            ['penjual' => 'Nasferi', 'supir' => 'Nasferi', 'tonase' => 1830, 'harga' => 3500],
+            ['penjual' => 'Joko', 'supir' => 'Joko', 'tonase' => 591, 'harga' => 3500],
+            ['penjual' => 'Ana', 'supir' => 'Anto', 'tonase' => 5423, 'harga' => 3500],
             [
-                'penjual' => 'SUDIRDIN', 'supir' => 'ANTO', 'tonase' => 2168, 'harga' => 3500,
+                'penjual' => 'Sudurdin', 'supir' => 'Anto', 'tonase' => 2168, 'harga' => 3500,
                 'biaya' => 726000, 'hutang' => 500000, 'cara_bayar' => 'transfer'
             ],
-            ['penjual' => '', 'supir' => 'FEBRI', 'tonase' => 411, 'harga' => 3500],
-            ['penjual' => '', 'supir' => 'ANTO/ANA', 'tonase' => 5423, 'harga' => 3500],
+            ['penjual' => 'Febri', 'supir' => 'Febri', 'tonase' => 411, 'harga' => 3500],
             [
-                'penjual' => 'OUSTIA', 'supir' => 'JEKI', 'tonase' => 2387, 'harga' => 3500,
+                'penjual' => 'Gustia harani', 'supir' => 'Jeki', 'tonase' => 2387, 'harga' => 3500,
                 'biaya' => 100000, 'cara_bayar' => 'transfer'
             ],
             [
-                'penjual' => 'RIVALDI', 'supir' => '-', 'tonase' => 1296, 'harga' => 3500,
+                'penjual' => 'Rivaldi', 'supir' => 'Rival', 'tonase' => 1296, 'harga' => 3500,
                 'cara_bayar' => 'transfer'
             ],
             [
-                'penjual' => 'IRMAN', 'supir' => 'NOPI', 'tonase' => 6761, 'harga' => 3500,
+                'penjual' => 'Irman', 'supir' => 'Nopi', 'tonase' => 6761, 'harga' => 3500,
                 'biaya' => 2046000, 'cara_bayar' => 'transfer'
             ],
-            ['penjual' => '', 'supir' => 'ANDES', 'tonase' => 1352, 'harga' => 3500],
+            ['penjual' => 'Andes', 'supir' => 'Andes', 'tonase' => 1352, 'harga' => 3500],
         ];
 
-        $penjualCounter = 1;
         foreach ($dataDo as $index => $item) {
             try {
-                $namaPenjual = $item['penjual'];
-                if (empty($namaPenjual)) {
-                    $namaPenjual = 'Penjual ' . $penjualCounter++;
-                }
-
-                $penjual = Penjual::firstOrCreate(
-                    ['nama' => $namaPenjual, 'perusahaan_id' => $perusahaanId],
+                $penjualModel = Penjual::firstOrCreate(
+                    ['nama' => $item['penjual'], 'perusahaan_id' => $perusahaanId],
                     ['perusahaan_id' => $perusahaanId]
                 );
 
                 $bayarHutang = $item['hutang'] ?? 0;
-                if ($bayarHutang > 0 && $penjual->hutang < $bayarHutang) {
-                    $penjual->update(['hutang' => $bayarHutang]);
+                if ($bayarHutang > 0 && $penjualModel->hutang < $bayarHutang) {
+                    $penjualModel->update(['hutang' => $bayarHutang]);
                 }
 
                 $idSupir = null;
                 if ($item['supir'] && $item['supir'] !== '-') {
-                    $supir = Supir::firstOrCreate(
+                    $supirModel = Supir::firstOrCreate(
                         ['nama' => $item['supir'], 'perusahaan_id' => $perusahaanId],
                         ['perusahaan_id' => $perusahaanId]
                     );
-                    $idSupir = $supir->id;
+                    $idSupir = $supirModel->id;
                 }
 
                 $subTotal = $item['tonase'] * $item['harga'];
@@ -110,9 +116,9 @@ class SimulasiDataSeeder extends Seeder
                 TransaksiDo::create([
                     'perusahaan_id' => $perusahaanId,
                     'tanggal' => $tanggalSimulasi->copy()->setHour(9)->addMinutes($index * 5),
-                    'penjual_id' => $penjual->id,
+                    'penjual_id' => $penjualModel->id,
                     'supir_id' => $idSupir,
-                    'no_polisi' => 'BK ' . (1000 + $index) . ' SM',
+                    'no_polisi' => 'BK ' . (3000 + $index) . ' SM',
                     'tonase' => $item['tonase'],
                     'harga_satuan' => $item['harga'],
                     'sub_total' => $subTotal,
@@ -121,14 +127,13 @@ class SimulasiDataSeeder extends Seeder
                     'pembayaran_hutang' => $bayarHutang,
                     'sisa_bayar' => $sisaBayar,
                     'cara_bayar' => $item['cara_bayar'] ?? 'tunai',
-                    'keterangan_pembayaran' => 'Seeder Simulasi Row ' . ($index + 1),
+                    'keterangan_pembayaran' => 'Lap 25/03 - Row ' . ($index + 1),
                 ]);
             } catch (\Exception $e) {
                 $this->command->error("Gagal pada baris " . ($index + 1) . ": " . $e->getMessage());
-                Log::error("Seeder Error Row " . ($index + 1) . ": " . $e->getMessage());
             }
         }
 
-        $this->command->info('Simulasi data Excel (19 Baris) berhasil disuntikkan.');
+        $this->command->info('Simulasi Laporan (19 Baris + 100jt) di CV SUCCESS MANDIRI berhasil disuntikkan.');
     }
 }

@@ -77,7 +77,7 @@ class TransaksiDoStatWidget extends BaseWidget
                 $totalExpenditureToday = $totalDOToday + $totalOperationalToday;
 
                 return [
-                    Stat::make('DO Hari Ini', $todayStats->count ?? 0)
+                    Stat::make('DO Hari Ini', ($todayStats->count ?? 0))
                         ->description('Total: Rp ' . number_format($todayStats->total ?? 0, 0, ',', '.'))
                         ->descriptionIcon('heroicon-m-clock')
                         ->color('info')
@@ -86,7 +86,7 @@ class TransaksiDoStatWidget extends BaseWidget
                     // Total Income (Today)
                     Stat::make('Uang Masuk (Hari Ini)', 'Rp ' . number_format($totalIncomingToday, 0, ',', '.'))
                         ->description(sprintf(
-                            "Bayar Hutang: Rp %s\nBayar Sisa: Rp %s\nOperasional: Rp %s",
+                            "Bayar Hutang: Rp %s | Bayar Sisa: Rp %s\nOperasional: Rp %s",
                             number_format($incomingFundsToday->total_debt_payments, 0, ',', '.'),
                             number_format($incomingFundsToday->remaining_payments, 0, ',', '.'),
                             number_format($operationalIncomeToday, 0, ',', '.')
@@ -101,7 +101,7 @@ class TransaksiDoStatWidget extends BaseWidget
                     // Total Expenditure (Today)
                     Stat::make('Pengeluaran (Hari Ini)', 'Rp ' . number_format($totalExpenditureToday, 0, ',', '.'))
                         ->description(sprintf(
-                            "DO: Rp %s\nOperasional: Rp %s",
+                            "DO: Rp %s | Operasional: Rp %s",
                             number_format($totalDOToday, 0, ',', '.'),
                             number_format($totalOperationalToday, 0, ',', '.')
                         ))
@@ -112,16 +112,16 @@ class TransaksiDoStatWidget extends BaseWidget
                             'tableFilters' => ['jenis_transaksi' => ['value' => 'Pengeluaran']]
                         ])),
 
-                    Stat::make('Transaksi (Hari Ini)', TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->count())
+                    Stat::make('Transaksi (Hari Ini)', TransaksiDo::where('perusahaan_id', $tenantId)->whereNull('deleted_at')->whereDate('tanggal', $today)->count())
                         ->description(sprintf(
-                            "tunai: %d | transfer: %d\ncair: %d | belum: %d",
-                            TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'tunai')->count(),
-                            TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'transfer')->count(),
-                            TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'cair di luar')->count(),
-                            TransaksiDo::where('perusahaan_id', $tenantId)->whereDate('tanggal', $today)->where('cara_bayar', 'belum dibayar')->count()
+                            "tunai: %d | transfer: %d | cair: %d | belum: %d",
+                            TransaksiDo::where('perusahaan_id', $tenantId)->whereNull('deleted_at')->whereDate('tanggal', $today)->where('cara_bayar', 'tunai')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->whereNull('deleted_at')->whereDate('tanggal', $today)->where('cara_bayar', 'transfer')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->whereNull('deleted_at')->whereDate('tanggal', $today)->where('cara_bayar', 'cair di luar')->count(),
+                            TransaksiDo::where('perusahaan_id', $tenantId)->whereNull('deleted_at')->whereDate('tanggal', $today)->where('cara_bayar', 'belum dibayar')->count()
                         ))
                         ->descriptionIcon('heroicon-m-document-text')
-                        ->color('primary')
+                        ->color('warning')
                         ->url(TransaksiDoResource::getUrl('index', ['activeTab' => 'hari_ini'])),
                 ];
             });
