@@ -43,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
 
         return $panel
             ->default()
-            ->spa()
+            // ->spa()
             // ->topNavigation()
             ->maxContentWidth('full')
             ->id('admin')
@@ -83,6 +83,9 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->tenantMiddleware([
+                \App\Http\Middleware\SetPermissionsTeamId::class,
+            ], isPersistent: true)
             ->databaseNotifications()
             // ->searchableTenantMenu()
             ->tenant(Perusahaan::class, slugAttribute: 'slug', ownershipRelationship: 'perusahaan')

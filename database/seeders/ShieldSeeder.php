@@ -11,6 +11,7 @@ class ShieldSeeder extends Seeder
     public function run(): void
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        setPermissionsTeamId(null);
 
         $allPermissions = [
             "ViewAny:Role", "View:Role", "Create:Role", "Update:Role", "Delete:Role", "DeleteAny:Role",
