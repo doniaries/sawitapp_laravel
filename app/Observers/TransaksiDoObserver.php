@@ -255,7 +255,7 @@ class TransaksiDoObserver
     {
         // Generate nomor DO jika baru
         if (!$transaksiDo->nomor) {
-            $transaksiDo->nomor = $transaksiDo->generateMonthlyNumber();
+            $transaksiDo->nomor = $transaksiDo->generateMonthlyNumber($transaksiDo->tanggal);
         }
 
         // Set default values

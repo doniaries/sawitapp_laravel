@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\BenchmarkTransactionSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -25,7 +26,8 @@ class DatabaseSeeder extends Seeder
             SupirSeeder::class,
             PekerjaSeeder::class,
 //            OperasionalSeeder::class,
-            SimulasiDataSeeder::class,
+//            SimulasiDataSeeder::class,
+            BenchmarkTransactionSeeder::class,
         ]);
         $this->command->info("Seeders berhasil dijalankan");
     }

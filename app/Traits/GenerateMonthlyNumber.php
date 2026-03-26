@@ -2,22 +2,24 @@
 
 namespace App\Traits;
 
+use Carbon\Carbon;
+
 trait GenerateMonthlyNumber
 {
-    public static function generateMonthlyNumber()
+    public static function generateMonthlyNumber($date = null)
     {
-        $today = now();
-        $day = $today->format('d');
-        $month = $today->format('m');
-        $year = $today->format('Y');
+        $date = $date ? Carbon::parse($date) : now();
+        $dateString = $date->toDateString();
+        $day = $date->format('d');
+        $month = $date->format('m');
+        $year = $date->format('Y');
 
-        // Ambil nomor terakhir untuk hari ini
-        $lastNumber = static::whereDate('tanggal', $today->toDateString())
-            ->withTrashed() // Termasuk data yang sudah dihapus
+        // Ambil nomor terakhir untuk tanggal tersebut
+        $lastNumber = static::whereDate('tanggal', $dateString)
+            ->withTrashed()
             ->max('nomor');
 
         if (!$lastNumber) {
-            // Jika belum ada nomor untuk hari ini
             $newNumber = 1;
         } else {
             // Ekstrak nomor dari format DO-YYYYMMDD-XXXX
