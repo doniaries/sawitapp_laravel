@@ -25,6 +25,10 @@ class UserResource extends JsonResource
             'photo_url' => $this->photo ? asset('storage/' . $this->photo) : null,
             'perusahaan_logo_url' => $this->perusahaan?->logo_url,
             'roles' => $this->roles->pluck('name'),
+            'perusahaans' => $this->perusahaans->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+            ]),
         ];
     }
 }

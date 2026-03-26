@@ -31,7 +31,7 @@ class UserController extends Controller
             $query->where('perusahaan_id', $user->perusahaan_id);
         }
 
-        $users = $query->with(['perusahaan', 'roles'])
+        $users = $query->with(['perusahaan', 'roles', 'perusahaans'])
             ->latest()
             ->paginate($request->integer('per_page', 10));
 
