@@ -3,7 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Resources\TransaksiDoResource\Widgets\TransaksiDoStatWidget;
-use App\Filament\Widgets\{DashboardStatsWidget, DailyFinanceChartWidget, MonthlyFinanceChartWidget};
+use App\Filament\Widgets\{DashboardStatsWidget, DailyFinanceChartWidget};
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Widgets\AccountWidget;
 
@@ -17,7 +17,6 @@ class Dashboard extends BaseDashboard
         return [
             DashboardStatsWidget::class,
             DailyFinanceChartWidget::class,
-            MonthlyFinanceChartWidget::class,
         ];
     }
 

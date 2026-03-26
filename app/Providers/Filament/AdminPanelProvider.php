@@ -6,7 +6,9 @@ use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Tenancy\EditTeamProfile;
 use App\Models\Perusahaan;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Carbon\Carbon;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
+use EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -14,8 +16,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
-// use Filament\Widgets\FilamentInfoWidget;
+use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -67,7 +68,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                //
+                \Filament\Widgets\AccountWidget::class,
+                FilamentInfoWidget::class,
             ])
             ->authMiddleware([
                 Authenticate::class
@@ -115,7 +117,11 @@ class AdminPanelProvider extends PanelProvider
                         'Pimpinan' => 'yondra@gmail.com',
                         'Kasir' => 'kasir1@gmail.com',
                     ]),
-                \Rupadana\ApiService\ApiServicePlugin::make()
+                \Rupadana\ApiService\ApiServicePlugin::make(),
+                FilamentInactivityGuardPlugin::make()
+                    ->inactiveAfter(Carbon::SECONDS_PER_MINUTE * 10)
+                    ->showNoticeFor(Carbon::SECONDS_PER_MINUTE * 1)
+                    ->keepActiveOn(['change', 'select', 'mousemove'], mergeWithDefaults: true),
             ])
             ->renderHook(
                 'panels::head.end',
