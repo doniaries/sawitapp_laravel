@@ -8,8 +8,8 @@ use App\Events\RefreshDashboardWidgets;
 use Illuminate\Support\ServiceProvider;
 use App\Services\JurnalKeuanganService;
 use Illuminate\Support\Facades\Gate;
-use App\Models\{TransaksiOperasional, TransaksiDo, JurnalKeuangan};
-use App\Observers\{TransaksiOperasionalObserver, TransaksiDoObserver};
+use App\Models\{TransaksiOperasional, TransaksiDo, JurnalKeuangan, TambahSaldo};
+use App\Observers\{TransaksiOperasionalObserver, TransaksiDoObserver, TambahSaldoObserver};
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -64,5 +64,6 @@ class AppServiceProvider extends ServiceProvider
         // Register observers
         TransaksiOperasional::observe(TransaksiOperasionalObserver::class);
         TransaksiDo::observe(TransaksiDoObserver::class);
+        TambahSaldo::observe(TambahSaldoObserver::class);
     }
 }

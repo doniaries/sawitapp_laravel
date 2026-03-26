@@ -62,33 +62,7 @@ class TambahSaldoController extends Controller
                 'proses_by' => $isDirect ? $user->id : null,
             ]);
 
-            if ($isDirect) {
-                // Tambah Saldo Perusahaan Langsung
-                $perusahaan = Perusahaan::findOrFail($user->perusahaan_id);
-                $saldoAwal = $perusahaan->saldo;
-                $perusahaan->increment('saldo', $pengajuan->nominal);
-                $saldoAkhir = $perusahaan->saldo;
-
-                // Catat di Jurnal Keuangan
-                JurnalKeuangan::create([
-                    'perusahaan_id' => $pengajuan->perusahaan_id,
-                    'tanggal' => now(),
-                    'jenis_transaksi' => 'Pemasukan',
-                    'kategori' => JurnalKeuangan::KATEGORI_TRANSAKSI['SALDO'],
-                    'sub_kategori' => JurnalKeuangan::SUB_KATEGORI_SALDO['TAMBAH'],
-                    'nominal' => $pengajuan->nominal,
-                    'saldo_awal' => $saldoAwal,
-                    'saldo_akhir' => $saldoAkhir,
-                    'sumber_transaksi' => 'Tambah Saldo',
-                    'referensi_id' => $pengajuan->id,
-                    'nomor_referensi' => $pengajuan->nomor ?? ('TS-' . $pengajuan->id),
-                    'pihak_terkait' => $user->name,
-                    'tipe_pihak' => TipeNama::USER,
-                    'cara_pembayaran' => 'transfer',
-                    'keterangan' => 'Top up saldo langsung: ' . $pengajuan->keperluan,
-                    'mempengaruhi_kas' => true,
-                ]);
-            }
+            // Observer akan menangani update saldo dan jurnal jika status === DISETUJUI
 
             return response()->json($pengajuan, 201);
         });
@@ -126,31 +100,7 @@ class TambahSaldoController extends Controller
                     'catatan_pimpinan' => $request->catatan_pimpinan,
                 ]);
 
-                // 2. Tambah Saldo Perusahaan
-                $perusahaan = Perusahaan::findOrFail($pengajuan->perusahaan_id);
-                $saldoAwal = $perusahaan->saldo;
-                $perusahaan->increment('saldo', $pengajuan->nominal);
-                $saldoAkhir = $perusahaan->saldo;
-
-                // 3. Catat di Jurnal Keuangan (Buku Kas)
-                JurnalKeuangan::create([
-                    'perusahaan_id' => $pengajuan->perusahaan_id,
-                    'tanggal' => now(),
-                    'jenis_transaksi' => 'Pemasukan',
-                    'kategori' => JurnalKeuangan::KATEGORI_TRANSAKSI['SALDO'],
-                    'sub_kategori' => JurnalKeuangan::SUB_KATEGORI_SALDO['TAMBAH'],
-                    'nominal' => $pengajuan->nominal,
-                    'saldo_awal' => $saldoAwal,
-                    'saldo_akhir' => $saldoAkhir,
-                    'sumber_transaksi' => 'Tambah Saldo',
-                    'referensi_id' => $pengajuan->id,
-                    'nomor_referensi' => $pengajuan->nomor ?? ('TS-' . $pengajuan->id),
-                    'pihak_terkait' => $pengajuan->user?->name ?? 'User',
-                    'tipe_pihak' => TipeNama::USER,
-                    'cara_pembayaran' => 'transfer',
-                    'keterangan' => 'Top up saldo: ' . $pengajuan->keperluan,
-                    'mempengaruhi_kas' => true,
-                ]);
+                // 2. Observer akan menangani update saldo dan jurnal secara otomatis saat status diupdate ke STATUS_DISETUJUI
 
                 return response()->json([
                     'success' => true,

@@ -11,6 +11,19 @@ use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
+    public function loginInfo()
+    {
+        return response()->json([
+            'message' => 'Silakan gunakan metode POST untuk login.',
+            'status' => 'error'
+        ], 405);
+    }
+
+    public function user(Request $request)
+    {
+        return new UserResource($request->user());
+    }
+
     public function login(Request $request)
     {
         \Illuminate\Support\Facades\Log::info('Login attempt', $request->all());

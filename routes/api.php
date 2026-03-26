@@ -20,21 +20,14 @@ use Illuminate\Support\Facades\Route;
  */
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/app-settings', [AppSettingsController::class, 'index']);
-Route::get('/login', function () {
-    return response()->json([
-        'message' => 'Silakan gunakan metode POST untuk login.',
-        'status' => 'error'
-    ], 405);
-});
+Route::get('/login', [AuthController::class, 'loginInfo'])->name('login.info');
 
 /**
  * Protected Routes (Requires Sanctum Token)
  */
 Route::middleware('auth:sanctum')->group(function () {
     
-    Route::get('/user', function (Request $request) {
-        return new UserResource($request->user());
-    });
+    Route::get('/user', [AuthController::class, 'user']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/user/photo', [AuthController::class, 'updatePhoto']);

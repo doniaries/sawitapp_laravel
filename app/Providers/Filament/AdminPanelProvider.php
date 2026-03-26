@@ -8,7 +8,7 @@ use App\Models\Perusahaan;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Carbon\Carbon;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
-use EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin;
+// use EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -119,24 +119,16 @@ class AdminPanelProvider extends PanelProvider
                         'Kasir' => 'kasir1@gmail.com',
                     ]),
                 \Rupadana\ApiService\ApiServicePlugin::make(),
-                FilamentInactivityGuardPlugin::make()
-                    ->inactiveAfter(Carbon::SECONDS_PER_MINUTE * 10)
-                    ->showNoticeFor(Carbon::SECONDS_PER_MINUTE * 1)
-                    ->keepActiveOn(['change', 'select', 'mousemove'], mergeWithDefaults: true),
+                ...(class_exists('EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin') ? [
+                    \EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin::make()
+                        ->inactiveAfter(Carbon::SECONDS_PER_MINUTE * 10)
+                        ->showNoticeFor(Carbon::SECONDS_PER_MINUTE * 1)
+                        ->keepActiveOn(['change', 'select', 'mousemove'], mergeWithDefaults: true),
+                ] : []),
             ])
             ->renderHook(
                 'panels::head.end',
-                fn() => new \Illuminate\Support\HtmlString('
-                    <link rel="manifest" href="/manifest.json">
-                    <meta name="theme-color" content="#f59e0b">
-                    <meta name="apple-mobile-web-app-capable" content="yes">
-                    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-                    <script>
-                        if ("serviceWorker" in navigator) {
-                            navigator.serviceWorker.register("/serviceworker.js");
-                        }
-                    </script>
-                ')
+                fn(): \Illuminate\Contracts\View\View => view('filament.hooks.pwa-tags')
             );
     }
 }
