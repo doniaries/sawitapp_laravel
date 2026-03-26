@@ -31,63 +31,51 @@ class DashboardStatsWidget extends BaseWidget
         $cacheKey = "dashboard_stats_tenant_{$tenant->id}_" . now()->format('YmdH');
 
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($tenant) {
-            $today = now();
+            $today = Carbon::today();
             
-            // 2. Daily Income Breakdown
+            // 1. Ambil Statistik Transaksi DO dalam 1 query
+            $doStats = TransaksiDo::query()
+                ->where('perusahaan_id', $tenant->id)
+                ->whereDate('tanggal', $today)
+                ->selectRaw('
+                    SUM(sub_total) as total_bruto, 
+                    COUNT(*) as jumlah_transaksi,
+                    SUM(CASE WHEN cara_bayar = "tunai" THEN 1 ELSE 0 END) as tunai_count,
+                    SUM(CASE WHEN cara_bayar = "transfer" THEN 1 ELSE 0 END) as transfer_count
+                ')
+                ->first();
 
-        // 1. Hitung Pengeluaran Hari Ini (DO Bruto + Operasional)
-        $totalDoBruto = (float) TransaksiDo::query()
-            ->whereDate('tanggal', Carbon::today())
-            ->sum('sub_total');
-        
-        $totalOperasional = (float) JurnalKeuangan::query()
-            ->whereDate('tanggal', Carbon::today())
-            ->where('kategori', 'Operasional')
-            ->where('jenis_transaksi', 'Pengeluaran')
-            ->sum('nominal');
-        
-        $pengeluaranTotal = $totalDoBruto + $totalOperasional;
+            // 2. Ambil Statistik Jurnal Keuangan dalam 1 query
+            $jurnalStats = JurnalKeuangan::query()
+                ->where('perusahaan_id', $tenant->id)
+                ->whereDate('tanggal', $today)
+                ->selectRaw('
+                    SUM(CASE WHEN kategori = "Operasional" AND jenis_transaksi = "Pengeluaran" THEN nominal ELSE 0 END) as total_operasional,
+                    SUM(CASE WHEN cara_pembayaran = "transfer" AND jenis_transaksi = "Pengeluaran" THEN nominal ELSE 0 END) as total_transfer,
+                    SUM(CASE WHEN sub_kategori = "Potong Hutang" THEN nominal ELSE 0 END) as potong_hutang
+                ')
+                ->first();
 
-        // 2. Hitung Uang Masuk Hari Ini (Transfer + Potong Hutang) - ABAIKAN BIAYA (Sesuai Gambar)
-        $totalTransfer = (float) JurnalKeuangan::query()
-            ->whereDate('tanggal', Carbon::today())
-            ->where('cara_pembayaran', 'transfer')
-            ->where('jenis_transaksi', 'Pengeluaran')
-            ->sum('nominal');
+            $totalDoBruto = (float) ($doStats->total_bruto ?? 0);
+            $totalOperasional = (float) ($jurnalStats->total_operasional ?? 0);
+            $pengeluaranTotal = $totalDoBruto + $totalOperasional;
 
-        $potongHutang = (float) JurnalKeuangan::query()
-            ->whereDate('tanggal', Carbon::today())
-            ->where('sub_kategori', 'Potong Hutang')
-            ->sum('nominal');
+            $totalTransfer = (float) ($jurnalStats->total_transfer ?? 0);
+            $potongHutang = (float) ($jurnalStats->potong_hutang ?? 0);
+            $uangMasukTotal = $totalTransfer + $potongHutang;
 
-        $uangMasukTotal = $totalTransfer + $potongHutang;
+            $selisihKas = $uangMasukTotal - $pengeluaranTotal;
+            $displaySaldoAkhir = (float) $tenant->saldo;
 
-        // 3. Selisih Kas (Periode)
-        $selisihKas = $uangMasukTotal - $pengeluaranTotal;
-
-        // 4. Saldo Akhir (Kita tampilkan saldo real namun beri penjelasan jika ada selisih profit biaya)
-        $currentBalance = (float) $tenant->saldo;
-        
-        // Agar angka di widget PAS 953.470 (Sesuai Gambar), kita hitung mundur dari saldo awal simulasi jika sedang sesi hari ini
-        $displaySaldoAkhir = $currentBalance;
-        // Opsional: Jika user ingin angkanya MATI sesuai gambar:
-        // $displaySaldoAkhir = 95215000 + $selisihKas; 
-
-        // Info tambahan untuk deskripsi
-        $jumlahTransaksi = TransaksiDo::query()
-            ->whereDate('tanggal', Carbon::today())
-            ->count();
+            $jumlahTransaksi = (int) ($doStats->jumlah_transaksi ?? 0);
             
-        $tunaiCount = TransaksiDo::query()->whereDate('tanggal', Carbon::today())->where('cara_bayar', 'tunai')->count();
-        $transferCount = TransaksiDo::query()->whereDate('tanggal', Carbon::today())->where('cara_bayar', 'transfer')->count();
-
         return [
-            Stat::make('SELISIH KAS (PERIODE)', 'Rp ' . number_format($selisihKas, 0, ',', '.'))
-                ->description('Total Uang Masuk - Total Pengeluaran')
+            Stat::make('SELISIH KAS (PERIODE)', new \Illuminate\Support\HtmlString('<div class="text-base font-bold">Rp ' . number_format($selisihKas, 0, ',', '.') . '</div>'))
+                ->description($selisihKas < 0 ? 'Peringatan: Pengeluaran melebihi pemasukan hari ini.' : 'Total Uang Masuk - Total Pengeluaran')
                 ->icon('heroicon-m-scale')
                 ->color($selisihKas >= 0 ? 'success' : 'danger'),
 
-            Stat::make('TOTAL SALDO/UANG MASUK', 'Rp ' . number_format($uangMasukTotal, 0, ',', '.'))
+            Stat::make('TOTAL SALDO/UANG MASUK', new \Illuminate\Support\HtmlString('<div class="text-base font-bold">Rp ' . number_format($uangMasukTotal, 0, ',', '.') . '</div>'))
                 ->description(sprintf(
                     "Transfer: Rp %s | Hutang: Rp %s",
                     number_format($totalTransfer, 0, ',', '.'),
@@ -96,7 +84,7 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-arrow-down-circle')
                 ->color('success'),
 
-            Stat::make('PENGELUARAN/UANG KELUAR', 'Rp ' . number_format($pengeluaranTotal, 0, ',', '.'))
+            Stat::make('PENGELUARAN/UANG KELUAR', new \Illuminate\Support\HtmlString('<div class="text-base font-bold">Rp ' . number_format($pengeluaranTotal, 0, ',', '.') . '</div>'))
                 ->description(sprintf(
                     "Total DO: Rp %s | Operasional: Rp %s",
                     number_format($totalDoBruto, 0, ',', '.'),
@@ -105,8 +93,8 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-arrow-up-circle')
                 ->color('danger'),
 
-            Stat::make('SALDO AKHIR PERUSAHAAN', 'Rp ' . number_format($displaySaldoAkhir, 0, ',', '.'))
-                ->description("Menampilkan Saldo Real (Termasuk Profit Biaya)")
+            Stat::make('SALDO AKHIR PERUSAHAAN', new \Illuminate\Support\HtmlString('<div class="text-base font-bold">Rp ' . number_format($displaySaldoAkhir, 0, ',', '.') . '</div>'))
+                ->description($displaySaldoAkhir < 0 ? 'Peringatan: Saldo minus (Aset kas kosong).' : "Saldo Real (Termasuk Profit Biaya)")
                 ->icon('heroicon-m-banknotes')
                 ->color($displaySaldoAkhir >= 0 ? 'success' : 'danger'),
         ];

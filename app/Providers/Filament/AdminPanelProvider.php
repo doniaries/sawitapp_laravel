@@ -53,6 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->favicon(asset('images/success.png'))
             ->login()
+            ->font('Poppins')
             ->colors([
                 'primary' => Color::Amber,
                 'secondary' => Color::Cyan,
