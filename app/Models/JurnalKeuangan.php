@@ -10,7 +10,6 @@ use App\Models\Penjual;
 use Illuminate\Database\Eloquent\Relations\BelongsTo as EloquentBelongsTo;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\{TransaksiOperasional, TransaksiDo};
-use App\Observers\JurnalKeuanganObserver;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Log;

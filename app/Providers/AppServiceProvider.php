@@ -9,7 +9,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Services\JurnalKeuanganService;
 use Illuminate\Support\Facades\Gate;
 use App\Models\{TransaksiOperasional, TransaksiDo, JurnalKeuangan};
-use App\Observers\{TransaksiOperasionalObserver, JurnalKeuanganObserver, TransaksiDoObserver};
+use App\Observers\{TransaksiOperasionalObserver, TransaksiDoObserver};
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -63,7 +63,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Register observers
         TransaksiOperasional::observe(TransaksiOperasionalObserver::class);
-        JurnalKeuangan::observe(JurnalKeuanganObserver::class);
         TransaksiDo::observe(TransaksiDoObserver::class);
     }
 }

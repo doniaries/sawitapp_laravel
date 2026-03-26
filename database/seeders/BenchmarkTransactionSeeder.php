@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\{Perusahaan, Penjual, Supir, TransaksiDo};
+use App\Models\{Perusahaan, Penjual, Supir, TransaksiDo, TransaksiOperasional};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -29,8 +29,10 @@ class BenchmarkTransactionSeeder extends Seeder
         // Kita gunakan truncate jika ingin benar-benar bersih, tapi forceDelete cukup
         TransaksiDo::where('perusahaan_id', $perusahaanId)->forceDelete();
         \App\Models\JurnalKeuangan::where('perusahaan_id', $perusahaanId)
-            ->where('sumber_transaksi', 'DO')
+            ->whereIn('sumber_transaksi', ['DO', 'Operasional'])
             ->forceDelete();
+        
+        TransaksiOperasional::where('perusahaan_id', $perusahaanId)->forceDelete();
         
         $this->command->info('Memulai seeding 1000 transaksi menggunakan Eloquent (untuk mengetes performa observer)...');
 
@@ -81,6 +83,29 @@ class BenchmarkTransactionSeeder extends Seeder
         }
 
         $progressBar->finish();
-        $this->command->info("\n1000 transaksi berhasil disuntikkan.");
+        $this->command->info("\n1000 transaksi DO berhasil disuntikkan.");
+
+        // SEED OPERASIONAL
+        $this->command->info('Memulai seeding 1000 transaksi OPERASIONAL...');
+        $progressBarOp = $this->command->getOutput()->createProgressBar($totalTransactions);
+        $progressBarOp->start();
+
+        for ($i = 0; $i < $totalTransactions; $i++) {
+            try {
+                TransaksiOperasional::create([
+                    'perusahaan_id' => $perusahaanId,
+                    'tanggal' => $now->copy()->startOfDay()->addSeconds($i * 86),
+                    'kategori' => $faker->randomElement(\App\Enums\KategoriOperasional::cases()),
+                    'nominal' => $faker->numberBetween(10000, 1000000),
+                    'keterangan' => 'Benchmark Operasional ' . ($i + 1),
+                ]);
+            } catch (\Exception $e) {
+                $this->command->error("\nError at Op $i: " . $e->getMessage());
+            }
+            $progressBarOp->advance();
+        }
+
+        $progressBarOp->finish();
+        $this->command->info("\n1000 transaksi Operasional berhasil disuntikkan.");
     }
 }

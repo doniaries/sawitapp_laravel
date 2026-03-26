@@ -12,16 +12,30 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transaksi_do', function (Blueprint $table) {
-            $table->index(['perusahaan_id', 'tanggal'], 'idx_do_perusahaan_tanggal');
-            $table->index('penjual_id', 'idx_do_penjual');
-            $table->index('supir_id', 'idx_do_supir');
-            $table->index('nomor', 'idx_do_nomor');
+            if (!Schema::hasIndex('transaksi_do', 'idx_do_perusahaan_tanggal')) {
+                $table->index(['perusahaan_id', 'tanggal'], 'idx_do_perusahaan_tanggal');
+            }
+            if (!Schema::hasIndex('transaksi_do', 'idx_do_penjual')) {
+                $table->index('penjual_id', 'idx_do_penjual');
+            }
+            if (!Schema::hasIndex('transaksi_do', 'idx_do_supir')) {
+                $table->index('supir_id', 'idx_do_supir');
+            }
+            if (!Schema::hasIndex('transaksi_do', 'idx_do_nomor')) {
+                $table->index('nomor', 'idx_do_nomor');
+            }
         });
 
         Schema::table('jurnal_keuangan', function (Blueprint $table) {
-            $table->index(['perusahaan_id', 'tanggal'], 'idx_jurnal_perusahaan_tanggal');
-            $table->index(['sumber_transaksi', 'referensi_id'], 'idx_jurnal_source_ref');
-            $table->index(['kategori', 'jenis_transaksi'], 'idx_jurnal_cat_type');
+            if (!Schema::hasIndex('jurnal_keuangan', 'idx_jurnal_perusahaan_tanggal')) {
+                $table->index(['perusahaan_id', 'tanggal'], 'idx_jurnal_perusahaan_tanggal');
+            }
+            if (!Schema::hasIndex('jurnal_keuangan', 'idx_jurnal_source_ref')) {
+                $table->index(['sumber_transaksi', 'referensi_id'], 'idx_jurnal_source_ref');
+            }
+            if (!Schema::hasIndex('jurnal_keuangan', 'idx_jurnal_cat_type')) {
+                $table->index(['kategori', 'jenis_transaksi'], 'idx_jurnal_cat_type');
+            }
         });
     }
 
