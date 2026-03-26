@@ -38,6 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/user/photo', [AuthController::class, 'updatePhoto']);
+    Route::post('/user/change-password', [UserController::class, 'changePassword']);
+    Route::post('/user/{id}/reset-password', [UserController::class, 'resetPassword']);
     Route::get('/users', [UserController::class, 'index']);
 
     // Multi-Tenancy (Perusahaan)

@@ -31,7 +31,24 @@ class JurnalKeuanganController extends Controller
         }
 
         $perPage = $request->get('per_page', 10);
-        return response()->json($query->orderBy('tanggal', 'desc')->paginate($perPage));
+        $paginated = $query->orderBy('tanggal', 'desc')->paginate($perPage);
+
+        // Agregat statistik (untuk header di mobile)
+        $statsQuery = JurnalKeuangan::where('perusahaan_id', $perusahaanId);
+        
+        // Sesuaikan filter jika ada
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $statsQuery->whereBetween('tanggal', [$request->start_date, $request->end_date]);
+        }
+
+        $summary = [
+            'total_pemasukan' => (float) $statsQuery->clone()->where('jenis_transaksi', 'Pemasukan')->sum('nominal'),
+            'total_pengeluaran' => (float) $statsQuery->clone()->where('jenis_transaksi', 'Pengeluaran')->sum('nominal'),
+        ];
+
+        return response()->json(array_merge($paginated->toArray(), [
+            'summary' => $summary
+        ]));
     }
 
     /**

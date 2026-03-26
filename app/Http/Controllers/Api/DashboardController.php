@@ -54,41 +54,55 @@ class DashboardController extends Controller
         $totalPengajuanDana = (float) $pendingSaldoQuery->sum('nominal');
         $totalPengajuanCount = $pendingSaldoQuery->count();
 
-        // Stats Pemasukan (Operasional)
-        $opPemasukanQuery = TransaksiOperasional::where('perusahaan_id', $perusahaanId)
-            ->where('operasional', 'pemasukan');
-            
-        $pemasukanTodayTotal = (float) $opPemasukanQuery->clone()->whereDate('tanggal', $today)->sum('nominal');
-        $pemasukanTodayCount = $opPemasukanQuery->clone()->whereDate('tanggal', $today)->count();
-        $pemasukanMonthTotal = (float) $opPemasukanQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
-        $pemasukanMonthCount = $opPemasukanQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
-
-        // Stats Pengeluaran (Operasional)
-        $opPengeluaranQuery = TransaksiOperasional::where('perusahaan_id', $perusahaanId)
-            ->where('operasional', 'pengeluaran');
-            
-        $opPengeluaranTodayTotal = (float) $opPengeluaranQuery->clone()->whereDate('tanggal', $today)->sum('nominal');
-        $opPengeluaranTodayCount = $opPengeluaranQuery->clone()->whereDate('tanggal', $today)->count();
-        $opPengeluaranMonthTotal = (float) $opPengeluaranQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('nominal');
-        $opPengeluaranMonthCount = $opPengeluaranQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
-
-        // Stats DO
-        $doQuery = TransaksiDo::where('perusahaan_id', $perusahaanId);
+        // Stats Keuangan via Jurnal Keuangan (Single Source of Truth)
+        $jurnalQuery = JurnalKeuangan::where('perusahaan_id', $perusahaanId);
         
+        // Pemasukan Today & Month
+        $pemasukanTodayTotal = (float) $jurnalQuery->clone()
+            ->where('jenis_transaksi', 'Pemasukan')
+            ->whereDate('tanggal', $today)
+            ->sum('nominal');
+        $pemasukanTodayCount = $jurnalQuery->clone()
+            ->where('jenis_transaksi', 'Pemasukan')
+            ->whereDate('tanggal', $today)
+            ->count();
+            
+        $pemasukanMonthTotal = (float) $jurnalQuery->clone()
+            ->where('jenis_transaksi', 'Pemasukan')
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->sum('nominal');
+        $pemasukanMonthCount = $jurnalQuery->clone()
+            ->where('jenis_transaksi', 'Pemasukan')
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->count();
+            
+        // Pengeluaran Today & Month
+        $pengeluaranTodayTotal = (float) $jurnalQuery->clone()
+            ->where('jenis_transaksi', 'Pengeluaran')
+            ->whereDate('tanggal', $today)
+            ->sum('nominal');
+        $pengeluaranTodayCount = $jurnalQuery->clone()
+            ->where('jenis_transaksi', 'Pengeluaran')
+            ->whereDate('tanggal', $today)
+            ->count();
+            
+        $pengeluaranMonthTotal = (float) $jurnalQuery->clone()
+            ->where('jenis_transaksi', 'Pengeluaran')
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->sum('nominal');
+        $pengeluaranMonthCount = $jurnalQuery->clone()
+            ->where('jenis_transaksi', 'Pengeluaran')
+            ->whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->count();
+
+        // Stats DO Counts (tetap dari TransaksiDo karena ini spesifik unit kerja)
+        $doQuery = TransaksiDo::where('perusahaan_id', $perusahaanId);
         $doTodayCount = $doQuery->clone()->whereDate('tanggal', $today)->count();
         $doMonthCount = $doQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
-        
-        $doHutangTodayTotal = (float) $doQuery->clone()->whereDate('tanggal', $today)->sum('pembayaran_hutang');
-        $doHutangTodayCount = $doQuery->clone()->whereDate('tanggal', $today)->where('pembayaran_hutang', '>', 0)->count();
-        
-        $doPengeluaranMonthTotal = (float) $doQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('sisa_bayar');
-        $doPengeluaranMonthCount = $doQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->where('sisa_bayar', '>', 0)->count();
-
-        // Merged stats for UI
-        $pengeluaranTodayTotal = $doHutangTodayTotal + $opPengeluaranTodayTotal;
-        $pengeluaranTodayCount = $doHutangTodayCount + $opPengeluaranTodayCount;
-        $pengeluaranMonthTotal = $doPengeluaranMonthTotal + $opPengeluaranMonthTotal;
-        $pengeluaranMonthCount = $doPengeluaranMonthCount + $opPengeluaranMonthCount;
 
         // Latest transactions
         $transactions = TransaksiDo::where('perusahaan_id', $perusahaanId)
