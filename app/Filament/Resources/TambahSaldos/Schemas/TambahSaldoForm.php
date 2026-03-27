@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TambahSaldos\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -15,18 +16,10 @@ class TambahSaldoForm
     {
         return $schema
             ->components([
-                Select::make('perusahaan_id')
-                    ->relationship('perusahaan', 'name')
-                    ->default(fn() => Auth::user()?->perusahaan_id)
-                    ->required()
-                    ->disabled() // Sesuai yang aktif
-                    ->dehydrated(),
-                Select::make('user_id')
-                    ->relationship('user', 'name')
-                    ->default(fn() => Auth::id())
-                    ->required()
-                    ->disabled() // Sesuai yang aktif
-                    ->dehydrated(),
+                Hidden::make('perusahaan_id')
+                    ->default(fn() => Auth::user()?->perusahaan_id),
+                Hidden::make('user_id')
+                    ->default(fn() => Auth::id()),
                 DateTimePicker::make('tanggal_pengajuan')
                     ->default(now())
                     ->required()
@@ -57,9 +50,6 @@ class TambahSaldoForm
                     ->disabled() // Tidak bisa diubah manual
                     ->dehydrated()
                     ->required(),
-                TextInput::make('bukti_transfer')
-                    ->placeholder('Diisi setelah disetujui')
-                    ->disabled(),
             ]);
     }
 }

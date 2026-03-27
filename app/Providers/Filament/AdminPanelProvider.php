@@ -85,6 +85,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\CheckNavigationVisibility::class,
             ])
             ->tenantMiddleware([
                 \App\Http\Middleware\SetPermissionsTeamId::class,
@@ -121,14 +122,10 @@ class AdminPanelProvider extends PanelProvider
                 \Rupadana\ApiService\ApiServicePlugin::make(),
                 ...(class_exists('EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin') ? [
                     \EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin::make()
-                        ->inactiveAfter(Carbon::SECONDS_PER_MINUTE * 10)
-                        ->showNoticeFor(Carbon::SECONDS_PER_MINUTE * 1)
+                        ->inactiveAfter(600) // 10 menit
+                        ->showNoticeFor(60)  // 1 menit
                         ->keepActiveOn(['change', 'select', 'mousemove'], mergeWithDefaults: true),
                 ] : []),
-            ])
-            ->renderHook(
-                'panels::head.end',
-                fn(): \Illuminate\Contracts\View\View => view('filament.hooks.pwa-tags')
-            );
+            ]);
     }
 }
