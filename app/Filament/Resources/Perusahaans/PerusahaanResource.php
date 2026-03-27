@@ -20,6 +20,7 @@ class PerusahaanResource extends Resource
     protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
     protected static ?int $navigationSort = 3;
+    protected static bool $isScopedToTenant = false;
 
 
 
