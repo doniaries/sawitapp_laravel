@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Perusahaans\Schemas;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -48,13 +49,15 @@ class PerusahaanForm
                             ->components([
                                 TextInput::make('saldo')
                                     ->required()
+                                    ->default(0)
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp.'),
-                                TextInput::make('email')
+                                Hidden::make('email')
                                     ->email(),
                                 TextInput::make('npwp')
                                     ->maxLength(30),
                                 Toggle::make('is_active')
+                                    ->default(true)
                                     ->required(),
                             ]),
                     ]),
