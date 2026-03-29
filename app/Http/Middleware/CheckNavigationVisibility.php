@@ -18,7 +18,7 @@ class CheckNavigationVisibility
     public function handle(Request $request, \Closure $next): \Symfony\Component\HttpFoundation\Response
     {
         /** @var \App\Models\User|null $user */
-        $user = auth()->user();
+        $user = Auth::user();
         
         if ($user) {
             $tenantId = \Filament\Facades\Filament::getTenant()?->id;

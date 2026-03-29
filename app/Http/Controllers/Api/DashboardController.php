@@ -99,10 +99,16 @@ class DashboardController extends Controller
             ->whereYear('tanggal', $year)
             ->count();
 
-        // Stats DO Counts (tetap dari TransaksiDo karena ini spesifik unit kerja)
+        // Stats DO Counts & Amounts
         $doQuery = TransaksiDo::where('perusahaan_id', $perusahaanId);
         $doTodayCount = $doQuery->clone()->whereDate('tanggal', $today)->count();
+        $doTodayAmount = (float) $doQuery->clone()->whereDate('tanggal', $today)->sum('sub_total');
+        
+        $yesterday = Carbon::yesterday();
+        $doYesterdayCount = $doQuery->clone()->whereDate('tanggal', $yesterday)->count();
+        
         $doMonthCount = $doQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->count();
+        $doMonthAmount = (float) $doQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('sub_total');
 
         // Latest transactions
         $transactions = TransaksiDo::where('perusahaan_id', $perusahaanId)
@@ -167,10 +173,15 @@ class DashboardController extends Controller
                 ],
                 'transaksi' => [
                     'today' => [
-                        'total' => $doTodayCount,
+                        'count' => $doTodayCount,
+                        'total' => $doTodayAmount,
+                    ],
+                    'yesterday' => [
+                        'count' => $doYesterdayCount,
                     ],
                     'month' => [
-                        'total' => $doMonthCount,
+                        'count' => $doMonthCount,
+                        'total' => $doMonthAmount,
                     ],
                     'periode_awal' => $today->startOfMonth()->format('Y-m-d'),
                     'periode_akhir' => $today->copy()->endOfMonth()->format('Y-m-d'),

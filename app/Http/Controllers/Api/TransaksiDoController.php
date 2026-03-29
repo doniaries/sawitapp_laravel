@@ -10,8 +10,19 @@ class TransaksiDoController extends Controller
 {
     public function index(Request $request)
     {
-        $perusahaanId = $request->user()->perusahaan_id;
-        $query = TransaksiDo::where('perusahaan_id', $perusahaanId)
+        $user = $request->user();
+        $perusahaanId = $user->perusahaan_id;
+
+        // Fail-safe untuk Admin/Superadmin tanpa perusahaan_id default
+        if (is_null($perusahaanId)) {
+            $perusahaanId = \App\Models\Perusahaan::first()?->id;
+            if ($perusahaanId) {
+                $user->update(['perusahaan_id' => $perusahaanId]);
+            }
+        }
+
+        $query = TransaksiDo::withoutGlobalScopes()
+            ->where('perusahaan_id', $perusahaanId)
             ->with(['penjual:id,nama', 'supir:id,nama']);
 
         if ($request->has('tanggal')) {
