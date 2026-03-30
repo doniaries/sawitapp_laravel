@@ -1,4 +1,4 @@
-name: 🚀 Deploy website on push
+name: Deploy Website
 
 on:
   push:
@@ -6,27 +6,14 @@ on:
       - main
 
 jobs:
-  web-deploy:
-    name: 🎉 Deploy
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚚 Get latest code
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: ⚡ Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: npm
-
-      - name: 📦 Install Dependencies
-        run: npm ci
-
-      - name: 🏗️ Build Assets
-        run: npm run build
-
-      - name: 📂 Sync files to hosting
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -36,3 +23,5 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
+            **/tests/**
+            **/.env
