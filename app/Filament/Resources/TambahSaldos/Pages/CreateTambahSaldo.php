@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\TambahSaldos\Pages;
 
 use App\Filament\Resources\TambahSaldos\TambahSaldoResource;
-use Filament\Notifications\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
