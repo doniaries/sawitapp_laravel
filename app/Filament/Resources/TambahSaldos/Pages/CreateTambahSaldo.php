@@ -17,4 +17,9 @@ class CreateTambahSaldo extends CreateRecord
         
         $record->loadMissing(['user', 'perusahaan']);
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
