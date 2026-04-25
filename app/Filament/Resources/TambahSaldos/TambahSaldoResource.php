@@ -26,7 +26,8 @@ class TambahSaldoResource extends Resource
 
     protected static ?string $slug = 'tambah-saldo';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Keuangan';
+    protected static string | \UnitEnum | null $navigationGroup = 'Transaksi';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {
@@ -59,6 +60,15 @@ class TambahSaldoResource extends Resource
             'create' => Pages\CreateTambahSaldo::route('/create'),
             'edit' => Pages\EditTambahSaldo::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['perusahaan', 'user', 'pimpinan'])
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 
     public static function getRecordRouteBindingEloquentQuery(): Builder

@@ -4,20 +4,17 @@ namespace App\Filament\Resources\TransaksiDos\Schemas;
 
 
 use App\Models\Penjual;
-use App\Models\Supir;
 use App\Models\TransaksiDo;
 use Carbon\Carbon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
-use Illuminate\Support\Facades\DB;
 
 class TransaksiDoForm
 {
@@ -61,7 +58,9 @@ class TransaksiDoForm
                                         fn($query) => $query->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id)
                                     )
                                     ->searchable()
+                                    ->preload()
                                     ->live()
+                                    ->searchDebounce(500)
                                     ->required()
                                     ->createOptionForm([
                                         TextInput::make('nama')
@@ -83,13 +82,13 @@ class TransaksiDoForm
                                             ->default(0)
                                             ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0),
                                     ])
-                                    ->afterStateUpdated(function ($state, Set $set) {
+                                    ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                         if ($state) {
                                             $penjual = Penjual::find($state);
                                             if ($penjual) {
                                                 $set('hutang_awal', $penjual->hutang);
                                                 $set('sisa_hutang_penjual', $penjual->hutang);
-                                                $set('pembayaran_hutang', 0);
+                                                 $set('pembayaran_hutang', 0);
                                             }
                                         }
                                     }),
@@ -98,21 +97,36 @@ class TransaksiDoForm
                                     ->label('Supir')
                                     ->relationship(
                                         'supir',
-                                        'nama'
+                                        'nama',
+                                        fn($query) => $query->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id)
                                     )
                                     ->searchable()
+                                    ->preload()
                                     ->live()
+                                    ->searchDebounce(500)
                                     ->required()
+
                                     ->createOptionForm([
                                         TextInput::make('nama')->required()->maxLength(255),
                                         TextInput::make('alamat')->maxLength(255),
                                         TextInput::make('telepon')->tel()->maxLength(255),
-                                    ]),
+                                    ])
+                                    ->afterStateUpdated(function ($state, Set $set) {
+                                        if ($state) {
+                                            $lastTransaksi = \App\Models\TransaksiDo::where('supir_id', $state)
+                                                ->orderBy('tanggal', 'desc')
+                                                ->first();
+                                            if ($lastTransaksi) {
+                                                $set('no_polisi', $lastTransaksi->no_polisi);
+                                            }
+                                        }
+                                    }),
 
-                                TextInput::make('no_polisi')
+                                 TextInput::make('no_polisi')
                                     ->label('Nomor Polisi')
-                                    ->required()
+                                    // ->required()
                                     ->maxLength(10)
+                                    ->debounce(500)
                                     ->placeholder('B 1234 ABC'),
                             ])->columns(3),
 
@@ -129,14 +143,6 @@ class TransaksiDoForm
                                     ->suffix('Kg')
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(function ($state, Get $get, Set $set) {
-                                        $penjualId = $get('penjual_id');
-                                        if ($state && $penjualId && !$get('supir_id')) {
-                                            $penjual = Penjual::find($penjualId);
-                                            if ($penjual) {
-                                                $supir = Supir::firstOrCreate(['nama' => $penjual->nama], ['alamat' => $penjual->alamat ?? '', 'telepon' => $penjual->telepon ?? '']);
-                                                $set('supir_id', $supir->id);
-                                            }
-                                        }
                                         self::hitungTotal($state, $get, $set);
                                     }),
 
@@ -232,7 +238,7 @@ class TransaksiDoForm
                                     ->prefix('Rp')
                                     ->numeric()
                                     ->required()
-                                    ->live()
+                                    ->live(onBlur: true)
                                     ->visible(fn(Get $get) => $get('cara_bayar') === 'tunai & transfer')
                                     ->rules([
                                         function (Get $get) {
@@ -253,15 +259,6 @@ class TransaksiDoForm
                                     ->required()
                                     ->live()
                                     ->afterStateUpdated(function ($state, Get $get, Set $set) {
-                                        $penjualId = $get('penjual_id');
-                                        if ($state && $penjualId && !$get('supir_id')) {
-                                            $penjual = Penjual::find($penjualId);
-                                            if ($penjual) {
-                                                $supir = Supir::firstOrCreate(['nama' => $penjual->nama], ['alamat' => $penjual->alamat ?? '', 'telepon' => $penjual->telepon ?? '']);
-                                                $set('supir_id', $supir->id);
-                                            }
-                                        }
-
                                         // Reset nominal_tunai if not split
                                         if ($state !== 'tunai & transfer') {
                                             $set('nominal_tunai', 0);
@@ -292,7 +289,7 @@ class TransaksiDoForm
                             ->components([
                                 Placeholder::make('saldo_perusahaan')
                                     ->label('Saldo Perusahaan')
-                                    ->content(fn() => 'Rp ' . number_format(\App\Models\Perusahaan::first()->saldo ?? 0, 0, ',', '.'))
+                                    ->content(fn() => 'Rp ' . number_format(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 0, ',', '.'))
                                     ->extraAttributes(['class' => 'text-lg font-semibold']),
                             ]),
                     ]),

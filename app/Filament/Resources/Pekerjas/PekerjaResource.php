@@ -16,9 +16,12 @@ class PekerjaResource extends Resource
 {
     protected static ?string $model = \App\Models\Pekerja::class;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
+    protected static string | \UnitEnum | null $navigationGroup = 'Data Master';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
-    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationLabel = 'Pekerja';
+    protected static ?string $modelLabel = 'Pekerja';
+    protected static ?string $pluralModelLabel = 'Pekerja';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $form): Schema
     {

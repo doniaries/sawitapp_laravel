@@ -16,8 +16,8 @@ class SupirResource extends Resource
 {
     protected static ?string $model = \App\Models\Supir::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-group';
-    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
-    protected static ?int $navigationSort = 5;
+    protected static string | \UnitEnum | null $navigationGroup = 'Data Master';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $form): Schema
     {

@@ -33,6 +33,7 @@ class TransaksiOperasionalForm
                                     ))
                                     ->required()
                                     ->searchable()
+                                    ->searchDebounce(500)
                                     ->live()
                                     ->afterStateUpdated(function ($state, Set $set) {
                                         if ($state) {
@@ -68,6 +69,7 @@ class TransaksiOperasionalForm
                                             );
                                     })
                                     ->searchable()
+                                    ->searchDebounce(500)
                                     ->required()
                                     ->visible(fn(Get $get) => !!$get('pihak_type')),
                                 TextInput::make('nominal')
@@ -76,6 +78,7 @@ class TransaksiOperasionalForm
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
                                     ->numeric()
+                                    ->debounce(500)
                                     ->rules([
                                         function (Get $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
@@ -90,6 +93,7 @@ class TransaksiOperasionalForm
                                     ]),
                                 TextInput::make('keterangan')
                                     ->label('Keterangan')
+                                    ->debounce(500)
                                     ->columnSpanFull(),
                             ])->columns(2),
                     ]),

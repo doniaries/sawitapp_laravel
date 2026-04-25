@@ -94,6 +94,12 @@ class AdminPanelProvider extends PanelProvider
             // ->searchableTenantMenu()
             ->tenant(Perusahaan::class, slugAttribute: 'slug', ownershipRelationship: 'perusahaan')
             ->tenantProfile(EditTeamProfile::class)
+            ->navigationGroups([
+                'Transaksi',
+                'Data Master',
+                'Laporan',
+                'Pengaturan',
+            ])
             ->plugins([
                 FilamentShieldPlugin::make()
                     ->gridColumns([

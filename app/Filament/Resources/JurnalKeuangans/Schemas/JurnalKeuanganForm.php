@@ -28,7 +28,8 @@ class JurnalKeuanganForm
                                     ->required()
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
-                                    ->numeric(),
+                                    ->numeric()
+                                    ->debounce(500),
                                 TextInput::make('kategori')
                                     ->required()
                                     ->maxLength(50),

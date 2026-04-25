@@ -8,17 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('pengajuan_dana', function (Blueprint $col) {
+        Schema::create('tambah_saldo', function (Blueprint $col) {
             $col->id();
             $col->foreignId('perusahaan_id')->constrained('perusahaan')->onDelete('cascade');
-            $col->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Yang mengajukan
-            $col->dateTime('tanggal_pengajuan');
+            $col->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Kasir/Admin yang input
+            $col->dateTime('tanggal');
             $col->decimal('nominal', 15, 0);
-            $col->text('keperluan');
-            $col->enum('status', ['pending', 'disetujui', 'ditolak'])->default('pending');
-            $col->dateTime('tanggal_proses')->nullable(); // Kapan disetujui/ditolak
-            $col->foreignId('proses_by')->nullable()->constrained('users')->nullOnDelete(); // Siapa pimpinannya
-            $col->text('catatan_pimpinan')->nullable();
+            $col->text('keterangan')->nullable();
             $col->string('bukti_transfer')->nullable();
             $col->timestamps();
             $col->softDeletes();
@@ -27,6 +23,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('pengajuan_dana');
+        Schema::dropIfExists('tambah_saldo');
     }
 };

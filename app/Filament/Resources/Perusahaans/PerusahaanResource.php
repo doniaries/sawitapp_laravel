@@ -17,9 +17,12 @@ class PerusahaanResource extends Resource
 {
     protected static ?string $model = \App\Models\Perusahaan::class;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Master Data';
+    protected static string | \UnitEnum | null $navigationGroup = 'Data Master';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationLabel = 'Perusahaan';
+    protected static ?string $modelLabel = 'Perusahaan';
+    protected static ?string $pluralModelLabel = 'Perusahaan';
+    protected static ?int $navigationSort = 1;
     protected static bool $isScopedToTenant = false;
 
 

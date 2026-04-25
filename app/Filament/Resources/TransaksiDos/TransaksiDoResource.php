@@ -15,6 +15,7 @@ class TransaksiDoResource extends Resource
 {
     protected static ?string $model = \App\Models\TransaksiDo::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \UnitEnum | null $navigationGroup = 'Transaksi';
     protected static ?string $navigationLabel = 'Transaksi DO';
     protected static ?string $modelLabel = 'Transaksi DO';
     protected static ?string $pluralModelLabel = 'Transaksi DO';

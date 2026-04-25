@@ -28,146 +28,34 @@ class TambahSaldosTable
         return $table
             ->deferLoading()
             ->columns([
-                TextColumn::make('perusahaan.name')
-                    ->searchable(),
-                TextColumn::make('user.name')
-                    ->searchable(),
-                TextColumn::make('tanggal_pengajuan')
+                TextColumn::make('tanggal')
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('user.name')
+                    ->label('Entry Oleh')
+                    ->searchable(),
                 TextColumn::make('nominal')
                     ->numeric(0, ',', '.')
                     ->prefix('Rp ')
                     ->sortable(),
-                TextColumn::make('status')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'disetujui' => 'success',
-                        'ditolak' => 'danger',
-                        default => 'gray',
-                    }),
-                TextColumn::make('pimpinan.name')
-                    ->label('Diproses Oleh')
-                    ->placeholder('Belum diproses')
-                    ->sortable(),
-                TextColumn::make('tanggal_proses')
-                    ->dateTime()
-                    ->sortable(),
+                TextColumn::make('keterangan')
+                    ->searchable()
+                    ->limit(50),
                 TextColumn::make('bukti_transfer')
+                    ->label('Referensi')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('tanggal_pengajuan', 'desc')
+            ->defaultSort('tanggal', 'desc')
             ->filters([
                 TrashedFilter::make(),
             ])
-            ->recordActions([
-                EditAction::make()
-                    ->visible(fn($record) => $record->status === 'pending'),
-                Action::make('setujui')
-                    ->label('Setujui')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn($record) => $record->status === 'pending')
-                    ->form([
-                        TextInput::make('bukti_transfer')
-                            ->label('Link/Nomor Bukti Transfer'),
-                        Textarea::make('catatan_pimpinan')
-                            ->label('Catatan'),
-                    ])
-                    ->action(function ($record, array $data) {
-                        DB::transaction(function () use ($record, $data) {
-                            $record->update([
-                                'status' => 'disetujui',
-                                'tanggal_proses' => now(),
-                                'proses_by' => Auth::id(),
-                                'bukti_transfer' => $data['bukti_transfer'],
-                                'catatan_pimpinan' => $data['catatan_pimpinan'],
-                            ]);
-
-                            // 1. Tambah Saldo Perusahaan
-                            $perusahaan = Perusahaan::findOrFail($record->perusahaan_id);
-                            $saldoAwal = $perusahaan->saldo;
-                            $perusahaan->increment('saldo', $record->nominal);
-                            $saldoAkhir = $perusahaan->saldo;
-
-                            // 2. Catat ke Jurnal Keuangan
-                            JurnalKeuangan::create([
-                                'perusahaan_id' => $record->perusahaan_id,
-                                'tanggal' => now(),
-                                'jenis_transaksi' => 'Pemasukan',
-                                'kategori' => JurnalKeuangan::KATEGORI_TRANSAKSI['SALDO'],
-                                'sub_kategori' => JurnalKeuangan::SUB_KATEGORI_SALDO['TAMBAH'],
-                                'nominal' => $record->nominal,
-                                'saldo_awal' => $saldoAwal,
-                                'saldo_akhir' => $saldoAkhir,
-                                'referensi_id' => $record->id,
-                                'nomor_referensi' => 'TS-' . $record->id,
-                                'sumber_transaksi' => 'Tambah Saldo',
-                                'tipe_pihak' => TipeNama::USER,
-                                'cara_pembayaran' => 'transfer',
-                                'pihak_terkait' => $record->user?->name,
-                                'keterangan' => 'Top up saldo: ' . $record->keperluan,
-                                'mempengaruhi_kas' => true,
-                            ]);
-
-                            // 3. Notifikasi ke User
-                            if ($record->user) {
-                                Notification::make()
-                                    ->title('Tambah Saldo Disetujui')
-                                    ->body("Pengajuan saldo sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " telah disetujui.")
-                                    ->success()
-                                    ->actions([
-                                        \Filament\Notifications\Actions\Action::make('lihat')
-                                            ->button()
-                                            ->url(route('filament.admin.resources.tambah-saldo.index', ['tenant' => $record->perusahaan->slug])),
-                                    ])
-                                    ->sendToDatabase($record->user);
-                            }
-                        });
-                    })
-                    ->requiresConfirmation(),
-                Action::make('tolak')
-                    ->label('Tolak')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn($record) => $record->status === 'pending')
-                    ->form([
-                        Textarea::make('catatan_pimpinan')
-                            ->label('Alasan Penolakan')
-                            ->required(),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => 'ditolak',
-                            'tanggal_proses' => now(),
-                            'proses_by' => Auth::id(),
-                            'catatan_pimpinan' => $data['catatan_pimpinan'],
-                        ]);
-
-                        // Notifikasi ke User
-                        if ($record->user) {
-                            Notification::make()
-                                ->title('Tambah Saldo Ditolak')
-                                ->body("Pengajuan saldo sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " ditolak. Alasan: " . $data['catatan_pimpinan'])
-                                ->danger()
-                                ->sendToDatabase($record->user);
-                        }
-                    })
-                    ->requiresConfirmation(),
+            ->actions([
+                EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

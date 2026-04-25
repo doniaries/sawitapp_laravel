@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\TambahSaldos\Pages;
 
 use App\Filament\Resources\TambahSaldos\TambahSaldoResource;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateTambahSaldo extends CreateRecord
@@ -13,20 +15,27 @@ class CreateTambahSaldo extends CreateRecord
     {
         $record = $this->record;
         
-        $users = \App\Models\User::whereHas('roles', fn($q) => $q->whereIn('name', ['super_admin', 'pimpinan']))->get();
+        $record->loadMissing(['user', 'perusahaan']);
         
-        $notif = \Filament\Notifications\Notification::make()
-            ->title('Pengajuan Tambah Saldo Baru')
-            ->body("Pengajuan sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " oleh " . $record->user->name)
-            ->info()
+        // Notify Pimpinan for awareness
+        $recipients = \App\Models\User::whereHas('roles', fn($query) => 
+            $query->whereIn('name', ['pimpinan'])
+        )->get();
+        
+        Notification::make()
+            ->title('Saldo Perusahaan Ditambahkan')
+            ->body(sprintf(
+                'Saldo sebesar Rp %s ditambahkan oleh %s',
+                number_format($record->nominal, 0, ',', '.'),
+                $record->user?->name ?? 'Admin'
+            ))
+            ->success()
             ->actions([
-                \Filament\Notifications\Actions\Action::make('lihat')
+                Action::make('lihat')
+                    ->label('Lihat Detail')
                     ->button()
-                    ->url(TambahSaldoResource::getUrl('index', ['tenant' => $record->perusahaan->slug])),
-            ]);
-
-        foreach ($users as $user) {
-            $notif->sendToDatabase($user);
-        }
+                    ->url(TambahSaldoResource::getUrl('index', ['tenant' => $record->perusahaan])),
+            ])
+            ->sendToDatabase($recipients);
     }
 }
