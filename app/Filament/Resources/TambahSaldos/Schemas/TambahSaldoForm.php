@@ -33,10 +33,6 @@ class TambahSaldoForm
                     ->prefix('Rp')
                     ->minValue(0)
                     ->debounce(500),
-                TextInput::make('bukti_transfer')
-                    ->label('Referensi / Bukti Transfer')
-                    ->maxLength(255)
-                    ->debounce(500),
                 Textarea::make('keterangan')
                     ->columnSpanFull()
                     ->maxLength(100)
