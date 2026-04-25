@@ -22,6 +22,15 @@ class PekerjaResource extends Resource
     protected static ?string $modelLabel = 'Pekerja';
     protected static ?string $pluralModelLabel = 'Pekerja';
     protected static ?int $navigationSort = 2;
+    protected static ?string $recordTitleAttribute = 'nama';
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Telepon' => $record->telepon ?? '-',
+            'Alamat' => $record->alamat ?? '-',
+        ];
+    }
 
     public static function form(Schema $form): Schema
     {
@@ -36,7 +45,8 @@ class PekerjaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\RelationManagers\Shared\RiwayatHutangPinjamanRelationManager::class,
+            \App\Filament\RelationManagers\Shared\RiwayatPembayaranHutangRelationManager::class,
         ];
     }
 

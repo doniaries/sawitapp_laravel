@@ -25,6 +25,21 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 class TransaksiDo extends Model
 {
     use HasFactory, SoftDeletes, JurnalKeuanganTrait, DokumentasiTrait, GenerateMonthlyNumber, BelongsToTenant;
+    
+    protected static function booted()
+    {
+        static::creating(function ($transaksi) {
+            if ($transaksi->no_polisi) {
+                $transaksi->no_polisi = mb_strtoupper($transaksi->no_polisi);
+            }
+        });
+
+        static::updating(function ($transaksi) {
+            if ($transaksi->no_polisi) {
+                $transaksi->no_polisi = mb_strtoupper($transaksi->no_polisi);
+            }
+        });
+    }
 
     protected $table = 'transaksi_do';
     protected $with = ['penjual', 'supir', 'kendaraan']; // Default eager loading
@@ -33,6 +48,7 @@ class TransaksiDo extends Model
     protected $fillable = [
         'id',
         'perusahaan_id',
+        'user_id',
         'nomor',
         'tanggal',
         'penjual_id',
@@ -159,6 +175,11 @@ class TransaksiDo extends Model
     public function supir(): BelongsTo
     {
         return $this->belongsTo(Supir::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function kendaraan(): BelongsTo

@@ -18,6 +18,7 @@ class TransaksiOperasional extends Model
 
     protected $fillable = [
         'perusahaan_id',
+        'user_id',
         'pihak_id',
         'pihak_type',
         'tanggal',
@@ -65,6 +66,11 @@ class TransaksiOperasional extends Model
     public function perusahaan(): BelongsTo
     {
         return $this->belongsTo(Perusahaan::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     // Accessors & Mutators

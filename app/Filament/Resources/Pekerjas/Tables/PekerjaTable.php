@@ -27,6 +27,7 @@ class PekerjaTable
             ->deferLoading()
             ->columns([
                 TextColumn::make('nama')
+                    ->formatStateUsing(fn(string $state): string => mb_strtoupper($state))
                     ->searchable(),
                 TextColumn::make('alamat')
                     ->searchable(),

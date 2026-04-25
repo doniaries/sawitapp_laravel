@@ -6,9 +6,11 @@ namespace App\Filament\Resources\TransaksiDos\Schemas;
 use App\Models\Penjual;
 use App\Models\TransaksiDo;
 use Carbon\Carbon;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DateTimePicker;
+use Illuminate\Support\Facades\Auth;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Get;
@@ -23,6 +25,11 @@ class TransaksiDoForm
         return $schema
             ->columns(3)
             ->components([
+                Hidden::make('perusahaan_id')
+                    ->default(fn() => Auth::user()?->perusahaan_id),
+                Hidden::make('user_id')
+                    ->default(fn() => Auth::id()),
+
                 Group::make()
                     ->columnSpan(['default' => 3, 'lg' => 2])
                     ->components([
@@ -68,6 +75,8 @@ class TransaksiDoForm
                                             ->unique(ignoreRecord: true)
                                             ->required()
                                             ->maxLength(255)
+                                            ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
+                                            ->dehydrateStateUsing(fn($state) => strtoupper($state))
                                             ->debounce(500),
                                         TextInput::make('alamat')
                                             ->label('Alamat')
@@ -111,7 +120,7 @@ class TransaksiDoForm
                                     ->required()
 
                                     ->createOptionForm([
-                                        TextInput::make('nama')->required()->maxLength(255)->debounce(500),
+                                        TextInput::make('nama')->required()->maxLength(255)->extraInputAttributes(['style' => 'text-transform: uppercase;'])->dehydrateStateUsing(fn($state) => strtoupper($state))->debounce(500),
                                         TextInput::make('alamat')->maxLength(255)->debounce(500),
                                         TextInput::make('telepon')->tel()->maxLength(255)->debounce(500),
                                     ])
@@ -130,6 +139,8 @@ class TransaksiDoForm
                                     ->label('Nomor Polisi')
                                     // ->required()
                                     ->maxLength(10)
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
+                                    ->dehydrateStateUsing(fn($state) => strtoupper($state))
                                     ->debounce(500)
                                     ->placeholder('B 1234 ABC'),
                             ])->columns(3),

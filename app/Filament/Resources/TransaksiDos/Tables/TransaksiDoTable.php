@@ -42,18 +42,21 @@ class TransaksiDoTable
 
                 TextColumn::make('penjual.nama')
                     ->label('Penjual')
+                    ->formatStateUsing(fn(string $state): string => mb_strtoupper($state))
                     ->searchable()
                     ->sortable()
                     ->wrap(),
 
                 TextColumn::make('supir.nama')
                     ->label('Supir')
+                    ->formatStateUsing(fn(string $state): string => mb_strtoupper($state))
                     ->searchable()
                     ->sortable()
                     ->wrap(),
 
                 TextColumn::make('no_polisi')
                     ->label('No Kendaraan')
+                    ->formatStateUsing(fn(string $state): string => mb_strtoupper($state))
                     ->searchable()
                     ->wrap(),
 

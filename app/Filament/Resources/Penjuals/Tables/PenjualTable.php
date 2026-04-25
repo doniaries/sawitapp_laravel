@@ -25,6 +25,7 @@ class PenjualTable
             ->deferLoading()
             ->columns([
                 TextColumn::make('nama')
+                    ->formatStateUsing(fn(string $state): string => mb_strtoupper($state))
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
@@ -59,13 +60,13 @@ class PenjualTable
                     ->icon('heroicon-o-plus')
                     ->label('Tambah Penjual'),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('bayar_hutang')
                     ->label('Bayar Hutang')
                     ->icon('heroicon-o-banknotes')
                     ->color('success')
                     ->visible(fn($record) => $record->sisa_hutang > 0)
-                    ->form([
+                    ->schema([
                         TextInput::make('sisa_hutang_info')
                             ->label('Sisa Hutang Saat Ini')
                             ->disabled()
@@ -119,7 +120,7 @@ class PenjualTable
                 EditAction::make()->label('Edit'),
                 ViewAction::make()->label('Lihat Detail'),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {

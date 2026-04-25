@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Penjuals\RelationManagers;
+namespace App\Filament\RelationManagers\Shared;
 
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -8,7 +8,6 @@ use Filament\Resources\RelationManagers\RelationManager;
 
 class RiwayatHutangPinjamanRelationManager extends RelationManager
 {
-    // Gunakan relasi morphMany mutasiHutang yang ada di model Penjual
     protected static string $relationship = 'mutasiHutang';
 
     protected static ?string $title = '📋 Riwayat Mutasi Hutang';
@@ -60,10 +59,10 @@ class RiwayatHutangPinjamanRelationManager extends RelationManager
             ])
             ->defaultSort('tanggal', 'desc')
             ->headerActions([])
-            ->actions([])
-            ->bulkActions([])
+            ->recordActions([])
+            ->toolbarActions([])
             ->emptyStateHeading('Belum ada riwayat hutang')
-            ->emptyStateDescription('Riwayat mutasi hutang penjual akan tampil di sini.')
+            ->emptyStateDescription('Riwayat mutasi hutang akan tampil di sini.')
             ->emptyStateIcon('heroicon-o-document-text');
     }
 }

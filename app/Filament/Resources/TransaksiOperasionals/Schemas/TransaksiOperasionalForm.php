@@ -4,8 +4,10 @@ namespace App\Filament\Resources\TransaksiOperasionals\Schemas;
 
 use App\Enums\KategoriOperasional;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Illuminate\Support\Facades\Auth;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -19,6 +21,11 @@ class TransaksiOperasionalForm
         return $schema
             ->columns(3)
             ->components([
+                Hidden::make('perusahaan_id')
+                    ->default(fn() => Auth::user()?->perusahaan_id),
+                Hidden::make('user_id')
+                    ->default(fn() => Auth::id()),
+
                 Group::make()
                     ->columnSpan(['default' => 3, 'md' => 2])
                     ->components([

@@ -24,6 +24,14 @@ class SupirResource extends Resource
     protected static int $globalSearchResultsLimit = 10;
     protected static ?int $navigationSort = 3;
 
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Telepon' => $record->telepon ?? '-',
+            'Alamat' => $record->alamat ?? '-',
+        ];
+    }
+
     public static function form(Schema $form): Schema
     {
         return SupirForm::configure($form);
@@ -37,7 +45,8 @@ class SupirResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\RelationManagers\Shared\RiwayatHutangPinjamanRelationManager::class,
+            \App\Filament\RelationManagers\Shared\RiwayatPembayaranHutangRelationManager::class,
         ];
     }
 

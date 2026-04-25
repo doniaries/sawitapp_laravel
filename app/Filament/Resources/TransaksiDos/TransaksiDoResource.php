@@ -23,6 +23,21 @@ class TransaksiDoResource extends Resource
     protected static int $globalSearchResultsLimit = 10;
     protected static ?int $navigationSort = 1;
 
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['nomor', 'penjual.nama', 'supir.nama'];
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        /** @var \App\Models\TransaksiDo $record */
+        return [
+            'Penjual' => $record->penjual?->nama,
+            'Supir' => $record->supir?->nama,
+            'Tanggal' => $record->tanggal->translatedFormat('d F Y'),
+        ];
+    }
+
 
     public static function getEloquentQuery(): Builder
     {

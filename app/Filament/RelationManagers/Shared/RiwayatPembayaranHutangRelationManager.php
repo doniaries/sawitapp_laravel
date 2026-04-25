@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Penjuals\RelationManagers;
+namespace App\Filament\RelationManagers\Shared;
 
 use App\Actions\Finance\ProcessDebtPayment;
 use Filament\Forms\Components\DatePicker;
@@ -12,11 +12,9 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
-use Filament\Schemas\Schema;
 
 class RiwayatPembayaranHutangRelationManager extends RelationManager
 {
-    // Gunakan relasi hasMany riwayatPembayaran yang ada di model Penjual
     protected static string $relationship = 'riwayatPembayaran';
 
     protected static ?string $title = '💳 Riwayat Pembayaran Hutang';
@@ -48,13 +46,12 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
             ])
             ->defaultSort('tanggal', 'desc')
             ->headerActions([
-                // Tombol Bayar Hutang langsung di dalam tab ini
                 Action::make('bayar_hutang')
                     ->label('+ Bayar Hutang')
                     ->icon('heroicon-o-banknotes')
                     ->color('success')
                     ->visible(fn() => $this->getOwnerRecord()->sisa_hutang > 0)
-                    ->form([
+                    ->schema([
                         TextInput::make('sisa_hutang_info')
                             ->label('Sisa Hutang Saat Ini')
                             ->disabled()
@@ -91,10 +88,10 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
                             ->rows(2),
                     ])
                     ->action(function (array $data) {
-                        $penjual = $this->getOwnerRecord();
+                        $record = $this->getOwnerRecord();
                         try {
                             app(ProcessDebtPayment::class)->execute(
-                                $penjual,
+                                $record,
                                 (float) $data['nominal'],
                                 $data['tanggal'],
                                 $data['cara_pembayaran'],
@@ -102,7 +99,7 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
                             );
                             Notification::make()
                                 ->title('Pembayaran Berhasil')
-                                ->body("Hutang {$penjual->nama} berkurang Rp " . number_format($data['nominal'], 0, ',', '.'))
+                                ->body("Hutang {$record->nama} berkurang Rp " . number_format($data['nominal'], 0, ',', '.'))
                                 ->success()
                                 ->send();
                         } catch (\Exception $e) {
@@ -114,8 +111,8 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
                         }
                     }),
             ])
-            ->actions([])
-            ->bulkActions([])
+            ->recordActions([])
+            ->toolbarActions([])
             ->emptyStateHeading('Belum ada pembayaran')
             ->emptyStateDescription('Klik tombol "Bayar Hutang" untuk mencatat pembayaran.')
             ->emptyStateIcon('heroicon-o-banknotes');

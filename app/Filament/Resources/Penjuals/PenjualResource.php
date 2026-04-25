@@ -25,12 +25,20 @@ class PenjualResource extends Resource
     protected static ?string $recordTitleAttribute = 'nama';
     protected static int $globalSearchResultsLimit = 10;
 
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Telepon' => $record->telepon ?? '-',
+            'Alamat' => $record->alamat ?? '-',
+        ];
+    }
+
 
     public static function getRelations(): array
     {
         return [
-            RelationManagers\RiwayatHutangPinjamanRelationManager::class,
-            RelationManagers\RiwayatPembayaranHutangRelationManager::class,
+            \App\Filament\RelationManagers\Shared\RiwayatHutangPinjamanRelationManager::class,
+            \App\Filament\RelationManagers\Shared\RiwayatPembayaranHutangRelationManager::class,
         ];
     }
 

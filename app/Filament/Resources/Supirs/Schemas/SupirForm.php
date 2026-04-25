@@ -24,6 +24,7 @@ class SupirForm
                                     ->required()
                                     ->maxLength(255)
                                     ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
+                                    ->dehydrateStateUsing(fn($state) => strtoupper($state))
                                     ->debounce(500),
 
                                 TextInput::make('telepon')

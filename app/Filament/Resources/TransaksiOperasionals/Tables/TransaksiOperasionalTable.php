@@ -42,6 +42,7 @@ class TransaksiOperasionalTable
 
                 TextColumn::make('nama')
                     ->label('Pihak Terkait')
+                    ->formatStateUsing(fn($state) => $state ? mb_strtoupper($state) : '-')
                     ->placeholder('-')
                     ->searchable(['pihak_id', 'pihak_type']),
 

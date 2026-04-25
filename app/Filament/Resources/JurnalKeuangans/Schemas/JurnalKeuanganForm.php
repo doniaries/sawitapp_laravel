@@ -25,32 +25,24 @@ class JurnalKeuanganForm
                             ->description('Detail riwayat transaksi keuangan')
                             ->components([
                                 TextInput::make('nominal')
-                                    ->required()
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
                                     ->numeric()
-                                    ->debounce(500),
+                                    ->disabled(),
                                 TextInput::make('kategori')
-                                    ->required()
-                                    ->maxLength(50)
-                                    ->debounce(500),
+                                    ->disabled(),
                                 TextInput::make('sub_kategori')
-                                    ->maxLength(50)
-                                    ->debounce(500),
+                                    ->disabled(),
                                 TextInput::make('sumber_transaksi')
-                                    ->required()
-                                    ->maxLength(50)
-                                    ->debounce(500),
+                                    ->disabled(),
                                 TextInput::make('referensi_id')
-                                    ->required()
                                     ->numeric()
-                                    ->debounce(500),
+                                    ->disabled(),
                                 TextInput::make('nomor_referensi')
-                                    ->maxLength(50)
-                                    ->debounce(500),
+                                    ->disabled(),
                                 Textarea::make('keterangan')
                                     ->columnSpanFull()
-                                    ->debounce(500),
+                                    ->disabled(),
                             ])->columns(2),
                     ]),
 
@@ -61,18 +53,15 @@ class JurnalKeuanganForm
                             ->description('Konteks tambahan transaksi')
                             ->components([
                                 DateTimePicker::make('tanggal')
-                                    ->required(),
+                                    ->disabled(),
                                 TextInput::make('jenis_transaksi')
-                                    ->required()
-                                    ->debounce(500),
+                                    ->disabled(),
                                 TextInput::make('pihak_terkait')
-                                    ->maxLength(100)
-                                    ->debounce(500),
+                                    ->disabled(),
                                 TextInput::make('tipe_pihak')
-                                    ->debounce(500),
+                                    ->disabled(),
                                 TextInput::make('cara_pembayaran')
-                                    ->maxLength(20)
-                                    ->debounce(500),
+                                    ->disabled(),
                             ]),
                     ]),
             ]);

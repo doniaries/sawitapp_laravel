@@ -11,6 +11,21 @@ class Kendaraan extends Model
 {
     use HasFactory, SoftDeletes, BelongsToTenant;
 
+    protected static function booted()
+    {
+        static::creating(function ($kendaraan) {
+            if ($kendaraan->no_polisi) {
+                $kendaraan->no_polisi = mb_strtoupper($kendaraan->no_polisi);
+            }
+        });
+
+        static::updating(function ($kendaraan) {
+            if ($kendaraan->no_polisi) {
+                $kendaraan->no_polisi = mb_strtoupper($kendaraan->no_polisi);
+            }
+        });
+    }
+
     protected $table = 'kendaraan';
 
     protected $fillable = [
