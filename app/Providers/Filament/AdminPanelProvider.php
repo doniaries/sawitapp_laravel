@@ -44,8 +44,7 @@ class AdminPanelProvider extends PanelProvider
 
         return $panel
             ->default()
-            // ->spa()
-            // ->topNavigation()
+            ->spa()
             ->maxContentWidth('full')
             ->id('admin')
             ->sidebarCollapsibleOnDesktop()
@@ -55,12 +54,12 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->font('Poppins')
             ->colors([
-                'primary' => Color::Amber,
-                'secondary' => Color::Cyan,
-                'danger' => Color::Red,
-                'warning' => Color::Yellow,
-                'success' => Color::Green,
-                'info' => Color::Blue,
+                'primary' => Color::Indigo,
+                'secondary' => Color::Slate,
+                'danger' => Color::Rose,
+                'warning' => Color::Amber,
+                'success' => Color::Emerald,
+                'info' => Color::Sky,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

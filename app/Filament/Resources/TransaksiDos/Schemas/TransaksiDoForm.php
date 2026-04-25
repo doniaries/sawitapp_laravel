@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Get;
@@ -67,20 +68,24 @@ class TransaksiDoForm
                                             ->label('Nama Penjual')
                                             ->unique(ignoreRecord: true)
                                             ->required()
-                                            ->maxLength(255),
+                                            ->maxLength(255)
+                                            ->debounce(500),
                                         TextInput::make('alamat')
                                             ->label('Alamat')
-                                            ->maxLength(255),
+                                            ->maxLength(255)
+                                            ->debounce(500),
                                         TextInput::make('telepon')
                                             ->tel()
-                                            ->label('Nomor Telepon'),
+                                            ->label('Nomor Telepon')
+                                            ->debounce(500),
                                         TextInput::make('hutang')
                                             ->label(fn($context) => $context === 'create' ? 'Hutang Awal' : 'Total Hutang')
                                             ->dehydrated()
                                             ->prefix('Rp')
                                             ->numeric()
                                             ->default(0)
-                                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0),
+                                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
+                                            ->debounce(500),
                                     ])
                                     ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                         if ($state) {
@@ -107,9 +112,9 @@ class TransaksiDoForm
                                     ->required()
 
                                     ->createOptionForm([
-                                        TextInput::make('nama')->required()->maxLength(255),
-                                        TextInput::make('alamat')->maxLength(255),
-                                        TextInput::make('telepon')->tel()->maxLength(255),
+                                        TextInput::make('nama')->required()->maxLength(255)->debounce(500),
+                                        TextInput::make('alamat')->maxLength(255)->debounce(500),
+                                        TextInput::make('telepon')->tel()->maxLength(255)->debounce(500),
                                     ])
                                     ->afterStateUpdated(function ($state, Set $set) {
                                         if ($state) {
@@ -142,6 +147,7 @@ class TransaksiDoForm
                                     ->numeric()
                                     ->suffix('Kg')
                                     ->live(onBlur: true)
+                                    ->debounce(500)
                                     ->afterStateUpdated(function ($state, Get $get, Set $set) {
                                         self::hitungTotal($state, $get, $set);
                                     }),
@@ -154,6 +160,7 @@ class TransaksiDoForm
                                     ->prefix('Rp')
                                     ->numeric()
                                     ->live(onBlur: true)
+                                    ->debounce(500)
                                     ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungTotal($get('tonase'), $get, $set)),
 
                                 TextInput::make('upah_bongkar')
@@ -162,6 +169,7 @@ class TransaksiDoForm
                                     ->prefix('Rp')
                                     ->default(0)
                                     ->live(onBlur: true)
+                                    ->debounce(500)
                                     ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
 
                                 TextInput::make('biaya_lain')
@@ -170,6 +178,7 @@ class TransaksiDoForm
                                     ->prefix('Rp')
                                     ->default(0)
                                     ->live(onBlur: true)
+                                    ->debounce(500)
                                     ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
                             ]),
                     ]),
@@ -202,6 +211,7 @@ class TransaksiDoForm
                                     ->prefix('Rp')
                                     ->default(0)
                                     ->live(onBlur: true)
+                                    ->debounce(500)
                                     ->visible(fn(Get $get): bool => $get('hutang_awal') > 0)
                                     ->afterStateUpdated(function ($state, Get $get, Set $set) {
                                         $hutangAwal = self::formatCurrency($get('hutang_awal'));
@@ -239,6 +249,7 @@ class TransaksiDoForm
                                     ->numeric()
                                     ->required()
                                     ->live(onBlur: true)
+                                    ->debounce(500)
                                     ->visible(fn(Get $get) => $get('cara_bayar') === 'tunai & transfer')
                                     ->rules([
                                         function (Get $get) {
@@ -287,9 +298,9 @@ class TransaksiDoForm
 
                         Section::make('Informasi Saldo')
                             ->components([
-                                Text::make(fn() => 'Saldo Perusahaan: Rp ' . number_format(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 0, ',', '.'))
-                                    ->weight(\Filament\Support\Enums\FontWeight::SemiBold)
-                                    ->color('primary'),
+                                Placeholder::make('saldo_perusahaan')
+                                    ->content(fn() => 'Saldo Perusahaan: Rp ' . number_format(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 0, ',', '.'))
+                                    ->extraAttributes(['class' => 'font-semibold text-primary-600']),
                             ]),
                     ]),
             ]);

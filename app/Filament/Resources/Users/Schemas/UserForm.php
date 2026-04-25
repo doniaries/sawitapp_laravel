@@ -64,7 +64,8 @@ class UserForm
                                     ->visible(true) // Selalu tampak di create dan edit sesuai permintaan
                                     ->minLength(6)
                                     ->maxLength(50)
-                                    ->dehydrated(false),
+                                    ->dehydrated(false)
+                                    ->debounce(500),
                             ])
                             ->columns(2),
                     ]),
@@ -86,6 +87,8 @@ class UserForm
                                             }
                                         });
                                     })
+                                    ->searchable()
+                                    ->searchDebounce(500)
                                     ->loadStateFromRelationshipsUsing(function (Select $component, ?User $record) {
                                         if ($record) {
                                             $tenantId = \Filament\Facades\Filament::getTenant()?->id;

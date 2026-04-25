@@ -48,7 +48,8 @@ class SupirForm
                                         thousandSeparator: '.',
                                         decimalSeparator: ',',
                                         precision: 0
-                                    ),
+                                    )
+                                    ->debounce(500),
                                 TextInput::make('sisa_hutang')
                                     ->label('Sisa Hutang Saat Ini')
                                     ->disabled()

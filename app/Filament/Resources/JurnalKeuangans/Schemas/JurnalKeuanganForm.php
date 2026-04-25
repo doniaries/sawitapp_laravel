@@ -32,19 +32,25 @@ class JurnalKeuanganForm
                                     ->debounce(500),
                                 TextInput::make('kategori')
                                     ->required()
-                                    ->maxLength(50),
+                                    ->maxLength(50)
+                                    ->debounce(500),
                                 TextInput::make('sub_kategori')
-                                    ->maxLength(50),
+                                    ->maxLength(50)
+                                    ->debounce(500),
                                 TextInput::make('sumber_transaksi')
                                     ->required()
-                                    ->maxLength(50),
+                                    ->maxLength(50)
+                                    ->debounce(500),
                                 TextInput::make('referensi_id')
                                     ->required()
-                                    ->numeric(),
+                                    ->numeric()
+                                    ->debounce(500),
                                 TextInput::make('nomor_referensi')
-                                    ->maxLength(50),
+                                    ->maxLength(50)
+                                    ->debounce(500),
                                 Textarea::make('keterangan')
-                                    ->columnSpanFull(),
+                                    ->columnSpanFull()
+                                    ->debounce(500),
                             ])->columns(2),
                     ]),
 
@@ -57,12 +63,16 @@ class JurnalKeuanganForm
                                 DateTimePicker::make('tanggal')
                                     ->required(),
                                 TextInput::make('jenis_transaksi')
-                                    ->required(),
+                                    ->required()
+                                    ->debounce(500),
                                 TextInput::make('pihak_terkait')
-                                    ->maxLength(100),
-                                TextInput::make('tipe_pihak'),
+                                    ->maxLength(100)
+                                    ->debounce(500),
+                                TextInput::make('tipe_pihak')
+                                    ->debounce(500),
                                 TextInput::make('cara_pembayaran')
-                                    ->maxLength(20),
+                                    ->maxLength(20)
+                                    ->debounce(500),
                             ]),
                     ]),
             ]);

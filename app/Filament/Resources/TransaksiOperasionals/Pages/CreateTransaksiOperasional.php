@@ -21,7 +21,7 @@ class CreateTransaksiOperasional extends CreateRecord
             ->body("Transaksi sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " untuk {$record->kategori}")
             ->success()
             ->actions([
-                \Filament\Notifications\Actions\Action::make('lihat')
+                \Filament\Actions\Action::make('lihat')
                     ->button()
                     ->url(TransaksiOperasionalResource::getUrl('index', ['tenant' => $record->perusahaan->slug])),
             ]);

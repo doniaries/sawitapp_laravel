@@ -54,10 +54,12 @@ class PerusahaanForm
                                     ->required()
                                     ->default(0)
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                    ->prefix('Rp.'),
+                                    ->prefix('Rp.')
+                                    ->debounce(500),
                                 Hidden::make('email')
                                     ->email(),
                                 TextInput::make('npwp')
+                                    ->debounce(500)
                                     ->maxLength(30),
                                 Toggle::make('is_active')
                                     ->default(true)
