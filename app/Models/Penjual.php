@@ -81,11 +81,10 @@ class Penjual extends Model
     {
         parent::boot();
 
-        static::creating(fn ($penjual) => $penjual->slug = Str::slug($penjual->nama));
-        static::updating(fn ($penjual) => $penjual->slug = Str::slug($penjual->nama));
-
-        // Log hutang awal saat create
         static::creating(function ($penjual) {
+            $penjual->nama = mb_strtoupper($penjual->nama);
+            $penjual->slug = Str::slug($penjual->nama);
+
             if ($penjual->hutang > 0) {
                 \Illuminate\Support\Facades\Log::info('Input Hutang Awal Penjual:', [
                     'penjual' => $penjual->nama,
@@ -96,12 +95,10 @@ class Penjual extends Model
             }
         });
 
-        // // Cegah perubahan hutang langsung dari form edit
-        // static::updating(function ($penjual) {
-        //     if ($penjual->isDirty('hutang') && !$penjual->wasRecentlyCreated) {
-        //         throw new \Exception('Hutang hanya bisa diubah melalui transaksi.');
-        //     }
-        // });
+        static::updating(function ($penjual) {
+            $penjual->nama = mb_strtoupper($penjual->nama);
+            $penjual->slug = Str::slug($penjual->nama);
+        });
     }
 
     // Scopes

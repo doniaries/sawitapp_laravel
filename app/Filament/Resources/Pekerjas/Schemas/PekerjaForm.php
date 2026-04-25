@@ -24,6 +24,7 @@ class PekerjaForm
                                     ->required()
                                     ->unique(ignoreRecord: true)
                                     ->maxLength(255)
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
                                     ->debounce(500),
                                 TextInput::make('alamat')
                                     ->maxLength(255)

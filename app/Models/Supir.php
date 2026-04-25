@@ -18,8 +18,14 @@ class Supir extends Model
 
     protected static function booted()
     {
-        static::creating(fn ($supir) => $supir->slug = Str::slug($supir->nama));
-        static::updating(fn ($supir) => $supir->slug = Str::slug($supir->nama));
+        static::creating(function ($supir) {
+            $supir->nama = mb_strtoupper($supir->nama);
+            $supir->slug = Str::slug($supir->nama);
+        });
+        static::updating(function ($supir) {
+            $supir->nama = mb_strtoupper($supir->nama);
+            $supir->slug = Str::slug($supir->nama);
+        });
     }
 
     protected $table = 'supir';

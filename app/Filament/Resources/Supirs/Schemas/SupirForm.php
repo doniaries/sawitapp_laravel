@@ -23,6 +23,7 @@ class SupirForm
                                 TextInput::make('nama')
                                     ->required()
                                     ->maxLength(255)
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
                                     ->debounce(500),
 
                                 TextInput::make('telepon')

@@ -27,6 +27,7 @@ class PenjualForm
                                     ->unique(ignoreRecord: true)
                                     ->required()
                                     ->maxLength(255)
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
                                     ->debounce(500),
 
                                 TextInput::make('alamat')

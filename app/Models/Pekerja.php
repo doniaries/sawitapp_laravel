@@ -16,8 +16,14 @@ class Pekerja extends Model
 
     protected static function booted()
     {
-        static::creating(fn ($pekerja) => $pekerja->slug = Str::slug($pekerja->nama));
-        static::updating(fn ($pekerja) => $pekerja->slug = Str::slug($pekerja->nama));
+        static::creating(function ($pekerja) {
+            $pekerja->nama = mb_strtoupper($pekerja->nama);
+            $pekerja->slug = Str::slug($pekerja->nama);
+        });
+        static::updating(function ($pekerja) {
+            $pekerja->nama = mb_strtoupper($pekerja->nama);
+            $pekerja->slug = Str::slug($pekerja->nama);
+        });
     }
 
     protected $fillable = [
