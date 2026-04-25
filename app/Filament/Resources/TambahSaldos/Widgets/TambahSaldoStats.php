@@ -5,7 +5,6 @@ namespace App\Filament\Resources\TambahSaldos\Widgets;
 use App\Models\TambahSaldo as PengajuanDana;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Number;
 
 class TambahSaldoStats extends StatsOverviewWidget
 {
