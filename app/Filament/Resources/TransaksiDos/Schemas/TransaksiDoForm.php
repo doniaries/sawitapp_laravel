@@ -9,7 +9,7 @@ use Carbon\Carbon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -287,10 +287,9 @@ class TransaksiDoForm
 
                         Section::make('Informasi Saldo')
                             ->components([
-                                Placeholder::make('saldo_perusahaan')
-                                    ->label('Saldo Perusahaan')
-                                    ->content(fn() => 'Rp ' . number_format(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 0, ',', '.'))
-                                    ->extraAttributes(['class' => 'text-lg font-semibold']),
+                                Text::make(fn() => 'Saldo Perusahaan: Rp ' . number_format(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 0, ',', '.'))
+                                    ->weight(\Filament\Support\Enums\FontWeight::SemiBold)
+                                    ->color('primary'),
                             ]),
                     ]),
             ]);

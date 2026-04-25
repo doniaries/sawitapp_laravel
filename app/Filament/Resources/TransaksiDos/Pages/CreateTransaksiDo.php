@@ -5,7 +5,7 @@ namespace App\Filament\Resources\TransaksiDos\Pages;
 use App\Filament\Resources\TransaksiDos\TransaksiDoResource;
 use App\Models\{Penjual};
 use Filament\Notifications\Notification;
-use Filament\Actions\Action as NotificationAction;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\DB;
 
