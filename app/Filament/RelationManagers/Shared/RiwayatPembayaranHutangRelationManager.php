@@ -64,7 +64,8 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
                             ->numeric()
                             ->required()
                             ->prefix('Rp')
-                            ->default(fn() => $this->getOwnerRecord()->sisa_hutang),
+                            ->default(fn() => $this->getOwnerRecord()->sisa_hutang)
+                            ->debounce(500),
 
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pembayaran')
