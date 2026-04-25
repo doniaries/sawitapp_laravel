@@ -7,7 +7,8 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\Action as BulkAction;
+use Filament\Actions\DeleteBulkAction;
+
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -115,12 +116,12 @@ class PenjualTable
                                 ->send();
                         }
                     }),
-                EditAction::make(),
-                ViewAction::make(),
+                EditAction::make()->label('Edit'),
+                ViewAction::make()->label('Lihat Detail'),
             ])
             ->bulkActions([
-                \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make()
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
                             $records->each(function ($record) {
                                 if ($record->sisa_hutang > 0) {
@@ -129,8 +130,7 @@ class PenjualTable
                                         ->body("Penjual {$record->nama} masih memiliki hutang. Tidak dapat dihapus.")
                                         ->danger()
                                         ->send();
-                                    return; // skip deleting this one, but continue others? Or throw exception.
-                                    // Actually, DeleteBulkAction provides its own before/action. We can just use standard action or keep our custom logic.
+                                    return;
                                 }
                                 $record->delete();
                             });
