@@ -29,7 +29,8 @@ class TambahSaldosTable
             ->deferLoading()
             ->columns([
                 TextColumn::make('tanggal')
-                    ->dateTime()
+                    ->label('Tanggal')
+                    ->dateTime('d F Y H:i')
                     ->sortable(),
                 TextColumn::make('user.name')
                     ->label('Entry Oleh')
@@ -54,7 +55,7 @@ class TambahSaldosTable
             ->filters([
                 TrashedFilter::make(),
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make(),
             ])
             ->toolbarActions([

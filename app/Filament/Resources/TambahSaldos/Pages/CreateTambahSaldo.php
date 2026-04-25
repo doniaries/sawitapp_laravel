@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\TambahSaldos\Pages;
 
 use App\Filament\Resources\TambahSaldos\TambahSaldoResource;
-use Filament\Notifications\Actions\Action;
+use Filament\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -31,7 +31,7 @@ class CreateTambahSaldo extends CreateRecord
             ))
             ->success()
             ->actions([
-                Action::make('lihat')
+                NotificationAction::make('lihat')
                     ->label('Lihat Detail')
                     ->button()
                     ->url(TambahSaldoResource::getUrl('index', ['tenant' => $record->perusahaan])),

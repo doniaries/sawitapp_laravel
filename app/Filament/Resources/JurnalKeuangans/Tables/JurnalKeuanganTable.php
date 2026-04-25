@@ -29,7 +29,7 @@ class JurnalKeuanganTable
             ->deferLoading()
             ->columns([
                 TextColumn::make('tanggal')
-                    ->dateTime('d/M/Y H:i')
+                    ->dateTime('d F Y H:i')
                     ->label('Tanggal Transaksi')
                     ->sortable(),
                 TextColumn::make('jenis_transaksi')

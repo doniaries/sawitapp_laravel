@@ -23,12 +23,15 @@ class PekerjaForm
                                 TextInput::make('nama')
                                     ->required()
                                     ->unique(ignoreRecord: true)
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
                                 TextInput::make('alamat')
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
                                 TextInput::make('telepon')
                                     ->tel()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
                             ]),
                     ]),
 

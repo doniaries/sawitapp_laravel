@@ -22,12 +22,15 @@ class SupirForm
                             ->components([
                                 TextInput::make('nama')
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
 
                                 TextInput::make('telepon')
-                                    ->tel(),
+                                    ->tel()
+                                    ->debounce(500),
 
-                                TextInput::make('alamat'),
+                                TextInput::make('alamat')
+                                    ->debounce(500),
                             ]),
                     ]),
 

@@ -37,7 +37,7 @@ class TransaksiDoTable
                 TextColumn::make('tanggal')
                     ->label('Tanggal')
                     ->badge()
-                    ->dateTime('d/m/Y H:i')
+                    ->dateTime('d F Y H:i')
                     ->sortable(),
 
                 TextColumn::make('penjual.nama')

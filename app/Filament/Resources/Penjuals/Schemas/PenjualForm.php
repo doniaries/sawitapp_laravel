@@ -26,15 +26,18 @@ class PenjualForm
                                     ->label('Nama Penjual')
                                     ->unique(ignoreRecord: true)
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
 
                                 TextInput::make('alamat')
                                     ->label('Alamat')
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
 
                                 TextInput::make('telepon')
                                     ->tel()
-                                    ->label('Nomor Telepon'),
+                                    ->label('Nomor Telepon')
+                                    ->debounce(500),
                             ]),
                     ]),
 

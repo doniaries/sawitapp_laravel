@@ -26,11 +26,14 @@ class PerusahaanForm
                                 TextInput::make('name')
                                     ->label('Nama Perusahaan')
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
                                 TextInput::make('pimpinan')
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
                                 TextInput::make('alamat')
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
                                 FileUpload::make('logo')
                                     ->label('Logo Perusahaan')
                                     ->image()

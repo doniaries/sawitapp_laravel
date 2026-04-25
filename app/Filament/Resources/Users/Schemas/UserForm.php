@@ -29,13 +29,15 @@ class UserForm
                                 TextInput::make('name')
                                     ->label('Nama Lengkap')
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
 
                                 TextInput::make('email')
                                     ->label('Email')
                                     ->email()
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->debounce(500),
 
                                 TextInput::make('password')
                                     ->label('Password')

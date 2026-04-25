@@ -18,10 +18,6 @@ class TambahSaldoController extends Controller
         $perusahaanId = $request->user()->perusahaan_id;
         $query = PengajuanDana::where('perusahaan_id', $perusahaanId);
 
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-
         return response()->json(
             $query->with('user')->latest()->paginate(20)
         );
@@ -42,103 +38,32 @@ class TambahSaldoController extends Controller
     {
         $request->validate([
             'nominal' => 'required|numeric',
-            'keperluan' => 'required|string',
-            'tanggal_pengajuan' => 'required|date',
+            'keterangan' => 'required|string',
+            'tanggal' => 'required|date',
+            'bukti_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $user = $request->user();
-        $role = strtolower($user->role ?? '');
-        $isDirect = in_array($role, ['admin', 'pimpinan', 'super_admin']);
 
-        return DB::transaction(function () use ($request, $user, $isDirect) {
+        return DB::transaction(function () use ($request, $user) {
+            $buktiPath = null;
+            if ($request->hasFile('bukti_transfer')) {
+                $file = $request->file('bukti_transfer');
+                $filename = 'transfer_' . time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('public/bukti_transfer', $filename);
+                $buktiPath = 'bukti_transfer/' . $filename;
+            }
+
             $pengajuan = PengajuanDana::create([
                 'perusahaan_id' => $user->perusahaan_id,
                 'user_id' => $user->id,
                 'nominal' => $request->nominal,
-                'keperluan' => $request->keperluan,
-                'tanggal_pengajuan' => $request->tanggal_pengajuan,
-                'status' => $isDirect ? PengajuanDana::STATUS_DISETUJUI : PengajuanDana::STATUS_PENDING,
-                'tanggal_proses' => $isDirect ? now() : null,
-                'proses_by' => $isDirect ? $user->id : null,
+                'keterangan' => $request->keterangan,
+                'tanggal' => $request->tanggal,
+                'bukti_transfer' => $buktiPath,
             ]);
-
-            // Observer akan menangani update saldo dan jurnal jika status === DISETUJUI
 
             return response()->json($pengajuan, 201);
         });
-    }
-
-    public function approve($id, Request $request)
-    {
-        $pengajuan = PengajuanDana::findOrFail($id);
-
-        if ($pengajuan->status !== PengajuanDana::STATUS_PENDING) {
-            return response()->json(['message' => 'Pengajuan sudah diproses.'], 422);
-        }
-
-        $request->validate([
-            'bukti_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'catatan_pimpinan' => 'nullable|string',
-        ]);
-
-        try {
-            return DB::transaction(function () use ($pengajuan, $request) {
-                $buktiPath = null;
-                if ($request->hasFile('bukti_transfer')) {
-                    $file = $request->file('bukti_transfer');
-                    $filename = 'transfer_' . time() . '_' . $pengajuan->id . '.' . $file->getClientOriginalExtension();
-                    $file->storeAs('public/bukti_transfer', $filename);
-                    $buktiPath = 'bukti_transfer/' . $filename;
-                }
-
-                // 1. Update Pengajuan
-                $pengajuan->update([
-                    'status' => PengajuanDana::STATUS_DISETUJUI,
-                    'tanggal_proses' => now(),
-                    'proses_by' => $request->user()->id,
-                    'bukti_transfer' => $buktiPath,
-                    'catatan_pimpinan' => $request->catatan_pimpinan,
-                ]);
-
-                // 2. Observer akan menangani update saldo dan jurnal secara otomatis saat status diupdate ke STATUS_DISETUJUI
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Pengajuan tambah saldo disetujui, saldo diperbarui, dan jurnal kas telah dicatat.',
-                    'data' => $pengajuan->fresh('user'),
-                ]);
-            });
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function reject($id, Request $request)
-    {
-        $request->validate([
-            'catatan_pimpinan' => 'required|string',
-        ]);
-
-        $pengajuan = PengajuanDana::findOrFail($id);
-
-        if ($pengajuan->status !== PengajuanDana::STATUS_PENDING) {
-            return response()->json(['message' => 'Pengajuan sudah diproses.'], 422);
-        }
-
-        $pengajuan->update([
-            'status' => PengajuanDana::STATUS_DITOLAK,
-            'tanggal_proses' => now(),
-            'proses_by' => $request->user()->id,
-            'catatan_pimpinan' => $request->catatan_pimpinan,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pengajuan ditolak.',
-            'data' => $pengajuan,
-        ]);
     }
 }
