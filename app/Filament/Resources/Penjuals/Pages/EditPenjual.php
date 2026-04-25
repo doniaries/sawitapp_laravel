@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Penjuals\Pages;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\Penjuals\PenjualResource;
-use App\Filament\Resources\Penjuals\RelationManagers\RiwayatHutangPinjamanRelationManager;
+use App\Filament\RelationManagers\Shared\RiwayatHutangPinjamanRelationManager;
 
 class EditPenjual extends EditRecord
 {

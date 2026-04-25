@@ -5,8 +5,8 @@ namespace App\Filament\Resources\Penjuals\Pages;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use App\Filament\Resources\Penjuals\PenjualResource;
-use App\Filament\Resources\Penjuals\RelationManagers\RiwayatHutangPinjamanRelationManager;
-use App\Filament\Resources\Penjuals\RelationManagers\RiwayatPembayaranHutangRelationManager;
+use App\Filament\RelationManagers\Shared\RiwayatHutangPinjamanRelationManager;
+use App\Filament\RelationManagers\Shared\RiwayatPembayaranHutangRelationManager;
 
 class ViewPenjual extends ViewRecord
 {

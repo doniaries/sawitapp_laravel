@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Penjuals\Pages;
 use App\Filament\Resources\Penjuals\PenjualResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use App\Filament\Resources\Penjuals\RelationManagers\RiwayatHutangPinjamanRelationManager;
+
 
 
 class ListPenjuals extends ListRecords
