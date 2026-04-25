@@ -65,7 +65,7 @@ class TambahSaldoResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['perusahaan', 'user', 'pimpinan'])
+            ->with(['perusahaan', 'user'])
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);

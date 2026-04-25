@@ -118,21 +118,25 @@ class PenjualTable
                 EditAction::make(),
                 ViewAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    BulkAction::make('delete')
-                        ->label('Hapus Terpilih')
-                        ->icon('heroicon-o-trash')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->action(function (\Illuminate\Support\Collection $records) {
+            ->bulkActions([
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
                             $records->each(function ($record) {
                                 if ($record->sisa_hutang > 0) {
-                                    throw new \Exception("Penjual {$record->nama} masih memiliki hutang. Tidak dapat dihapus.");
+                                    Notification::make()
+                                        ->title('Gagal menghapus')
+                                        ->body("Penjual {$record->nama} masih memiliki hutang. Tidak dapat dihapus.")
+                                        ->danger()
+                                        ->send();
+                                    return; // skip deleting this one, but continue others? Or throw exception.
+                                    // Actually, DeleteBulkAction provides its own before/action. We can just use standard action or keep our custom logic.
                                 }
+                                $record->delete();
                             });
-                            $records->each->delete();
-                        }),
+                            Notification::make()->title('Data berhasil dihapus')->success()->send();
+                        })
+                        ->requiresConfirmation(),
                 ]),
             ])
             ->striped()

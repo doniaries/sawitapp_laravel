@@ -31,10 +31,7 @@ return new class extends Migration
                     $col->dropColumn('status');
                 }
 
-                // Tambahkan bukti_transfer jika belum ada
-                if (!Schema::hasColumn('tambah_saldo', 'bukti_transfer')) {
-                    $col->string('bukti_transfer')->nullable();
-                }
+                
             });
         } else {
             // 3. Jika tidak ada sama sekali, buat baru
@@ -45,7 +42,6 @@ return new class extends Migration
                 $col->dateTime('tanggal');
                 $col->decimal('nominal', 15, 0);
                 $col->text('keterangan')->nullable();
-                $col->string('bukti_transfer')->nullable();
                 $col->timestamps();
                 $col->softDeletes();
             });

@@ -8,7 +8,7 @@ use App\Models\Perusahaan;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Carbon\Carbon;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
-// use EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin;
+
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -125,12 +125,6 @@ class AdminPanelProvider extends PanelProvider
                         'Kasir' => 'kasir1@gmail.com',
                     ]),
                 \Rupadana\ApiService\ApiServicePlugin::make(),
-                ...(class_exists('EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin') ? [
-                    \EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin::make()
-                        ->inactiveAfter(600) // 10 menit
-                        ->showNoticeFor(60)  // 1 menit
-                        ->keepActiveOn(['change', 'select', 'mousemove'], mergeWithDefaults: true),
-                ] : []),
             ]);
     }
 }

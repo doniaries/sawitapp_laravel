@@ -13,26 +13,25 @@ class TambahSaldoStats extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $pendingCount = PengajuanDana::where('status', 'pending')->count();
-        $pendingNominal = PengajuanDana::where('status', 'pending')->sum('nominal');
-        $approvedMonth = PengajuanDana::where('status', 'disetujui')
-            ->whereMonth('tanggal_proses', now()->month)
-            ->whereYear('tanggal_proses', now()->year)
+        $todayNominal = PengajuanDana::whereDate('tanggal', today())->sum('nominal');
+        $monthNominal = PengajuanDana::whereMonth('tanggal', now()->month)
+            ->whereYear('tanggal', now()->year)
             ->sum('nominal');
+        $totalNominal = PengajuanDana::sum('nominal');
 
         return [
-            Stat::make('Topup Pending', $pendingCount)
-                ->description('Menunggu konfirmasi')
-                ->descriptionIcon('heroicon-m-clock')
-                ->color('warning'),
-            Stat::make('Total Nominal Pending', 'Rp ' . number_format($pendingNominal, 0, ',', '.'))
-                ->description('Total top up pending')
-                ->descriptionIcon('heroicon-m-wallet')
-                ->color('warning'),
-            Stat::make('Total Topup Bulan Ini', 'Rp ' . number_format($approvedMonth, 0, ',', '.'))
+            Stat::make('Total Topup Hari Ini', 'Rp ' . number_format($todayNominal, 0, ',', '.'))
+                ->description('Saldo masuk hari ini')
+                ->descriptionIcon('heroicon-m-arrow-trending-up')
+                ->color('success'),
+            Stat::make('Total Topup Bulan Ini', 'Rp ' . number_format($monthNominal, 0, ',', '.'))
                 ->description('Saldo masuk bulan ini')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success'),
+            Stat::make('Total Keseluruhan', 'Rp ' . number_format($totalNominal, 0, ',', '.'))
+                ->description('Total semua saldo masuk')
+                ->descriptionIcon('heroicon-m-wallet')
+                ->color('primary'),
         ];
     }
 }
