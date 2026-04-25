@@ -19,6 +19,8 @@ class TransaksiDoResource extends Resource
     protected static ?string $navigationLabel = 'Transaksi DO';
     protected static ?string $modelLabel = 'Transaksi DO';
     protected static ?string $pluralModelLabel = 'Transaksi DO';
+    protected static ?string $recordTitleAttribute = 'nomor';
+    protected static int $globalSearchResultsLimit = 10;
     protected static ?int $navigationSort = 1;
 
 

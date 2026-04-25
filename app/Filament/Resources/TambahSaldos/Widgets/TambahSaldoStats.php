@@ -20,11 +20,11 @@ class TambahSaldoStats extends StatsOverviewWidget
         $totalNominal = PengajuanDana::sum('nominal');
 
         return [
-            Stat::make('Total Topup Hari Ini', 'Rp ' . number_format($todayNominal, 0, ',', '.'))
+            Stat::make('Total Tambah Saldo Hari Ini', 'Rp ' . number_format($todayNominal, 0, ',', '.'))
                 ->description('Saldo masuk hari ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success'),
-            Stat::make('Total Topup Bulan Ini', 'Rp ' . number_format($monthNominal, 0, ',', '.'))
+            Stat::make('Total Tambah Saldo Bulan Ini', 'Rp ' . number_format($monthNominal, 0, ',', '.'))
                 ->description('Saldo masuk bulan ini')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success'),

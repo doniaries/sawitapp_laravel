@@ -18,6 +18,7 @@ class TambahSaldo extends Model
         'tanggal',
         'nominal',
         'keterangan',
+        'bukti_transfer',
     ];
 
     protected $casts = [

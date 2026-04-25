@@ -52,6 +52,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->favicon(asset('images/success.png'))
             ->login()
+            ->globalSearch()
+            ->globalSearchKeyBindings(['ctrl+k', 'ctrl+/'])
             ->font('Poppins')
             ->colors([
                 'primary' => Color::Indigo,
@@ -98,6 +100,7 @@ class AdminPanelProvider extends PanelProvider
                 'Data Master',
                 'Laporan',
                 'Pengaturan',
+                'Filament Shield',
             ])
             ->plugins([
                 FilamentShieldPlugin::make()
