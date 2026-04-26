@@ -32,6 +32,7 @@ class TambahSaldoForm
                     ->numeric()
                     ->prefix('Rp')
                     ->minValue(0)
+                    ->default(null)
                     ->debounce(500),
                 Textarea::make('keterangan')
                     ->columnSpanFull()
