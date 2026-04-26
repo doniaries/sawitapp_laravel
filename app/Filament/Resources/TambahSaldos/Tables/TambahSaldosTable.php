@@ -42,10 +42,6 @@ class TambahSaldosTable
                 TextColumn::make('keterangan')
                     ->searchable()
                     ->limit(50),
-                TextColumn::make('bukti_transfer')
-                    ->label('Referensi')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

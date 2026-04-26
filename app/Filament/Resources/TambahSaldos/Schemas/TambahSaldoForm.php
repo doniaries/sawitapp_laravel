@@ -37,11 +37,6 @@ class TambahSaldoForm
                     ->columnSpanFull()
                     ->maxLength(100)
                     ->debounce(500),
-                TextInput::make('bukti_transfer')
-                    ->label('No. Referensi / Bukti Transfer')
-                    ->placeholder('Contoh: TRF-20241025-001')
-                    ->maxLength(255)
-                    ->debounce(500),
             ]);
     }
 }
