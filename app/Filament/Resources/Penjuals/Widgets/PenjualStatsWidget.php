@@ -26,7 +26,7 @@ class PenjualStatsWidget extends BaseWidget
             return [
                 'total_penjual' => \App\Models\Penjual::count(),
                 'penjual_berhutang' => \App\Models\Penjual::query()
-                    ->whereRaw('hutang > (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE penjual_id = penjuals.id)')
+                    ->whereRaw('hutang > (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE penjual_id = penjual.id)')
                     ->count(),
                 'total_sisa_hutang' => $totalSisaHutang,
             ];

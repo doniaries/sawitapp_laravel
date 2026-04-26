@@ -85,6 +85,7 @@ class TransaksiOperasionalForm
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
                                     ->numeric()
+                                    ->default(null)
                                     ->debounce(500)
                                     ->rules([
                                         function (Get $get) {

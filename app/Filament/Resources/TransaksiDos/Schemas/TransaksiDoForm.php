@@ -129,6 +129,7 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
+                                ->default(null)
                                 ->live(onBlur: true)
                                 ->debounce(500)
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
@@ -137,6 +138,7 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
+                                ->default(null)
                                 ->live(onBlur: true)
                                 ->debounce(500)
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
@@ -148,6 +150,7 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
+                                ->default(null)
                                 ->live(onBlur: true)
                                 ->debounce(500)
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set))
@@ -216,7 +219,7 @@ class TransaksiDoForm
                                     'style' => 'width: 100%;'
                                 ])
                                 ->extraInputAttributes([
-                                    'style' => 'font-size: 1.5rem !important; font-weight: 800; color: #2563eb !important; -webkit-text-fill-color: #2563eb !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
+                                    'style' => 'font-size: 1.25rem !important; font-weight: 800; color: #2563eb !important; -webkit-text-fill-color: #2563eb !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
                                     'class' => 'text-blue-600 dark:text-blue-400'
                                 ]),
 

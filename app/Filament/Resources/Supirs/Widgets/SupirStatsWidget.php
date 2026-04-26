@@ -29,7 +29,7 @@ class SupirStatsWidget extends BaseWidget
             
             // Hitung jumlah supir yang masih memiliki hutang
             $supirDenganHutang = \App\Models\Supir::query()
-                ->whereRaw('hutang > (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE supir_id = supirs.id)')
+                ->whereRaw('hutang > (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE supir_id = supir.id)')
                 ->count();
             
             return [
