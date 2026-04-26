@@ -69,7 +69,7 @@ class PerusahaanStatsWidget extends BaseWidget
 
                 return [
                     // Saldo from perusahaans table
-                    Stat::make('Saldo Perusahaan', 'Rp ' . number_format($saldoAkhir, 0, ',', '.'))
+                    Stat::make('Saldo Perusahaan', new \Illuminate\Support\HtmlString('<div class="text-sm font-bold text-white bg-blue-600 dark:bg-blue-500 px-2 py-1 rounded shadow-sm inline-block">Rp ' . number_format($saldoAkhir, 0, ',', '.') . '</div>'))
                         ->description($lastSaldoInfo)
                         ->descriptionIcon('heroicon-m-banknotes')
                         ->color($this->getSaldoColor($saldoAkhir)),
@@ -83,7 +83,7 @@ class PerusahaanStatsWidget extends BaseWidget
                     // Transaction summary
                     Stat::make(
                         'Total Pemasukan',
-                        'Rp ' . number_format($totalPemasukan, 0, ',', '.')
+                        new \Illuminate\Support\HtmlString('<div class="text-base font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($totalPemasukan, 0, ',', '.') . '</div>')
                     )
                         ->description(
                             'Total Pengeluaran: Rp ' . number_format($totalPengeluaran, 0, ',', '.')

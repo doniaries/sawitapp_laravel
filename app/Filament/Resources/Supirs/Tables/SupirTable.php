@@ -77,10 +77,10 @@ class SupirTable
                             ->default(fn($record) => number_format($record->sisa_hutang, 0, ',', '.')),
                         TextInput::make('nominal')
                             ->label('Nominal Pembayaran')
-                            ->numeric()
+                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                             ->required()
                             ->prefix('Rp')
-                            ->default(fn($record) => $record->sisa_hutang),
+                            ->debounce(500),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pembayaran')
                             ->default(now())
@@ -95,7 +95,8 @@ class SupirTable
                             ->required(),
                         TextInput::make('keterangan')
                             ->label('Keterangan')
-                            ->placeholder('Opsional'),
+                            ->placeholder('Opsional')
+                            ->debounce(500),
                     ])
                     ->action(function ($record, array $data) {
                         try {

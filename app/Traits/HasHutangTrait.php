@@ -65,8 +65,17 @@ trait HasHutangTrait
      */
     public function getTotalPembayaranAttribute(): float
     {
-        if (array_key_exists('riwayat_pembayaran_sum_nominal', $this->attributes)) {
-            return (float) $this->attributes['riwayat_pembayaran_sum_nominal'];
+        // Check standard naming conventions for withSum()
+        $keys = [
+            'riwayat_pembayaran_sum_nominal',
+            'total_pembayaran_sum',
+            'riwayatPembayaran_sum_nominal'
+        ];
+
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $this->attributes)) {
+                return (float) $this->attributes[$key];
+            }
         }
 
         return (float) $this->riwayatPembayaran()->sum('nominal');

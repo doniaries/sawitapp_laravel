@@ -84,7 +84,7 @@ class TransaksiDoStatWidget extends BaseWidget
                         ->url(TransaksiDoResource::getUrl('index', ['activeTab' => 'hari_ini'])),
 
                     // Total Income (Today)
-                    Stat::make('Uang Masuk (Hari Ini)', 'Rp ' . number_format($totalIncomingToday, 0, ',', '.'))
+                    Stat::make('Uang Masuk (Hari Ini)', new \Illuminate\Support\HtmlString('<div class="text-base font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($totalIncomingToday, 0, ',', '.') . '</div>'))
                         ->description(sprintf(
                             "Bayar Hutang: Rp %s | Bayar Sisa: Rp %s\nOperasional: Rp %s",
                             number_format($incomingFundsToday->total_debt_payments, 0, ',', '.'),
@@ -97,9 +97,9 @@ class TransaksiDoStatWidget extends BaseWidget
                             'activeTab' => 'hari_ini',
                             'tableFilters' => ['jenis_transaksi' => ['value' => 'Pemasukan']]
                         ])),
-
+ 
                     // Total Expenditure (Today)
-                    Stat::make('Pengeluaran (Hari Ini)', 'Rp ' . number_format($totalExpenditureToday, 0, ',', '.'))
+                    Stat::make('Pengeluaran (Hari Ini)', new \Illuminate\Support\HtmlString('<div class="text-sm font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($totalExpenditureToday, 0, ',', '.') . '</div>'))
                         ->description(sprintf(
                             "DO: Rp %s | Operasional: Rp %s",
                             number_format($totalDOToday, 0, ',', '.'),

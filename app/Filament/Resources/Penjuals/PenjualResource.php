@@ -70,6 +70,6 @@ class PenjualResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withSum('riwayatPembayaran as total_pembayaran_sum', 'nominal');
+            ->withSum('riwayatPembayaran as riwayat_pembayaran_sum_nominal', 'nominal');
     }
 }

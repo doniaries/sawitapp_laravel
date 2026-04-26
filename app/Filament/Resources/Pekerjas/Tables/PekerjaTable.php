@@ -62,6 +62,10 @@ class PekerjaTable
             ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
+                \Filament\Tables\Filters\Filter::make('has_hutang')
+                    ->query(fn(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query->whereRaw('(hutang - (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE pekerja_id = pekerja.id)) > 0'))
+                    ->label('Ada Hutang')
+                    ->toggle()
             ])
             ->headerActions([
                 CreateAction::make()
@@ -83,10 +87,10 @@ class PekerjaTable
                             ->default(fn($record) => number_format($record->sisa_hutang, 0, ',', '.')),
                         TextInput::make('nominal')
                             ->label('Nominal Pembayaran')
-                            ->numeric()
+                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                             ->required()
                             ->prefix('Rp')
-                            ->default(fn($record) => $record->sisa_hutang),
+                            ->debounce(500),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pembayaran')
                             ->default(now())
@@ -101,7 +105,8 @@ class PekerjaTable
                             ->required(),
                         TextInput::make('keterangan')
                             ->label('Keterangan')
-                            ->placeholder('Opsional'),
+                            ->placeholder('Opsional')
+                            ->debounce(500),
                     ])
                     ->action(function ($record, array $data) {
                         try {

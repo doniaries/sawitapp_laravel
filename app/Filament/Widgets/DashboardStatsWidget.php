@@ -70,12 +70,12 @@ class DashboardStatsWidget extends BaseWidget
             $jumlahTransaksi = (int) ($doStats->jumlah_transaksi ?? 0);
             
         return [
-            Stat::make('SELISIH KAS (PERIODE)', new \Illuminate\Support\HtmlString('<div class="text-base font-bold">Rp ' . number_format($selisihKas, 0, ',', '.') . '</div>'))
+            Stat::make('SELISIH KAS (PERIODE)', new \Illuminate\Support\HtmlString('<div class="text-base font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($selisihKas, 0, ',', '.') . '</div>'))
                 ->description($selisihKas < 0 ? 'Peringatan: Pengeluaran melebihi pemasukan hari ini.' : 'Total Uang Masuk - Total Pengeluaran')
                 ->icon('heroicon-m-scale')
                 ->color($selisihKas >= 0 ? 'success' : 'danger'),
 
-            Stat::make('TOTAL SALDO/UANG MASUK', new \Illuminate\Support\HtmlString('<div class="text-base font-bold">Rp ' . number_format($uangMasukTotal, 0, ',', '.') . '</div>'))
+            Stat::make('TOTAL SALDO/UANG MASUK', new \Illuminate\Support\HtmlString('<div class="text-base font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($uangMasukTotal, 0, ',', '.') . '</div>'))
                 ->description(sprintf(
                     "Transfer: Rp %s | Hutang: Rp %s",
                     number_format($totalTransfer, 0, ',', '.'),
@@ -84,7 +84,7 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-arrow-down-circle')
                 ->color('success'),
 
-            Stat::make('PENGELUARAN/UANG KELUAR', new \Illuminate\Support\HtmlString('<div class="text-base font-bold">Rp ' . number_format($pengeluaranTotal, 0, ',', '.') . '</div>'))
+            Stat::make('PENGELUARAN/UANG KELUAR', new \Illuminate\Support\HtmlString('<div class="text-sm font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($pengeluaranTotal, 0, ',', '.') . '</div>'))
                 ->description(sprintf(
                     "Total DO: Rp %s | Operasional: Rp %s",
                     number_format($totalDoBruto, 0, ',', '.'),
@@ -93,7 +93,7 @@ class DashboardStatsWidget extends BaseWidget
                 ->icon('heroicon-m-arrow-up-circle')
                 ->color('danger'),
 
-            Stat::make('SALDO AKHIR PERUSAHAAN', new \Illuminate\Support\HtmlString('<div class="text-base font-bold">Rp ' . number_format($displaySaldoAkhir, 0, ',', '.') . '</div>'))
+            Stat::make('SALDO AKHIR PERUSAHAAN', new \Illuminate\Support\HtmlString('<div class="text-sm font-bold text-white bg-blue-600 dark:bg-blue-500 px-2 py-1 rounded shadow-sm inline-block">Rp ' . number_format($displaySaldoAkhir, 0, ',', '.') . '</div>'))
                 ->description($displaySaldoAkhir < 0 ? 'Peringatan: Saldo minus (Aset kas kosong).' : "Saldo Real (Termasuk Profit Biaya)")
                 ->icon('heroicon-m-banknotes')
                 ->color($displaySaldoAkhir >= 0 ? 'success' : 'danger'),
