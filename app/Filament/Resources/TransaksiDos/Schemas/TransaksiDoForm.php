@@ -35,6 +35,13 @@ class TransaksiDoForm
                     ->components([
                         // 1. Tanggal & Nama Penjual
                         Group::make([
+                            TextInput::make('nomor')
+                                ->label('Nomor DO')
+                                ->default(fn() => TransaksiDo::generateMonthlyNumber())
+                                ->required()
+                                ->maxLength(255)
+                                ->disabled()
+                                ->dehydrated(),
                             DateTimePicker::make('tanggal')
                                 ->label('Tanggal')
                                 ->format('Y-m-d H:i:s')
@@ -112,7 +119,7 @@ class TransaksiDoForm
                                 ->prefix('Rp')
                                 ->disabled()
                                 ->dehydrated()
-                                ->extraInputAttributes(['class' => 'bg-gray-50 font-bold']),
+                                ->extraInputAttributes(['class' => 'bg-gray-50 font-bold text-xl']),
                         ])->columns(3),
 
                         // 5. Pengurangan (Biaya & Hutang)
@@ -202,21 +209,25 @@ class TransaksiDoForm
                                 ->label('Total Bayar ke Penjual')
                                 ->prefix('Rp')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                ->disabled()
+                                ->readOnly()
                                 ->dehydrated()
-                                ->extraInputAttributes(['class' => 'font-extrabold text-2xl text-success-600 py-2']),
+                                ->extraAttributes([
+                                    'class' => 'bg-blue-50 dark:bg-gray-800 p-4 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-4',
+                                    'style' => 'width: 100%;'
+                                ])
+                                ->extraInputAttributes([
+                                    'style' => 'font-size: 2.2rem !important; font-weight: 900; color: #2563eb !important; -webkit-text-fill-color: #2563eb !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
+                                    'class' => 'text-blue-600 dark:text-blue-400'
+                                ]),
 
                             Text::make(fn() => 'Saldo Perusahaan: Rp ' . number_format(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 0, ',', '.'))
                                 ->weight('bold')
-                                ->extraAttributes(['style' => 'font-weight: 900; font-size: 1.2rem;', 'class' => 'text-primary-600 mt-2 mb-4']),
+                                ->extraAttributes([
+                                    'style' => 'font-weight: 900; font-size: 1.3rem; color: #ffffff !important; background-color: #2563eb !important; display: inline-block; padding: 10px 24px; border-radius: 12px; border: 1px solid #1d4ed8; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);',
+                                    'class' => 'mt-2 mb-6'
+                                ]),
 
-                            TextInput::make('nomor')
-                                ->label('Nomor DO')
-                                ->default(fn() => TransaksiDo::generateMonthlyNumber())
-                                ->required()
-                                ->maxLength(255)
-                                ->disabled()
-                                ->dehydrated(),
+                            
 
                             TextInput::make('nominal_tunai')
                                 ->label('Nominal Tunai')
