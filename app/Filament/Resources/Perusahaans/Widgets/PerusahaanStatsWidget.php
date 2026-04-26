@@ -11,7 +11,7 @@ use Livewire\Attributes\On;
 
 class PerusahaanStatsWidget extends BaseWidget
 {
-    protected ?string $pollingInterval = '10s';
+    protected ?string $pollingInterval = '60s';
     protected static bool $isLazy = true;
     protected int | string | array $columnSpan = 'full';
 
@@ -23,24 +23,28 @@ class PerusahaanStatsWidget extends BaseWidget
             if (!$perusahaan) {
                 return [];
             }
-            return Cache::remember("perusahaan-stats-{$perusahaan->id}", 60, function () use ($perusahaan) {
-                // Get active kasir only for current company with role 'kasir'
-                $kasir = User::where('perusahaan_id', $perusahaan->id)
+            
+            $cacheKey = "perusahaan-stats-tenant-{$perusahaan->id}";
+
+            return Cache::remember($cacheKey, 60, function () use ($perusahaan) {
+                // 1. Get kasir names in one query
+                $kasirNames = User::where('perusahaan_id', $perusahaan->id)
                     ->where('is_active', true)
-                    ->whereHas('roles', function ($query) {
-                        $query->where('name', 'kasir');
-                    })
-                    ->get(['name']);
+                    ->whereHas('roles', fn ($q) => $q->where('name', 'kasir'))
+                    ->pluck('name')
+                    ->whenEmpty(fn() => collect(['Belum ada kasir']))
+                    ->join(', ');
 
-                $kasirNames = $kasir->isEmpty() ? 'Belum ada kasir' : $kasir->pluck('name')->join(', ');
-
-                // Get last saldo addition for current company
+                // 2. Get last saldo addition and aggregate sums in one pass if possible, 
+                // but lastSaldo needs orderBy, so we'll do 2 queries.
+                
                 $lastSaldo = DB::table('jurnal_keuangan')
                     ->where('perusahaan_id', $perusahaan->id)
                     ->whereNull('deleted_at')
                     ->where('kategori', 'Saldo')
                     ->where('sub_kategori', 'Tambah Saldo')
                     ->orderBy('tanggal', 'desc')
+                    ->select(['nominal', 'tanggal'])
                     ->first();
 
                 $lastSaldoInfo = $lastSaldo ?
@@ -48,56 +52,41 @@ class PerusahaanStatsWidget extends BaseWidget
                     " (" . date('d/m/Y', strtotime($lastSaldo->tanggal)) . ")" :
                     "Belum ada penambahan saldo";
 
-                // Calculate total pemasukan for current company
-                $totalPemasukan = DB::table('jurnal_keuangan')
+                // 3. Combine Pemasukan and Pengeluaran sums
+                $jurnalSums = DB::table('jurnal_keuangan')
                     ->where('perusahaan_id', $perusahaan->id)
                     ->whereNull('deleted_at')
-                    ->where('jenis_transaksi', 'Pemasukan')
                     ->where('mempengaruhi_kas', true)
-                    ->sum('nominal');
+                    ->selectRaw('
+                        SUM(CASE WHEN jenis_transaksi = "Pemasukan" THEN nominal ELSE 0 END) as total_pemasukan,
+                        SUM(CASE WHEN jenis_transaksi = "Pengeluaran" THEN nominal ELSE 0 END) as total_pengeluaran
+                    ')->first();
 
-                // Calculate total pengeluaran for current company
-                $totalPengeluaran = DB::table('jurnal_keuangan')
-                    ->where('perusahaan_id', $perusahaan->id)
-                    ->whereNull('deleted_at')
-                    ->where('jenis_transaksi', 'Pengeluaran')
-                    ->where('mempengaruhi_kas', true)
-                    ->sum('nominal');
-
-                // Calculate saldo (already has perusahaan_id context)
-                $saldoAkhir = $perusahaan->saldo;
+                $saldoAkhir = (float)$perusahaan->saldo;
 
                 return [
-                    // Saldo from perusahaans table
                     Stat::make('Saldo Perusahaan', new \Illuminate\Support\HtmlString('<div class="text-sm font-bold text-white bg-blue-600 dark:bg-blue-500 px-2 py-1 rounded shadow-sm inline-block">Rp ' . number_format($saldoAkhir, 0, ',', '.') . '</div>'))
                         ->description($lastSaldoInfo)
                         ->descriptionIcon('heroicon-m-banknotes')
                         ->color($this->getSaldoColor($saldoAkhir)),
 
-                    // Pimpinan as main title with company name below
                     Stat::make($perusahaan->name, $perusahaan->pimpinan ?? 'Pimpinan belum diatur')
                         ->description("Kasir: {$kasirNames}")
                         ->descriptionIcon('heroicon-m-user-group')
                         ->color('info'),
 
-                    // Transaction summary
                     Stat::make(
                         'Total Pemasukan',
-                        new \Illuminate\Support\HtmlString('<div class="text-base font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($totalPemasukan, 0, ',', '.') . '</div>')
+                        new \Illuminate\Support\HtmlString('<div class="text-base font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($jurnalSums->total_pemasukan ?? 0, 0, ',', '.') . '</div>')
                     )
                         ->description(
-                            'Total Pengeluaran: Rp ' . number_format($totalPengeluaran, 0, ',', '.')
+                            'Total Pengeluaran: Rp ' . number_format($jurnalSums->total_pengeluaran ?? 0, 0, ',', '.')
                         )
                         ->descriptionIcon('heroicon-m-arrow-path')
                         ->color('success'),
                 ];
             });
         } catch (\Exception $e) {
-            // \Log::error('PerusahaanStatsWidget Error:', [
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString()
-            // ]);
-
             return [
                 Stat::make('Error', 'Gagal memuat data')
                     ->description('Silakan refresh halaman')
@@ -110,18 +99,21 @@ class PerusahaanStatsWidget extends BaseWidget
     private function getSaldoColor($saldo): string
     {
         return match (true) {
-            $saldo > 100000000 => 'success',  // > 100jt
-            $saldo > 50000000 => 'info',      // > 50jt
-            $saldo > 10000000 => 'warning',   // > 10jt
-            $saldo > 0 => 'gray',             // > 0
-            default => 'danger'                // <= 0
+            $saldo > 100000000 => 'success',
+            $saldo > 50000000 => 'info',
+            $saldo > 10000000 => 'warning',
+            $saldo > 0 => 'gray',
+            default => 'danger'
         };
     }
 
     #[On(['refresh-widget', 'saldo-updated', 'laporan-created', 'laporan-deleted'])]
     public function refresh(): void
     {
-        Cache::forget('perusahaan-stats');
-        $this->getStats();
+        $tenantId = Filament::getTenant()?->id;
+        if ($tenantId) {
+            Cache::forget("perusahaan-stats-tenant-{$tenantId}");
+        }
     }
+
 }

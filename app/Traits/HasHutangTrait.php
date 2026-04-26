@@ -8,6 +8,8 @@ use App\Enums\KategoriOperasional;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Illuminate\Database\Eloquent\Builder;
+
 trait HasHutangTrait
 {
     public static function bootHasHutangTrait()
@@ -61,14 +63,37 @@ trait HasHutangTrait
     }
 
     /**
+     * Scope untuk memuat sisa hutang secara efisien
+     */
+    public function scopeWithSisaHutang(Builder $query): Builder
+    {
+        $table = $this->getTable();
+        $foreignKey = match (get_class($this)) {
+            \App\Models\Penjual::class => 'penjual_id',
+            \App\Models\Supir::class => 'supir_id',
+            \App\Models\Pekerja::class => 'pekerja_id',
+            default => null,
+        };
+
+        if (!$foreignKey) {
+            return $query;
+        }
+
+        return $query->addSelect([
+            'total_pembayaran_sum' => PembayaranHutang::selectRaw('COALESCE(SUM(nominal), 0)')
+                ->whereColumn($foreignKey, "{$table}.id")
+        ])->selectRaw("({$table}.hutang - (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE {$foreignKey} = {$table}.id)) as sisa_hutang_sum");
+    }
+
+    /**
      * Accessor untuk Total Pembayaran
      */
     public function getTotalPembayaranAttribute(): float
     {
         // Check standard naming conventions for withSum()
         $keys = [
-            'riwayat_pembayaran_sum_nominal',
             'total_pembayaran_sum',
+            'riwayat_pembayaran_sum_nominal',
             'riwayatPembayaran_sum_nominal'
         ];
 
@@ -86,6 +111,10 @@ trait HasHutangTrait
      */
     public function getSisaHutangAttribute(): float
     {
+        if (array_key_exists('sisa_hutang_sum', $this->attributes)) {
+            return (float) $this->attributes['sisa_hutang_sum'];
+        }
+
         return (float) ($this->hutang ?? 0) - $this->total_pembayaran;
     }
 

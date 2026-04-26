@@ -13,39 +13,44 @@ class PenjualStatsOverview extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        // Query builder untuk penjual
-        $query = Penjual::query();
+        $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+        $cacheKey = "penjual_stats_overview_tenant_{$tenantId}";
 
-        // Hitung statistik
-        $totalPenjual = $query->count();
-        $totalHutang = $query->sum('hutang');
-        $penjualDenganHutang = $query->where('hutang', '>', 0)->count();
-        $rataHutang = $penjualDenganHutang > 0 ? ($totalHutang / $penjualDenganHutang) : 0;
+        $stats = \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () {
+            // Hitung statistik secara efisien
+            $totalPenjual = Penjual::query()->count();
+            
+            // Gunakan scope untuk mendapatkan sisa hutang yang akurat
+            $allPenjual = Penjual::query()->withSisaHutang()->get();
+            $totalSisaHutang = $allPenjual->sum('sisa_hutang_sum');
+            $penjualDenganHutang = $allPenjual->where('sisa_hutang_sum', '>', 0)->count();
+            
+            $rataHutang = $penjualDenganHutang > 0 ? ($totalSisaHutang / $penjualDenganHutang) : 0;
 
-        // Hitung persentase perubahan (sebagai contoh)
-        $pertumbuhanPenjual = $totalPenjual > 0 ? (($totalPenjual - 100) / 100) * 100 : 0;
-        $pertumbuhanHutang = $totalHutang > 0 ? (($totalHutang - 1000000) / 1000000) * 100 : 0;
+            return [
+                'totalPenjual' => $totalPenjual,
+                'totalSisaHutang' => $totalSisaHutang,
+                'penjualDenganHutang' => $penjualDenganHutang,
+                'rataHutang' => $rataHutang,
+            ];
+        });
+
+        $blueBadgeStyle = 'text-sm font-bold text-white bg-blue-600 dark:bg-blue-500 px-2 py-1 rounded shadow-sm inline-block';
 
         return [
-            Stat::make('Total Penjual', number_format($totalPenjual))
-                ->description($pertumbuhanPenjual >= 0 ? 'Meningkat ' . number_format($pertumbuhanPenjual, 1) . '%' : 'Menurun ' . number_format(abs($pertumbuhanPenjual), 1) . '%')
-                ->descriptionIcon($pertumbuhanPenjual >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
-                ->chart([7, 4, 6, 8, $totalPenjual])
-                ->color($pertumbuhanPenjual >= 0 ? 'success' : 'danger')
+            Stat::make('Total Penjual', number_format($stats['totalPenjual'], 0, ',', '.'))
                 ->icon('heroicon-o-users'),
 
-            Stat::make('Total Hutang', 'Rp ' . number_format($totalHutang, 0, ',', '.'))
-                ->description($penjualDenganHutang . ' penjual dengan hutang')
+            Stat::make('Total Bayar ke Penjual', new \Illuminate\Support\HtmlString('<div class="' . $blueBadgeStyle . '">Rp ' . number_format($stats['totalSisaHutang'], 0, ',', '.') . '</div>'))
+                ->description($stats['penjualDenganHutang'] . ' penjual dengan sisa bayar')
                 ->descriptionIcon('heroicon-m-banknotes')
-                ->chart([4, 3, 6, 2, $totalHutang / 1000000])
-                ->color($totalHutang > 10000000 ? 'danger' : 'warning')
+                ->color('info')
                 ->icon('heroicon-o-banknotes'),
 
-            Stat::make('Rata-rata Hutang', 'Rp ' . number_format($rataHutang, 0, ',', '.'))
-                ->description('Per penjual dengan hutang')
+            Stat::make('Rata-rata Bayar', new \Illuminate\Support\HtmlString('<div class="text-sm font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($stats['rataHutang'], 0, ',', '.') . '</div>'))
+                ->description('Per penjual aktif')
                 ->descriptionIcon('heroicon-m-calculator')
-                ->chart([2, 4, 6, 5, 3, $rataHutang / 1000000])
-                ->color($rataHutang > 5000000 ? 'danger' : 'warning')
+                ->color('info')
                 ->icon('heroicon-o-calculator'),
         ];
     }

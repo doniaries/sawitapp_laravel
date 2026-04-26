@@ -212,19 +212,19 @@ class TransaksiDoForm
                                 ->readOnly()
                                 ->dehydrated()
                                 ->extraAttributes([
-                                    'class' => 'bg-blue-50 dark:bg-gray-800 p-4 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-4',
+                                    'class' => 'bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-2',
                                     'style' => 'width: 100%;'
                                 ])
                                 ->extraInputAttributes([
-                                    'style' => 'font-size: 2.2rem !important; font-weight: 900; color: #2563eb !important; -webkit-text-fill-color: #2563eb !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
+                                    'style' => 'font-size: 1.5rem !important; font-weight: 800; color: #2563eb !important; -webkit-text-fill-color: #2563eb !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
                                     'class' => 'text-blue-600 dark:text-blue-400'
                                 ]),
 
                             Text::make(fn() => 'Saldo Perusahaan: Rp ' . number_format(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 0, ',', '.'))
                                 ->weight('bold')
                                 ->extraAttributes([
-                                    'style' => 'font-weight: 900; font-size: 1.3rem; color: #ffffff !important; background-color: #2563eb !important; display: inline-block; padding: 10px 24px; border-radius: 12px; border: 1px solid #1d4ed8; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);',
-                                    'class' => 'mt-2 mb-6'
+                                    'style' => 'font-weight: 700; font-size: 1rem; color: #ffffff !important; background-color: #2563eb !important; display: inline-block; padding: 6px 16px; border-radius: 8px; border: 1px solid #1d4ed8; box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1);',
+                                    'class' => 'mt-1 mb-4'
                                 ]),
 
                             

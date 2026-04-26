@@ -62,7 +62,7 @@ class PekerjaResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withSum('riwayatPembayaran as riwayat_pembayaran_sum_nominal', 'nominal')
+            ->withSisaHutang()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
@@ -70,7 +70,12 @@ class PekerjaResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        $tenantId = \Filament\Facades\Filament::getTenant()?->id;
+        $cacheKey = "pekerja_count_tenant_{$tenantId}";
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () {
+            return static::getModel()::count();
+        });
     }
 
     public static function getNavigationBadgeColor(): ?string

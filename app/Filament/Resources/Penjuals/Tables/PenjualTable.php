@@ -25,7 +25,6 @@ class PenjualTable
             ->deferLoading()
             ->columns([
                 TextColumn::make('nama')
-                    ->formatStateUsing(fn(string $state): string => mb_strtoupper($state))
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
@@ -39,7 +38,7 @@ class PenjualTable
                     ->label('Telepon')
                     ->searchable(),
 
-                TextColumn::make('sisa_hutang')
+                TextColumn::make('sisa_hutang_sum')
                     ->label('Sisa Hutang')
                     ->numeric(0, ',', '.')
                     ->prefix('Rp ')
@@ -57,7 +56,7 @@ class PenjualTable
             ->filters([
                 \Filament\Tables\Filters\TrashedFilter::make(),
                 \Filament\Tables\Filters\Filter::make('has_hutang')
-                    ->query(fn(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query->whereRaw('(hutang - (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE penjual_id = penjual.id)) > 0'))
+                    ->query(fn(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query->having('sisa_hutang_sum', '>', 0))
                     ->label('Ada Hutang')
                     ->toggle()
             ])
@@ -84,6 +83,8 @@ class PenjualTable
                             ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                             ->required()
                             ->prefix('Rp')
+                            ->default(null)
+                            ->placeholder('Masukkan nominal pembayaran')
                             ->debounce(500),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pembayaran')

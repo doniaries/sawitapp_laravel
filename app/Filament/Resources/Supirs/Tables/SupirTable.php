@@ -29,7 +29,6 @@ class SupirTable
             ->deferLoading()
             ->columns([
                 TextColumn::make('nama')
-                    ->formatStateUsing(fn(string $state): string => mb_strtoupper($state))
                     ->searchable()
                     ->sortable(),
 
@@ -40,7 +39,7 @@ class SupirTable
                 TextColumn::make('telepon')
                     ->searchable(),
 
-                TextColumn::make('sisa_hutang')
+                TextColumn::make('sisa_hutang_sum')
                     ->label('Sisa Hutang')
                     ->numeric(0, ',', '.')
                     ->prefix('Rp ')
@@ -53,7 +52,7 @@ class SupirTable
             ->filters([
                 TrashedFilter::make(),
                 Filter::make('has_hutang')
-                    ->query(fn(Builder $query): Builder => $query->whereRaw('(hutang - (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE supir_id = supir.id)) > 0'))
+                    ->query(fn(Builder $query): Builder => $query->having('sisa_hutang_sum', '>', 0))
                     ->label('Ada Hutang')
                     ->toggle()
             ])
@@ -80,6 +79,8 @@ class SupirTable
                             ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                             ->required()
                             ->prefix('Rp')
+                            ->default(null)
+                            ->placeholder('Masukkan nominal pembayaran')
                             ->debounce(500),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pembayaran')

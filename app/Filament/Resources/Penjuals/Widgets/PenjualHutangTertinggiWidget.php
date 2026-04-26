@@ -12,15 +12,16 @@ class PenjualHutangTertinggiWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'full';
-    protected ?string $pollingInterval = '10s';
+    protected ?string $pollingInterval = '60s';
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
                 Penjual::query()
-                    ->where('hutang', '>', 0)
-                    ->orderBy('hutang', 'desc')
+                    ->withSisaHutang()
+                    ->where('sisa_hutang', '>', 0)
+                    ->orderBy('sisa_hutang', 'desc')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
@@ -37,12 +38,13 @@ class PenjualHutangTertinggiWidget extends BaseWidget
                     ->label('Telepon')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('hutang')
-                    ->label('Total Hutang')
+                Tables\Columns\TextColumn::make('sisa_hutang')
+                    ->label('Sisa Hutang')
                     ->numeric(0, ',', '.')
                     ->prefix('Rp ')
                     ->alignEnd()
                     ->sortable()
+                    ->badge()
                     ->color('danger')
                     ->weight('bold'),
 
