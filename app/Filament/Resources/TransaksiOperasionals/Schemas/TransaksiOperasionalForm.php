@@ -110,26 +110,28 @@ class TransaksiOperasionalForm
                     ->components([
                         Section::make('Waktu & Catatan')
                             ->description('Konteks operasional')
+                            ->compact()
                             ->components([
-                                Select::make('operasional')
-                                    ->label('Jenis Operasional')
-                                    ->options([
-                                        'pemasukan' => 'Pemasukan',
-                                        'pengeluaran' => 'Pengeluaran',
-                                    ])
-                                    ->required()
-                                    ->disabled()
-                                    ->dehydrated(),
+                                Group::make()
+                                    ->components([
+                                        Select::make('operasional')
+                                            ->label('Jenis')
+                                            ->options([
+                                                'pemasukan' => 'Pemasukan',
+                                                'pengeluaran' => 'Pengeluaran',
+                                            ])
+                                            ->required()
+                                            ->disabled()
+                                            ->dehydrated(),
 
-                                DateTimePicker::make('tanggal')
-                                    ->label('Tanggal')
-                                    ->readOnly()
-                                    ->native(false)
-                                    ->displayFormat('d/m/Y H:i')
-                                    ->default(now())
-                                    ->required(),
-
-
+                                        DateTimePicker::make('tanggal')
+                                            ->label('Waktu')
+                                            ->readOnly()
+                                            ->native(false)
+                                            ->displayFormat('d/m/Y H:i')
+                                            ->default(now())
+                                            ->required(),
+                                    ])->columns(2),
                             ]),
                     ]),
             ]);

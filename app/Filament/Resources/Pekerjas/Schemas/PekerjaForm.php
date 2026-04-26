@@ -7,6 +7,8 @@ use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 
+use App\Filament\Resources\Common\ResourceSchema;
+
 class PekerjaForm
 {
     public static function configure(Schema $schema): Schema
@@ -17,51 +19,25 @@ class PekerjaForm
                 Group::make()
                     ->columnSpan(['default' => 3, 'md' => 2])
                     ->components([
-                        Section::make('Informasi Pekerja')
-                            ->description('Detail profil data diri pekerja')
-                            ->components([
-                                TextInput::make('nama')
-                                    ->required()
-                                    ->unique(ignoreRecord: true)
-                                    ->maxLength(255)
-                                    ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
-                                    ->dehydrateStateUsing(fn($state) => strtoupper($state))
-                                    ->debounce(500),
-                                TextInput::make('alamat')
-                                    ->maxLength(255)
-                                    ->debounce(500),
-                                TextInput::make('telepon')
-                                    ->tel()
-                                    ->maxLength(255)
-                                    ->debounce(500),
-                            ]),
+                        ResourceSchema::getContactSection('Pekerja'),
                     ]),
 
                 Group::make()
                     ->columnSpan(['default' => 3, 'md' => 1])
                     ->components([
-                        Section::make('Statistik Keuangan')
-                            ->description('Ringkasan data keuangan terkait')
+                        Section::make('Info Pendapatan')
+                            ->compact()
                             ->components([
                                 TextInput::make('pendapatan')
-                                    ->label('Pendapatan')
+                                    ->label('Total Pendapatan')
                                     ->disabled()
-                                    ->prefix('Rp. ')
+                                    ->prefix('Rp')
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->default(0),
-                                TextInput::make('hutang')
-                                    ->label('Hutang Awal')
-                                    ->disabled()
-                                    ->prefix('Rp. ')
-                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0),
-                                TextInput::make('sisa_hutang')
-                                    ->label('Total Hutang (Sisa)')
-                                    ->disabled()
-                                    ->dehydrated(false)
-                                    ->prefix('Rp. ')
-                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0),
                             ]),
+                        ResourceSchema::getHutangSection(),
                     ]),
         ]);
     }
 }
+

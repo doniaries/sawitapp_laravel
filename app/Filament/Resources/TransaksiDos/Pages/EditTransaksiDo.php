@@ -21,7 +21,7 @@ class EditTransaksiDo extends EditRecord
 
         // Set info hutang terkini dari penjual
         if ($this->record->penjual_id) {
-            $data['info_hutang_terkini'] = $this->record->penjual->hutang ?? 0;
+            $data['info_hutang_terkini'] = $this->record->penjual->sisa_hutang ?? 0;
         }
 
         return $data;
@@ -85,76 +85,14 @@ class EditTransaksiDo extends EditRecord
     // Handle after record is saved
     protected function afterSave(): void
     {
-        $record = $this->record;
-        $changes = $record->getDirty();
-
-        try {
-            DB::beginTransaction();
-
-            // Jika ada perubahan pembayaran hutang
-            if (isset($changes['pembayaran_hutang'])) {
-                $oldPayment = $record->getOriginal('pembayaran_hutang');
-                $newPayment = $record->pembayaran_hutang;
-
-                if ($oldPayment != $newPayment) {
-                    // Update hutang penjual
-                    $penjual = $record->penjual;
-                    if ($penjual) {
-                        $selisihPembayaran = $newPayment - $oldPayment;
-                        if ($selisihPembayaran > 0) {
-                            $penjual->decrement('hutang', $selisihPembayaran);
-                        } else {
-                            $penjual->increment('hutang', abs($selisihPembayaran));
-                        }
-                    }
-
-                    // Notifikasi perubahan hutang
-                    Notification::make()
-                        ->title('Pembayaran Hutang Diperbarui')
-                        ->body(
-                            "DO #{$record->nomor}\n" .
-                                "Pembayaran sebelumnya: Rp " . number_format($oldPayment, 0, ',', '.') . "\n" .
-                                "Pembayaran baru: Rp " . number_format($newPayment, 0, ',', '.') . "\n" .
-                                "Sisa hutang: Rp " . number_format($record->sisa_hutang_penjual, 0, ',', '.')
-                        )
-                        ->success()
-                        ->duration(3000) // Set durasi 3 detik
-                        ->persistent(false) // Notifikasi akan otomatis hilang
-                        ->send();
-                }
-            }
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            Notification::make()
-                ->title('Error')
-                ->body('Terjadi kesalahan: ' . $e->getMessage())
-                ->danger()
-                ->duration(3000) // Set durasi 3 detik
-                ->persistent(false) // Notifikasi akan otomatis hilang
-                ->send();
-
-            throw $e;
-        }
+        // Logika pengkinian hutang dan jurnal sudah ditangani oleh TransaksiDoObserver
     }
 
     // Configure header actions
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
-                ->before(function () {
-                    // Validasi sebelum hapus
-                    if ($this->record->pembayaran_hutang > 0) {
-                        $penjual = $this->record->penjual;
-                        if ($penjual) {
-                            // Kembalikan hutang
-                            $penjual->increment('hutang', $this->record->pembayaran_hutang);
-                        }
-                    }
-                }),
+            Actions\DeleteAction::make(),
         ];
     }
 

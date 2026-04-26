@@ -40,13 +40,20 @@ class TransaksiDoObserver
     {
         try {
             DB::beginTransaction();
+            
+            // Reversal PembayaranHutang sebelumnya jika ada perubahan nominal
             $oldPembayaranHutang = $transaksiDo->getOriginal('pembayaran_hutang', 0);
-            if ($oldPembayaranHutang > 0) {
-                $transaksiDo->penjual?->increment('hutang', $oldPembayaranHutang);
+            if ($oldPembayaranHutang != $transaksiDo->pembayaran_hutang) {
+                \App\Models\PembayaranHutang::where([
+                    'referensi_id' => $transaksiDo->id,
+                    'referensi_type' => get_class($transaksiDo)
+                ])->forceDelete();
+
+                if ($transaksiDo->pembayaran_hutang > 0) {
+                    $this->handleHutangPenjual($transaksiDo);
+                }
             }
-            if ($transaksiDo->pembayaran_hutang > 0) {
-                $this->handleHutangPenjual($transaksiDo);
-            }
+
             if ($transaksiDo->cara_bayar === 'tunai') {
                 $this->validateCompanyBalance($transaksiDo);
             }
@@ -66,12 +73,21 @@ class TransaksiDoObserver
     {
         try {
             DB::beginTransaction();
-            DebtService::increaseDebt(
+            
+            // Hapus record pembayaran hutang yang terkait
+            \App\Models\PembayaranHutang::where([
+                'referensi_id' => $transaksiDo->id,
+                'referensi_type' => get_class($transaksiDo)
+            ])->delete();
+
+            // Ledger mutation for cancellation
+            DebtService::recordPayment(
                 $transaksiDo->penjual, 
-                $transaksiDo->pembayaran_hutang, 
+                -$transaksiDo->pembayaran_hutang, // Negative nominal for reversal in ledger
                 $transaksiDo, 
                 "Pembatalan transaksi DO #{$transaksiDo->nomor}"
             );
+
             \App\Jobs\ProcessDoJournals::dispatch($transaksiDo);
             DB::commit();
         } catch (\Exception $e) {
@@ -95,17 +111,30 @@ class TransaksiDoObserver
         $penjual = Penjual::lockForUpdate()->find($transaksiDo->penjual_id);
         if (!$penjual) throw new \Exception('Data penjual tidak ditemukan');
 
-        if ($transaksiDo->pembayaran_hutang > $penjual->hutang) {
-            throw new \Exception("Pembayaran hutang melebihi sisa hutang.");
+        if ($transaksiDo->pembayaran_hutang > $penjual->sisa_hutang) {
+            throw new \Exception("Pembayaran hutang Rp " . number_format($transaksiDo->pembayaran_hutang, 0, ',', '.') . " melebihi sisa hutang Rp " . number_format($penjual->sisa_hutang, 0, ',', '.'));
         }
 
+        // 1. Create PembayaranHutang record for the trait calculation
+        \App\Models\PembayaranHutang::create([
+            'tanggal' => $transaksiDo->tanggal,
+            'nominal' => $transaksiDo->pembayaran_hutang,
+            'tipe_nama' => 'penjual',
+            'penjual_id' => $transaksiDo->penjual_id,
+            'keterangan' => "Potong DO #{$transaksiDo->nomor}",
+            'perusahaan_id' => $transaksiDo->perusahaan_id,
+            'referensi_id' => $transaksiDo->id,
+            'referensi_type' => get_class($transaksiDo),
+        ]);
+
+        // 2. Record mutation in ledger (no decrement on model anymore)
         DebtService::recordPayment(
             $penjual, 
             $transaksiDo->pembayaran_hutang, 
             $transaksiDo, 
             "Pembayaran hutang via DO #{$transaksiDo->nomor}"
         );
-        $transaksiDo->sisa_hutang_penjual = $penjual->fresh()->hutang;
+        $transaksiDo->sisa_hutang_penjual = $penjual->fresh()->sisa_hutang;
     }
 
     protected function validateCompanyBalance(TransaksiDo $transaksiDo)
@@ -122,7 +151,7 @@ class TransaksiDoObserver
         if ($nominalDibutuhkan > 0) {
             $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
             if ($perusahaan->saldo < $nominalDibutuhkan) {
-                throw new \Exception("Saldo tidak mencukupi untuk porsi tunai.");
+                throw new \Exception("Saldo tidak mencukupi untuk bayar tunai.");
             }
         }
     }

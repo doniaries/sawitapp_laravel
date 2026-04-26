@@ -38,10 +38,13 @@ class PekerjaTable
                     ->prefix('Rp ')
                     ->sortable(),
                 TextColumn::make('sisa_hutang')
-                    ->label('Total hutang')
+                    ->label('Sisa Hutang')
                     ->numeric(0, ',', '.')
                     ->prefix('Rp ')
-                    ->sortable(),
+                    ->alignment('right')
+                    ->sortable()
+                    ->color(fn($state) => $state > 0 ? 'danger' : 'success')
+                    ->weight('bold'),
 
                 TextColumn::make('created_at')
                     ->dateTime()

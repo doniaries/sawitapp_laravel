@@ -23,6 +23,8 @@ class PembayaranHutang extends Model
         'operasional_id',
         'keterangan',
         'perusahaan_id',
+        'referensi_id',
+        'referensi_type',
     ];
 
     protected $casts = [

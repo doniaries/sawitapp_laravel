@@ -40,7 +40,7 @@ class PenjualTable
                     ->searchable(),
 
                 TextColumn::make('sisa_hutang')
-                    ->label('Total Hutang')
+                    ->label('Sisa Hutang')
                     ->numeric(0, ',', '.')
                     ->prefix('Rp ')
                     ->alignment('right')
@@ -54,7 +54,9 @@ class PenjualTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->filters([
+                \Filament\Tables\Filters\TrashedFilter::make(),
+            ])
             ->headerActions([
                 CreateAction::make()
                     ->icon('heroicon-o-plus')

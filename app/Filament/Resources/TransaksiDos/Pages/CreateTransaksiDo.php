@@ -49,14 +49,15 @@ class CreateTransaksiDo extends CreateRecord
             if ($data['penjual_id']) {
                 $penjual = Penjual::find($data['penjual_id']);
                 if ($penjual) {
-                    // Pastikan hutang_awal sesuai dengan hutang penjual saat ini
-                    $data['hutang_awal'] = $penjual->hutang;
+                    // Pastikan hutang_awal sesuai dengan sisa hutang penjual saat ini
+                    $data['hutang_awal'] = (float) $penjual->sisa_hutang;
 
                     // Validasi pembayaran hutang
-                    if (($data['pembayaran_hutang'] ?? 0) > $penjual->hutang) {
+                    $sisaHutang = (float) $penjual->sisa_hutang;
+                    if (($data['pembayaran_hutang'] ?? 0) > $sisaHutang) {
                         throw new \Exception(
                             "Pembayaran hutang melebihi hutang yang ada\n" .
-                                "Hutang saat ini: Rp " . number_format($penjual->hutang, 0, ',', '.') . "\n" .
+                                "Hutang saat ini: Rp " . number_format($sisaHutang, 0, ',', '.') . "\n" .
                                 "Pembayaran: Rp " . number_format($data['pembayaran_hutang'], 0, ',', '.')
                         );
                     }

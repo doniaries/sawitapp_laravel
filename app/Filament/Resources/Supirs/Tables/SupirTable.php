@@ -41,12 +41,13 @@ class SupirTable
                     ->searchable(),
 
                 TextColumn::make('sisa_hutang')
-                    ->label('Total Hutang')
+                    ->label('Sisa Hutang')
                     ->numeric(0, ',', '.')
                     ->prefix('Rp ')
-                    ->alignRight()
+                    ->alignment('right')
                     ->sortable()
-                    ->color(fn($state) => $state > 0 ? 'danger' : 'success'),
+                    ->color(fn($state) => $state > 0 ? 'danger' : 'success')
+                    ->weight('bold'),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([

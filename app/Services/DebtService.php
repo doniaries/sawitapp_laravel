@@ -30,14 +30,13 @@ class DebtService
     private static function createMutation(Model $pihak, string $tipe, float $nominal, ?Model $referensi, ?string $keterangan): MutasiHutang
     {
         return DB::transaction(function () use ($pihak, $tipe, $nominal, $referensi, $keterangan) {
-            $currentHutang = $pihak->hutang ?? 0;
+            $currentHutangTotal = (float) ($pihak->hutang ?? 0);
             
             if ($tipe === 'HUTANG_MASUK') {
-                $saldoAkhir = $currentHutang + $nominal;
                 $pihak->increment('hutang', $nominal);
             } else {
-                $saldoAkhir = max(0, $currentHutang - $nominal);
-                $pihak->decrement('hutang', $nominal);
+                // Jangan decrement 'hutang' di database karena 'hutang' adalah Total Akumulasi.
+                // Sisa hutang berkurang via record PembayaranHutang.
             }
 
             return MutasiHutang::create([
@@ -47,7 +46,7 @@ class DebtService
                 'tanggal' => now(),
                 'tipe' => $tipe,
                 'nominal' => $nominal,
-                'saldo_akhir' => $saldoAkhir,
+                'saldo_akhir' => $pihak->fresh()->sisa_hutang,
                 'referensi_id' => $referensi?->id,
                 'referensi_type' => $referensi ? get_class($referensi) : null,
                 'keterangan' => $keterangan,
