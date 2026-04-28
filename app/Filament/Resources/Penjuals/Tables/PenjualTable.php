@@ -6,6 +6,7 @@ use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 
@@ -127,29 +128,43 @@ class PenjualTable
                     }),
                 EditAction::make()->label('Edit'),
                 ViewAction::make()->label('Lihat Detail'),
+                DeleteAction::make()
+                    ->label('Hapus')
+                    ->before(function (\Filament\Actions\DeleteAction $action, $record) {
+                        if ($record->sisa_hutang > 0 && !auth()->user()->hasRole('super_admin')) {
+                            Notification::make()
+                                ->title('Gagal menghapus')
+                                ->body("Penjual masih memiliki hutang. Hanya Super Admin yang dapat menghapus data ini.")
+                                ->danger()
+                                ->send();
+                            
+                            $action->halt();
+                        }
+                    }),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
-                            $records->each(function ($record) {
-                                if ($record->sisa_hutang > 0) {
+                            $isSuperAdmin = auth()->user()->hasRole('super_admin');
+                            $records->each(function ($record) use ($isSuperAdmin) {
+                                if ($record->sisa_hutang > 0 && !$isSuperAdmin) {
                                     Notification::make()
                                         ->title('Gagal menghapus')
-                                        ->body("Penjual {$record->nama} masih memiliki hutang. Tidak dapat dihapus.")
+                                        ->body("Penjual {$record->nama} masih memiliki hutang. Hanya Super Admin yang dapat menghapus.")
                                         ->danger()
                                         ->send();
                                     return;
                                 }
                                 $record->delete();
                             });
-                            Notification::make()->title('Data berhasil dihapus')->success()->send();
+                            Notification::make()->title('Data berhasil diproses')->success()->send();
                         })
                         ->requiresConfirmation(),
                 ]),
             ])
             ->striped()
             ->paginated([10, 25, 50, 100])
-            ->poll('30s');
+            ->poll(null);
     }
 }

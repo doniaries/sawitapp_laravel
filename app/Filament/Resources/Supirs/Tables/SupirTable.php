@@ -124,7 +124,7 @@ class SupirTable
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->requiresConfirmation(),
@@ -135,6 +135,6 @@ class SupirTable
             ])
             ->striped()
             ->paginated([10, 25, 50, 100])
-            ->poll('30s');
+            ->poll(null);
     }
 }
