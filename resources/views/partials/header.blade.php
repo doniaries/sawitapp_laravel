@@ -15,7 +15,11 @@
             <div class="hidden md:flex items-center space-x-4">
                 @if (Route::has('login'))
                     @auth
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-6">
+                            <div class="flex flex-col items-end mr-2">
+                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Selamat datang,</span>
+                                <span class="text-sm font-bold text-slate-800 dark:text-white">{{ auth()->user()->name }}</span>
+                            </div>
                             <a href="{{ url('/admin') }}" class="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors">Dashboard</a>
                             
                             <form method="POST" action="{{ route('logout') }}" class="inline">
@@ -56,6 +60,10 @@
          class="md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
         <div class="px-4 pt-2 pb-6 space-y-4">
             @auth
+                <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl mb-2">
+                    <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Login sebagai:</p>
+                    <p class="text-sm font-bold text-slate-900 dark:text-white">{{ auth()->user()->name }}</p>
+                </div>
                 <a href="{{ url('/admin') }}" class="block px-4 py-3 text-base font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Dashboard Admin</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

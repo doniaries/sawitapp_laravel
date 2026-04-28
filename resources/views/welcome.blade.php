@@ -78,6 +78,25 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
+            <!-- Main Action Button -->
+            <div class="flex justify-center mb-16">
+                @auth
+                    <a href="{{ url('/admin') }}" class="group relative px-10 py-5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-[2rem] font-extrabold text-lg shadow-2xl shadow-emerald-500/40 transition-all duration-500 hover:scale-105 hover:-translate-y-1">
+                        <div class="flex items-center">
+                            <span>Lanjutkan ke Dashboard Admin</span>
+                            <svg class="w-6 h-6 ml-4 group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                        </div>
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" class="group relative px-10 py-5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-[2rem] font-extrabold text-lg shadow-2xl shadow-blue-500/40 transition-all duration-500 hover:scale-105 hover:-translate-y-1">
+                        <div class="flex items-center">
+                            <span>Masuk ke Sistem Manajemen Operasional</span>
+                            <svg class="w-6 h-6 ml-4 group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                        </div>
+                    </a>
+                @endauth
+            </div>
+
             <!-- Company Cards Section -->
             @if($perusahaans->count() > 0)
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -96,7 +115,7 @@
                                 </div>
                             </div>
                             
-                            <div class="space-y-4 mb-8">
+                            <div class="space-y-4">
                                 <div class="flex items-start text-slate-600 dark:text-slate-400">
                                     <svg class="w-6 h-6 text-blue-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                     <span class="text-sm leading-relaxed line-clamp-2">{{ $perusahaan->alamat ?? 'Alamat tidak tersedia' }}</span>
@@ -105,13 +124,6 @@
                                     <svg class="w-6 h-6 text-blue-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                                     <span class="text-sm font-medium">{{ $perusahaan->telepon ?? '-' }}</span>
                                 </div>
-                            </div>
-
-                            <div class="pt-6 border-t border-slate-100 dark:border-slate-800">
-                                <a href="{{ route('login') }}" class="w-full flex items-center justify-between px-6 py-4 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-2xl font-bold transition-all duration-300 group/btn">
-                                    <span>Akses Sistem</span>
-                                    <svg class="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                                </a>
                             </div>
                         </div>
                     @endforeach
