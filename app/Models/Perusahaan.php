@@ -26,6 +26,7 @@ class Perusahaan extends Model implements HasMedia
 
     protected $fillable = [
         'name',
+        'type',
         'alamat',
         'email',
         'telepon',

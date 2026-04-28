@@ -150,9 +150,13 @@ class TransaksiDoObserver
 
         if ($nominalDibutuhkan > 0) {
             $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
+            // Saldo diperbolehkan minus, jadi kita tidak melempar Exception lagi
+            // Jika ingin mengaktifkan blokir saldo kembali, uncomment baris dibawah:
+            /*
             if ($perusahaan->saldo < $nominalDibutuhkan) {
                 throw new \Exception("Saldo tidak mencukupi untuk bayar tunai.");
             }
+            */
         }
     }
 
@@ -173,6 +177,8 @@ class TransaksiDoObserver
             if ($transaksiDo->cara_bayar === 'tunai') {
                 $perusahaan = Perusahaan::lockForUpdate()->first();
                 $totalPemasukan = ($transaksiDo->upah_bongkar ?? 0) + ($transaksiDo->biaya_lain ?? 0) + ($transaksiDo->pembayaran_hutang ?? 0);
+                
+                // Saldo tetap diupdate saat restore
                 if ($totalPemasukan > 0) $perusahaan->increment('saldo', $totalPemasukan);
                 if ($transaksiDo->sisa_bayar > 0) $perusahaan->decrement('saldo', $transaksiDo->sisa_bayar);
             }

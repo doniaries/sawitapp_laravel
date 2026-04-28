@@ -28,6 +28,14 @@ class PerusahaanForm
                                     ->required()
                                     ->maxLength(255)
                                     ->debounce(500),
+                                \Filament\Forms\Components\Select::make('type')
+                                    ->label('Tipe Perusahaan')
+                                    ->options([
+                                        'umum' => 'Umum',
+                                        'khusus' => 'Khusus',
+                                    ])
+                                    ->required()
+                                    ->default('umum'),
                                 TextInput::make('pimpinan')
                                     ->maxLength(255)
                                     ->debounce(500),
