@@ -16,9 +16,21 @@ use Carbon\Carbon;
 // });
 
 //production
-Route::redirect('/', '/admin');
+Route::get('/', function () {
+    $perusahaans = \App\Models\Perusahaan::where('is_active', true)
+        ->select(['id', 'name', 'alamat', 'logo', 'telepon', 'slug'])
+        ->get();
+    return view('welcome', compact('perusahaans'));
+});
 
 Route::redirect('login', '/admin/login')->name('login');
+
+Route::post('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/');
+})->name('logout');
 
 Route::middleware(['auth', 'check.perusahaan'])->group(function () {
     // routes yang membutuhkan data perusahaan
