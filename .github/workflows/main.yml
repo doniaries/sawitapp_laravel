@@ -1,38 +1,80 @@
-name: Deploy Website
-
+name: 🚀 Deploy Website
 on:
     push:
-        branches:
-            - main
+        branches: [main]
+        paths:
+            - 'app/**'
+            - 'resources/**'
+            - 'routes/**'
+            - 'public/**'
+            - 'config/**'
+            - 'database/**'
+            - 'composer.json'
+            - 'composer.lock'
+            - 'package-lock.json'
+            - 'vite.config.js'
+            - '.github/workflows/main.yml'
+
+    workflow_dispatch:
+
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-    deploy:
+    web-deploy:
+        name: 🎉 Deploy
         runs-on: ubuntu-latest
-
+        timeout-minutes: 15
         steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v3
+            - name: 📂 Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-            - name: Deploy via FTP
-              uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+            - name: 🟢 Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
+
+            - name: 📦 Install dependencies
+              run: npm ci
+
+            - name: 🏗️ Build assets
+              run: npm run build
+
+            - name: 🚀 Sync via FTP
+              uses: SamKirkland/FTP-Deploy-Action@v4.3.4
               with:
                   server: ${{ secrets.FTP_SERVER }}
                   username: ${{ secrets.FTP_USERNAME }}
                   password: ${{ secrets.FTP_PASSWORD }}
-
-                  # server-dir: /
-                  state-name: .ftp-deploy-sync-state.json
-
+                  server-dir: ./
                   exclude: |
                       **/.git*
                       **/.git*/**
-                      **/node_modules/**
                       **/tests/**
-                      **/.env
-                      **/storage/**
+                      **/.env*
                       **/node_modules/**
                       **/vendor/**
                       **/storage/logs/**
                       **/storage/framework/cache/**
                       **/storage/framework/sessions/**
                       **/storage/framework/views/**
+                      **/database/*.sqlite
+                      composer.json
+                      composer.lock
+                      package.json
+                      package-lock.json
+                      vite.config.js
+                      README.md
+                      *.md
+                      .antigravity/
+                      load-test.js
+                      phpunit.xml
+                      .editorconfig
+                      .gitattributes
+                      .github/**
