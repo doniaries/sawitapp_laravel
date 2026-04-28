@@ -65,7 +65,7 @@
 </head>
 <body class="font-sans antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-x-hidden">
     
-    @include('partials.header')
+    @include('partials/header')
 
     <!-- Stars Background -->
     <div class="stars-container" id="stars-container"></div>
@@ -140,7 +140,7 @@
         </div>
     </div>
 
-    @include('partials.footer')
+    @include('partials/footer')
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

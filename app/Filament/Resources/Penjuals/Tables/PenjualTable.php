@@ -9,9 +9,11 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\Action;
+use Filament\Facades\Filament;
 
 use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\Action;
+
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -130,8 +132,8 @@ class PenjualTable
                 ViewAction::make()->label('Lihat Detail'),
                 DeleteAction::make()
                     ->label('Hapus')
-                    ->before(function (\Filament\Actions\DeleteAction $action, $record) {
-                        if ($record->sisa_hutang > 0 && !auth()->user()->hasRole('super_admin')) {
+                    ->before(function (DeleteAction $action, $record) {
+                        if ($record->sisa_hutang > 0 && !Filament::auth()->user()->hasRole('super_admin')) {
                             Notification::make()
                                 ->title('Gagal menghapus')
                                 ->body("Penjual masih memiliki hutang. Hanya Super Admin yang dapat menghapus data ini.")
@@ -142,11 +144,11 @@ class PenjualTable
                         }
                     }),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
-                            $isSuperAdmin = auth()->user()->hasRole('super_admin');
+                            $isSuperAdmin = Filament::auth()->user()->hasRole('super_admin');
                             $records->each(function ($record) use ($isSuperAdmin) {
                                 if ($record->sisa_hutang > 0 && !$isSuperAdmin) {
                                     Notification::make()
