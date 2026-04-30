@@ -9,7 +9,16 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Proteksi: Cek apakah sudah ada data transaksi
+        if (\App\Models\TransaksiDo::exists()) {
+            if (!$this->command->confirm('PERINGATAN: Sudah ada data transaksi di database. Menjalankan seeder mungkin akan menambah data master duplikat atau mengganggu integritas data. Lanjutkan?', false)) {
+                $this->command->info('Seeding dibatalkan.');
+                return;
+            }
+        }
+
         // Seed perusahaan, shield, dan super admin
+
         $this->call([
             PerusahaanSeeder::class,
             ShieldSeeder::class,
