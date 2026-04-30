@@ -81,7 +81,7 @@ class TransaksiDoForm
                                         if ($penjual) {
                                             $sisaHutang = (float) $penjual->hutang;
                                             $set('hutang_awal', $sisaHutang);
-                                            $set('pembayaran_hutang', 0);
+                                            $set('pembayaran_hutang', null);
                                             self::hitungSisaBayar($get, $set);
                                         }
                                     }
@@ -161,7 +161,7 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(0)
+                                ->default(null)
                                 ->live(onBlur: true)
                                 ->debounce(500)
                                 ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
@@ -171,7 +171,7 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(0)
+                                ->default(null)
                                 ->live(onBlur: true)
                                 ->debounce(500)
                                 ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
@@ -184,7 +184,7 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(0)
+                                ->default(null)
                                 ->live(onBlur: true)
                                 ->debounce(500)
                                 ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
@@ -275,7 +275,7 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(0)
+                                ->default(null)
                                 ->required()
                                 ->live(onBlur: true)
                                 ->debounce(500)
