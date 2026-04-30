@@ -47,7 +47,7 @@ class TransaksiDoTable
                     ->color(Color::Blue),
 
                 IconColumn::make('is_mismatch')
-                    ->label('Status')
+                    ->label('Status Data')
                     ->boolean()
                     ->trueIcon('heroicon-o-exclamation-triangle')
                     ->falseIcon('heroicon-o-check-circle')
