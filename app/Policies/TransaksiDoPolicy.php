@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\TransaksiDo;
+use App\Models\TutupHari;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TransaksiDoPolicy
@@ -29,22 +30,38 @@ class TransaksiDoPolicy
 
     public function update(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('Update:TransaksiDo');
+        if (!$authUser->can('Update:TransaksiDo')) {
+            return false;
+        }
+
+        return TutupHari::canModify($transaksiDo->tanggal, $transaksiDo->perusahaan_id, $authUser);
     }
 
     public function delete(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('Delete:TransaksiDo');
+        if (!$authUser->can('Delete:TransaksiDo')) {
+            return false;
+        }
+
+        return TutupHari::canModify($transaksiDo->tanggal, $transaksiDo->perusahaan_id, $authUser);
     }
 
     public function restore(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('Restore:TransaksiDo');
+        if (!$authUser->can('Restore:TransaksiDo')) {
+            return false;
+        }
+
+        return TutupHari::canModify($transaksiDo->tanggal, $transaksiDo->perusahaan_id, $authUser);
     }
 
     public function forceDelete(AuthUser $authUser, TransaksiDo $transaksiDo): bool
     {
-        return $authUser->can('ForceDelete:TransaksiDo');
+        if (!$authUser->can('ForceDelete:TransaksiDo')) {
+            return false;
+        }
+
+        return TutupHari::canModify($transaksiDo->tanggal, $transaksiDo->perusahaan_id, $authUser);
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool

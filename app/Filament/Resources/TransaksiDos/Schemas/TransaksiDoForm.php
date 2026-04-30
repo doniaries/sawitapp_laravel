@@ -48,7 +48,15 @@ class TransaksiDoForm
                                 ->native(false)
                                 ->displayFormat('d/m/Y H:i:s')
                                 ->default(Carbon::now())
-                                ->required(),
+                                ->required()
+                                ->rules([
+                                    fn ($get) => function (string $attribute, $value, $fail) use ($get) {
+                                        $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
+                                        if (!\App\Models\TutupHari::canModify($value, $perusahaanId)) {
+                                            $fail("Data tidak dapat ditambah/diubah karena hari tersebut sudah ditutup.");
+                                        }
+                                    },
+                                ]),
 
                             Select::make('penjual_id')
                                 ->label('Nama Penjual')

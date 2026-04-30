@@ -25,7 +25,15 @@ class TambahSaldoForm
                     ->required()
                     ->label('Tanggal Entry')
                     ->native(false)
-                    ->displayFormat('d/m/Y H:i'),
+                    ->displayFormat('d/m/Y H:i')
+                    ->rules([
+                        fn ($get) => function (string $attribute, $value, $fail) use ($get) {
+                            $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
+                            if (!\App\Models\TutupHari::canModify($value, $perusahaanId)) {
+                                $fail("Data tidak dapat ditambah/diubah karena hari tersebut sudah ditutup.");
+                            }
+                        },
+                    ]),
                 TextInput::make('nominal')
                     ->required()
                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)

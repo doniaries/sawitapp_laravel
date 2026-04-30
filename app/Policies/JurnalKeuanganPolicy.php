@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\JurnalKeuangan;
+use App\Models\TutupHari;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class JurnalKeuanganPolicy
@@ -29,22 +30,38 @@ class JurnalKeuanganPolicy
 
     public function update(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
-        return $authUser->can('Update:JurnalKeuangan');
+        if (!$authUser->can('Update:JurnalKeuangan')) {
+            return false;
+        }
+
+        return TutupHari::canModify($jurnalKeuangan->tanggal, $jurnalKeuangan->perusahaan_id, $authUser);
     }
 
     public function delete(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
-        return $authUser->can('Delete:JurnalKeuangan');
+        if (!$authUser->can('Delete:JurnalKeuangan')) {
+            return false;
+        }
+
+        return TutupHari::canModify($jurnalKeuangan->tanggal, $jurnalKeuangan->perusahaan_id, $authUser);
     }
 
     public function restore(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
-        return $authUser->can('Restore:JurnalKeuangan');
+        if (!$authUser->can('Restore:JurnalKeuangan')) {
+            return false;
+        }
+
+        return TutupHari::canModify($jurnalKeuangan->tanggal, $jurnalKeuangan->perusahaan_id, $authUser);
     }
 
     public function forceDelete(AuthUser $authUser, JurnalKeuangan $jurnalKeuangan): bool
     {
-        return $authUser->can('ForceDelete:JurnalKeuangan');
+        if (!$authUser->can('ForceDelete:JurnalKeuangan')) {
+            return false;
+        }
+
+        return TutupHari::canModify($jurnalKeuangan->tanggal, $jurnalKeuangan->perusahaan_id, $authUser);
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool

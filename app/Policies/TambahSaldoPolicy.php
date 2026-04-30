@@ -3,6 +3,8 @@
 namespace App\Policies;
 
 use App\Models\User;
+use App\Models\TambahSaldo;
+use App\Models\TutupHari;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TambahSaldoPolicy
@@ -14,7 +16,7 @@ class TambahSaldoPolicy
         return $user->can('ViewAny:TambahSaldo');
     }
 
-    public function view(User $user): bool
+    public function view(User $user, TambahSaldo $tambahSaldo): bool
     {
         return $user->can('View:TambahSaldo');
     }
@@ -24,23 +26,39 @@ class TambahSaldoPolicy
         return $user->can('Create:TambahSaldo');
     }
 
-    public function update(User $user): bool
+    public function update(User $user, TambahSaldo $tambahSaldo): bool
     {
-        return $user->can('Update:TambahSaldo');
+        if (!$user->can('Update:TambahSaldo')) {
+            return false;
+        }
+
+        return TutupHari::canModify($tambahSaldo->tanggal, $tambahSaldo->perusahaan_id, $user);
     }
 
-    public function delete(User $user): bool
+    public function delete(User $user, TambahSaldo $tambahSaldo): bool
     {
-        return $user->can('Delete:TambahSaldo');
+        if (!$user->can('Delete:TambahSaldo')) {
+            return false;
+        }
+
+        return TutupHari::canModify($tambahSaldo->tanggal, $tambahSaldo->perusahaan_id, $user);
     }
 
-    public function restore(User $user): bool
+    public function restore(User $user, TambahSaldo $tambahSaldo): bool
     {
-        return $user->can('Restore:TambahSaldo');
+        if (!$user->can('Restore:TambahSaldo')) {
+            return false;
+        }
+
+        return TutupHari::canModify($tambahSaldo->tanggal, $tambahSaldo->perusahaan_id, $user);
     }
 
-    public function forceDelete(User $user): bool
+    public function forceDelete(User $user, TambahSaldo $tambahSaldo): bool
     {
-        return $user->can('ForceDelete:TambahSaldo');
+        if (!$user->can('ForceDelete:TambahSaldo')) {
+            return false;
+        }
+
+        return TutupHari::canModify($tambahSaldo->tanggal, $tambahSaldo->perusahaan_id, $user);
     }
 }

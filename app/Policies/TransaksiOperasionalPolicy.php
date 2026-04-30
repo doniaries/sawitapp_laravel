@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\TransaksiOperasional;
+use App\Models\TutupHari;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TransaksiOperasionalPolicy
@@ -29,22 +30,38 @@ class TransaksiOperasionalPolicy
 
     public function update(AuthUser $authUser, TransaksiOperasional $operasional): bool
     {
-        return $authUser->can('Update:TransaksiOperasional');
+        if (!$authUser->can('Update:TransaksiOperasional')) {
+            return false;
+        }
+
+        return TutupHari::canModify($operasional->tanggal, $operasional->perusahaan_id, $authUser);
     }
 
     public function delete(AuthUser $authUser, TransaksiOperasional $operasional): bool
     {
-        return $authUser->can('Delete:TransaksiOperasional');
+        if (!$authUser->can('Delete:TransaksiOperasional')) {
+            return false;
+        }
+
+        return TutupHari::canModify($operasional->tanggal, $operasional->perusahaan_id, $authUser);
     }
 
     public function restore(AuthUser $authUser, TransaksiOperasional $operasional): bool
     {
-        return $authUser->can('Restore:TransaksiOperasional');
+        if (!$authUser->can('Restore:TransaksiOperasional')) {
+            return false;
+        }
+
+        return TutupHari::canModify($operasional->tanggal, $operasional->perusahaan_id, $authUser);
     }
 
     public function forceDelete(AuthUser $authUser, TransaksiOperasional $operasional): bool
     {
-        return $authUser->can('ForceDelete:TransaksiOperasional');
+        if (!$authUser->can('ForceDelete:TransaksiOperasional')) {
+            return false;
+        }
+
+        return TutupHari::canModify($operasional->tanggal, $operasional->perusahaan_id, $authUser);
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
