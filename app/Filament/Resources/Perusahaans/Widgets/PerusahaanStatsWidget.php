@@ -70,10 +70,10 @@ class PerusahaanStatsWidget extends BaseWidget
                         ->descriptionIcon('heroicon-m-banknotes')
                         ->color($this->getSaldoColor($saldoAkhir)),
 
-                    Stat::make($perusahaan->name, $perusahaan->pimpinan ?? 'Pimpinan belum diatur')
+                    Stat::make('Cabang / Perusahaan', new \Illuminate\Support\HtmlString('<div class="text-xl font-extrabold tracking-tight uppercase">' . $perusahaan->name . '</div>'))
                         ->description("Kasir: {$kasirNames}")
                         ->descriptionIcon('heroicon-m-user-group')
-                        ->color('info'),
+                        ->color('primary'),
 
                     Stat::make(
                         'Total Pemasukan',
