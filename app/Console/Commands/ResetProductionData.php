@@ -47,6 +47,12 @@ class ResetProductionData extends Command
             'mutasi_hutang',
             'notifications',
             'failed_jobs',
+            // Master Data (Test Data)
+            'penjual',
+            'supir',
+            'pekerja',
+            'pabrik',
+            'kendaraan',
         ];
 
         foreach ($tables as $table) {
