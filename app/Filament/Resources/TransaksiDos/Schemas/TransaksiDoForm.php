@@ -61,6 +61,20 @@ class TransaksiDoForm
                                 ->preload()
                                 ->live()
                                 ->required()
+                                ->createOptionForm([
+                                    TextInput::make('nama')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
+                                        ->dehydrateStateUsing(fn($state) => strtoupper($state)),
+                                    TextInput::make('alamat')
+                                        ->maxLength(255)
+                                        ->debounce(500),
+                                    TextInput::make('telepon')
+                                        ->tel()
+                                        ->maxLength(255)
+                                        ->debounce(500),
+                                ])
                                 ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                     if ($state) {
                                         $penjual = \App\Models\Penjual::find($state);
@@ -85,7 +99,21 @@ class TransaksiDoForm
                                 )
                                 ->searchable()
                                 ->preload()
-                                ->required(),
+                                ->required()
+                                ->createOptionForm([
+                                    TextInput::make('nama')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
+                                        ->dehydrateStateUsing(fn($state) => strtoupper($state)),
+                                    TextInput::make('alamat')
+                                        ->maxLength(255)
+                                        ->debounce(500),
+                                    TextInput::make('telepon')
+                                        ->tel()
+                                        ->maxLength(255)
+                                        ->debounce(500),
+                                ]),
 
                             TextInput::make('no_polisi')
                                 ->label('Nomor Polisi')
@@ -119,6 +147,8 @@ class TransaksiDoForm
                                 ->prefix('Rp')
                                 ->disabled()
                                 ->dehydrated()
+                                ->formatStateUsing(fn($state) => number_format((float) ($state ?? 0), 0, ',', '.'))
+                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->extraInputAttributes(['class' => 'bg-gray-50 font-bold text-xl']),
                         ])->columns(3),
 
@@ -134,7 +164,7 @@ class TransaksiDoForm
                                 ->debounce(500)
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
                             TextInput::make('biaya_lain')
-                                ->label('Biaya Lain')
+                                ->label('Biaya Lain/Pengambilan')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
@@ -214,6 +244,8 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->readOnly()
                                 ->dehydrated()
+                                ->formatStateUsing(fn($state) => number_format((float) ($state ?? 0), 0, ',', '.'))
+                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->extraAttributes([
                                     'class' => 'bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-2',
                                     'style' => 'width: 100%;'
