@@ -18,7 +18,7 @@ class ProsesJurnalDo implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $transaksiDo;
+    protected TransaksiDo $transaksiDo;
 
     /**
      * Create a new job instance.
@@ -37,19 +37,19 @@ class ProsesJurnalDo implements ShouldQueue
             DB::beginTransaction();
 
             // 1. REVERSE balance and DELETE existing journals for this DO
-            $existingJournals = JurnalKeuangan::where([
-                'sumber_transaksi' => 'DO',
-                'referensi_id' => $this->transaksiDo->id
-            ])->get();
+            $existingJournals = JurnalKeuangan::where('sumber_transaksi', '=', 'DO', 'and')
+                ->where('referensi_id', '=', $this->transaksiDo->id, 'and')
+                ->get();
 
             foreach ($existingJournals as $journal) {
                 if ($journal->mempengaruhi_kas) {
-                    $perusahaan = Perusahaan::find($journal->perusahaan_id);
+                    /** @var Perusahaan $perusahaan */
+                    $perusahaan = Perusahaan::query()->find($journal->perusahaan_id);
                     if ($perusahaan) {
                         if ($journal->jenis_transaksi === 'Pemasukan') {
-                            $perusahaan->decrement('saldo', $journal->nominal);
+                            $perusahaan->decrement('saldo', $journal->nominal, []);
                         } else {
-                            $perusahaan->increment('saldo', $journal->nominal);
+                            $perusahaan->increment('saldo', $journal->nominal, []);
                         }
                     }
                 }

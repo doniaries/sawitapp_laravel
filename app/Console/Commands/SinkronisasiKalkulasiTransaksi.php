@@ -46,7 +46,7 @@ class SinkronisasiKalkulasiTransaksi extends Command
         $this->info('Sinkronisasi selesai!');
     }
 
-    protected function syncTransaksiDo($dryRun)
+    protected function syncTransaksiDo(bool $dryRun)
     {
         $records = TransaksiDo::all();
         $this->info("Memproses " . $records->count() . " data Transaksi DO...");
@@ -80,7 +80,7 @@ class SinkronisasiKalkulasiTransaksi extends Command
         $this->info("Transaksi DO diperbarui: {$updatedCount}");
     }
 
-    protected function syncLansir($dryRun)
+    protected function syncLansir(bool $dryRun)
     {
         $records = Lansir::all();
         $this->info("Memproses " . $records->count() . " data Lansir...");

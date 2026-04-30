@@ -18,7 +18,7 @@ class ProsesJurnalOperasional implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $operasional;
+    protected TransaksiOperasional $operasional;
 
     /**
      * Create a new job instance.
@@ -37,19 +37,19 @@ class ProsesJurnalOperasional implements ShouldQueue
             DB::beginTransaction();
 
             // 1. REVERSE balance and DELETE existing journals
-            $existingJournals = JurnalKeuangan::where([
-                'kategori' => 'Operasional',
-                'referensi_id' => $this->operasional->id
-            ])->get();
+            $existingJournals = JurnalKeuangan::where('kategori', '=', 'Operasional', 'and')
+                ->where('referensi_id', '=', $this->operasional->id, 'and')
+                ->get();
 
             foreach ($existingJournals as $journal) {
                 if ($journal->mempengaruhi_kas) {
-                    $perusahaan = Perusahaan::find($journal->perusahaan_id);
+                    /** @var Perusahaan $perusahaan */
+                    $perusahaan = Perusahaan::query()->find($journal->perusahaan_id);
                     if ($perusahaan) {
                         if ($journal->jenis_transaksi === 'Pemasukan') {
-                            $perusahaan->decrement('saldo', $journal->nominal);
+                            $perusahaan->decrement('saldo', $journal->nominal, []);
                         } else {
-                            $perusahaan->increment('saldo', $journal->nominal);
+                            $perusahaan->increment('saldo', $journal->nominal, []);
                         }
                     }
                 }

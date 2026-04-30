@@ -48,8 +48,8 @@ class TransaksiDoObserver
             $oldPembayaranHutang = $transaksiDo->getOriginal('pembayaran_hutang', 0);
             if ($oldPembayaranHutang != $transaksiDo->pembayaran_hutang) {
                 \App\Models\PembayaranHutang::query()
-                    ->where('referensi_id', $transaksiDo->id)
-                    ->where('referensi_type', get_class($transaksiDo))
+                    ->where('referensi_id', '=', $transaksiDo->id, 'and')
+                    ->where('referensi_type', '=', get_class($transaksiDo), 'and')
                     ->forceDelete();
 
                 if ($transaksiDo->pembayaran_hutang > 0) {
@@ -79,8 +79,8 @@ class TransaksiDoObserver
             
             // Hapus record pembayaran hutang yang terkait
             \App\Models\PembayaranHutang::query()
-                ->where('referensi_id', $transaksiDo->id)
-                ->where('referensi_type', get_class($transaksiDo))
+                ->where('referensi_id', '=', $transaksiDo->id, 'and')
+                ->where('referensi_type', '=', get_class($transaksiDo), 'and')
                 ->delete();
 
             // Ledger mutation for cancellation
@@ -152,7 +152,7 @@ class TransaksiDoObserver
         };
 
         if ($nominalDibutuhkan > 0) {
-            $user = auth()->user();
+            $user = \Illuminate\Support\Facades\Auth::user();
             // Jika user adalah Admin/SuperAdmin, abaikan validasi saldo (boleh minus)
             if ($user && method_exists($user, 'isAdminOrSuperAdmin') && $user->isAdminOrSuperAdmin()) {
                 return;
@@ -206,8 +206,8 @@ class TransaksiDoObserver
     public function forceDeleted(TransaksiDo $transaksiDo)
     {
         \App\Models\JurnalKeuangan::query()
-            ->where('sumber_transaksi', 'DO')
-            ->where('referensi_id', $transaksiDo->id)
+            ->where('sumber_transaksi', '=', 'DO', 'and')
+            ->where('referensi_id', '=', $transaksiDo->id, 'and')
             ->forceDelete();
     }
 }
