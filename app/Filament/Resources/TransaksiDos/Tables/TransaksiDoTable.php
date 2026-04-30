@@ -219,9 +219,6 @@ class TransaksiDoTable
                     }),
             ], layout: FiltersLayout::Modal)
             ->headerActions([
-                CreateAction::make()
-                    ->icon('heroicon-o-plus')
-                    ->label('Tambah Transaksi'),
                 TablesAction::make('filter_periode')
                     ->label('Filter Periode')
                     ->icon('heroicon-o-calendar')
@@ -244,6 +241,10 @@ class TransaksiDoTable
                             'sampai_tanggal' => $data['sampai_tanggal'],
                         ];
                     }),
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah Transaksi'),
+                
             ])
             ->recordActions([
                 TablesAction::make('cetak_do')
