@@ -77,7 +77,7 @@ class TransaksiDoForm
                                 ])
                                 ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                     if ($state) {
-                                        $penjual = \App\Models\Penjual::find($state);
+                                        $penjual = \App\Models\Penjual::query()->find($state);
                                         if ($penjual) {
                                             $sisaHutang = (float) $penjual->hutang;
                                             $set('hutang_awal', $sisaHutang);
@@ -303,7 +303,7 @@ class TransaksiDoForm
             ]);
     }
 
-    public static function hitungTotal($tonase, Get $get, Set $set): void
+    public static function hitungTotal(mixed $tonase, Get $get, Set $set): void
     {
         $tonaseValue = self::formatCurrency($tonase);
         $hargaSatuan = self::formatCurrency($get('harga_satuan'));
@@ -322,7 +322,7 @@ class TransaksiDoForm
         $set('sisa_bayar', $sisaBayar);
     }
 
-    private static function formatCurrency($number): int
+    private static function formatCurrency(mixed $number): int
     {
         if (empty($number)) return 0;
         if (is_string($number)) {

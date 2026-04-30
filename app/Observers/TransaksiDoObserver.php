@@ -44,10 +44,10 @@ class TransaksiDoObserver
             // Reversal PembayaranHutang sebelumnya jika ada perubahan nominal
             $oldPembayaranHutang = $transaksiDo->getOriginal('pembayaran_hutang', 0);
             if ($oldPembayaranHutang != $transaksiDo->pembayaran_hutang) {
-                \App\Models\PembayaranHutang::where([
-                    'referensi_id' => $transaksiDo->id,
-                    'referensi_type' => get_class($transaksiDo)
-                ])->forceDelete();
+                \App\Models\PembayaranHutang::query()
+                    ->where('referensi_id', $transaksiDo->id)
+                    ->where('referensi_type', get_class($transaksiDo))
+                    ->forceDelete();
 
                 if ($transaksiDo->pembayaran_hutang > 0) {
                     $this->handleHutangPenjual($transaksiDo);
@@ -75,10 +75,10 @@ class TransaksiDoObserver
             DB::beginTransaction();
             
             // Hapus record pembayaran hutang yang terkait
-            \App\Models\PembayaranHutang::where([
-                'referensi_id' => $transaksiDo->id,
-                'referensi_type' => get_class($transaksiDo)
-            ])->delete();
+            \App\Models\PembayaranHutang::query()
+                ->where('referensi_id', $transaksiDo->id)
+                ->where('referensi_type', get_class($transaksiDo))
+                ->delete();
 
             // Ledger mutation for cancellation
             DebtService::recordPayment(
@@ -200,9 +200,9 @@ class TransaksiDoObserver
 
     public function forceDeleted(TransaksiDo $transaksiDo)
     {
-        \App\Models\JurnalKeuangan::where([
-            'sumber_transaksi' => 'DO',
-            'referensi_id' => $transaksiDo->id
-        ])->forceDelete();
+        \App\Models\JurnalKeuangan::query()
+            ->where('sumber_transaksi', 'DO')
+            ->where('referensi_id', $transaksiDo->id)
+            ->forceDelete();
     }
 }
