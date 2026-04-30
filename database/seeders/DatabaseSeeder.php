@@ -25,10 +25,17 @@ class DatabaseSeeder extends Seeder
             PenjualSeeder::class,
             SupirSeeder::class,
             PekerjaSeeder::class,
-//            OperasionalSeeder::class,
-//            SimulasiDataSeeder::class,
-            BenchmarkTransactionSeeder::class,
         ]);
+
+        // Hanya jalankan seeder transaksi jika TIDAK di produksi
+        if (!app()->environment('production')) {
+            $this->call([
+                BenchmarkTransactionSeeder::class,
+                // OperasionalSeeder::class,
+                // SimulasiDataSeeder::class,
+            ]);
+        }
+
         $this->command->info("Seeders berhasil dijalankan");
     }
 }
