@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\{TransaksiOperasional, TransaksiDo};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Builder;
 use App\Traits\{JurnalKeuanganTrait, DokumentasiTrait, BelongsToTenant};
 
 class JurnalKeuangan extends Model
@@ -70,7 +70,7 @@ class JurnalKeuangan extends Model
     public function transaksiDo()
     {
         return $this->belongsTo(TransaksiDo::class, 'referensi_id')
-            ->where('sumber_transaksi', 'DO');
+            ->where('sumber_transaksi', '=', 'DO', 'and');
     }
     public function supir(): EloquentBelongsTo
     {
@@ -108,29 +108,29 @@ class JurnalKeuangan extends Model
     }
 
     // Scopes
-    public function scopePemasukan($query)
+    public function scopePemasukan(Builder $query): Builder
     {
-        return $query->where('jenis', 'masuk');
+        return $query->where('jenis_transaksi', '=', 'Pemasukan', 'and');
     }
 
-    public function scopePengeluaran($query)
+    public function scopePengeluaran(Builder $query): Builder
     {
-        return $query->where('jenis', 'keluar');
+        return $query->where('jenis_transaksi', '=', 'Pengeluaran', 'and');
     }
 
-    public function scopeFromDO($query)
+    public function scopeFromDO(Builder $query): Builder
     {
-        return $query->where('tipe_transaksi', 'transaksi_do');
+        return $query->where('sumber_transaksi', '=', 'DO', 'and');
     }
 
-    public function scopeFromOperasional($query)
+    public function scopeFromOperasional(Builder $query): Builder
     {
-        return $query->where('sumber_transaksi', 'Operasional');
+        return $query->where('sumber_transaksi', '=', 'Operasional', 'and');
     }
 
-    public function scopeAffectsCash($query)
+    public function scopeAffectsCash(Builder $query): Builder
     {
-        return $query->where('mempengaruhi_kas', true);
+        return $query->where('mempengaruhi_kas', '=', true, 'and');
     }
 
     // Di dalam model JurnalKeuangan
@@ -146,7 +146,7 @@ class JurnalKeuangan extends Model
     }
 
     // Scope untuk filtering by date range
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange(Builder $query, ?string $startDate, ?string $endDate): Builder
     {
         return $query->whereBetween('tanggal', [$startDate, $endDate]);
     }

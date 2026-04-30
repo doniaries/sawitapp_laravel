@@ -86,14 +86,14 @@ class TransaksiOperasional extends Model
     }
 
     // Scopes
-    public function scopeManualEntry($query): Builder // [EDIT] Tambah return type
+    public function scopeManualEntry(Builder $query): Builder // [EDIT] Tambah return type
     {
-        return $query->where('is_from_transaksi', false);
+        return $query->where('is_from_transaksi', '=', false, 'and');
     }
 
-    public function scopeFromTransaksi($query): Builder // [EDIT] Tambah return type
+    public function scopeFromTransaksi(Builder $query): Builder // [EDIT] Tambah return type
     {
-        return $query->where('is_from_transaksi', true);
+        return $query->where('is_from_transaksi', '=', true, 'and');
     }
 
 

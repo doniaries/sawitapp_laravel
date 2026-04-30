@@ -5,6 +5,7 @@ namespace App\Models;
 
 use App\Models\Penjual;
 use App\Models\Supir;
+use App\Models\Perusahaan;
 use App\Traits\DokumentasiTrait;
 use App\Traits\GenerateMonthlyNumber;
 use App\Traits\JurnalKeuanganTrait;
@@ -73,13 +74,6 @@ class TransaksiDo extends Model
         // 'catatan',
     ];
 
-    // MASIH DIPAKAI - Tidak berubah
-    protected $dates = [
-        'tanggal',
-        'created_at',
-        'updated_at',
-        'deleted_at'
-    ];
 
     // MASIH DIPAKAI - Update casting untuk kolom baru
     protected $casts = [
@@ -151,7 +145,12 @@ class TransaksiDo extends Model
     public function generatePdf()
     {
         try {
-            $perusahaan = Perusahaan::first();
+            $perusahaan = \App\Models\Perusahaan::query()->first(['*']);
+            
+            if (!$perusahaan) {
+                throw new \Exception('Data Perusahaan belum dikonfigurasi. Silakan isi data perusahaan terlebih dahulu.');
+            }
+
             $qrcode = $this->generateQrCode();
 
             $pdf = PDF::loadView('pdf.transaksi-do', [
@@ -196,7 +195,7 @@ class TransaksiDo extends Model
         return $this->sub_total;
     }
 
-    public function scopeWithTotals($query)
+    public function scopeWithTotals(Builder $query): Builder
     {
         return $query->select('*')
             ->addSelect(DB::raw('sub_total as total_amount'));  // Use sub_total consistently
@@ -219,18 +218,18 @@ class TransaksiDo extends Model
         );
     }
 
-    public function scopeCurrentMonth($query)
+    public function scopeCurrentMonth(Builder $query): Builder
     {
-        return $query->whereMonth('tanggal', now()->month)
-            ->whereYear('tanggal', now()->year);
+        return $query->whereMonth('tanggal', '=', now()->month, 'and')
+            ->whereYear('tanggal', '=', now()->year, 'and');
     }
 
-    public function scopeByPenjual($query, $penjualId)
+    public function scopeByPenjual(Builder $query, ?string $penjualId): Builder
     {
-        return $query->where('penjual_id', $penjualId);
+        return $query->where('penjual_id', '=', $penjualId, 'and');
     }
 
-    public function getCachedAttribute($key)
+    public function getCachedAttribute(string $key)
     {
         return Cache::remember("transaksi_do_{$this->id}_{$key}", 3600, function () use ($key) {
             return $this->getAttribute($key);

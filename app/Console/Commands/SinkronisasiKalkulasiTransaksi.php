@@ -14,7 +14,7 @@ class SinkronisasiKalkulasiTransaksi extends Command
      *
      * @var string
      */
-    protected $signature = 'app:sync-calculations {--dry-run : Menampilkan perubahan tanpa menyimpan ke database}';
+    protected $signature = 'app:sinkronisasi-kalkulasi {--dry-run : Menampilkan perubahan tanpa menyimpan ke database}';
 
     /**
      * The console command description.

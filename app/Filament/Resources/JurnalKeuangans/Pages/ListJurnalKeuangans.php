@@ -30,27 +30,27 @@ class ListJurnalKeuangans extends ListRecords
         return [
             'hari_ini' => Tab::make('Hari Ini')
                 ->icon('heroicon-o-calendar')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', today()))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', '=', today(), 'and'))
                 ->badge($this->getTabCount('hari_ini')),
 
             'kemarin' => Tab::make('Kemarin')
                 ->icon('heroicon-o-calendar')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', today()->subDay()))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', '=', today()->subDay(), 'and'))
                 ->badge($this->getTabCount('kemarin')),
 
             'pemasukan' => Tab::make('Pemasukan')
                 ->icon('heroicon-o-arrow-down-circle')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('jenis_transaksi', 'Pemasukan'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('jenis_transaksi', '=', 'Pemasukan', 'and'))
                 ->badge($this->getTabCount('pemasukan')),
 
             'pengeluaran' => Tab::make('Pengeluaran')
                 ->icon('heroicon-o-arrow-up-circle')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('jenis_transaksi', 'Pengeluaran'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('jenis_transaksi', '=', 'Pengeluaran', 'and'))
                 ->badge($this->getTabCount('pengeluaran')),
 
             'bulan_ini' => Tab::make('Bulan Ini')
                 ->icon('heroicon-o-calendar-days')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereMonth('tanggal', now()->month)->whereYear('tanggal', now()->year))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereMonth('tanggal', '=', now()->month, 'and')->whereYear('tanggal', '=', now()->year, 'and'))
                 ->badge($this->getTabCount('bulan_ini')),
         ];
     }
@@ -65,12 +65,12 @@ class ListJurnalKeuangans extends ListRecords
         $query = JurnalKeuangan::query();
 
         return match ($tab) {
-            'hari_ini' => $query->whereDate('tanggal', today())->count(),
-            'kemarin' => $query->whereDate('tanggal', today()->subDay())->count(),
-            'pemasukan' => $query->where('jenis_transaksi', 'Pemasukan')->count(),
-            'pengeluaran' => $query->where('jenis_transaksi', 'Pengeluaran')->count(),
-            'bulan_ini' => $query->whereMonth('tanggal', now()->month)->whereYear('tanggal', now()->year)->count(),
-            default => $query->count(),
+            'hari_ini' => $query->whereDate('tanggal', '=', today(), 'and')->count('*'),
+            'kemarin' => $query->whereDate('tanggal', '=', today()->subDay(), 'and')->count('*'),
+            'pemasukan' => $query->where('jenis_transaksi', '=', 'Pemasukan', 'and')->count('*'),
+            'pengeluaran' => $query->where('jenis_transaksi', '=', 'Pengeluaran', 'and')->count('*'),
+            'bulan_ini' => $query->whereMonth('tanggal', '=', now()->month, 'and')->whereYear('tanggal', '=', now()->year, 'and')->count('*'),
+            default => $query->count('*'),
         };
     }
 }

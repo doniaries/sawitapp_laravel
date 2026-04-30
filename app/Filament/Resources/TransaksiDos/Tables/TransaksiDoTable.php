@@ -14,6 +14,9 @@ use Filament\Actions\Action as TablesAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Support\Colors\Color;
 use App\Models\TransaksiDo;
 
@@ -160,16 +163,73 @@ class TransaksiDoTable
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('created_at', 'desc')
             ->filters([
                 TrashedFilter::make(),
+                Filter::make('tanggal')
+                    ->form([
+                        DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal')
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                        DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal')
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['dari_tanggal'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date, 'and'),
+                            )
+                            ->when(
+                                $data['sampai_tanggal'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date, 'and'),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['dari_tanggal'] ?? null) {
+                            $indicators[] = 'Dari: ' . \Carbon\Carbon::parse($data['dari_tanggal'])->format('d/m/Y');
+                        }
+                        if ($data['sampai_tanggal'] ?? null) {
+                            $indicators[] = 'Sampai: ' . \Carbon\Carbon::parse($data['sampai_tanggal'])->format('d/m/Y');
+                        }
+                        return $indicators;
+                    }),
             ])
             ->headerActions([
-                TablesAction::make('refresh')
-                    ->label('Refresh Data')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('gray')
-                    ->url(fn() => \App\Filament\Resources\TransaksiDos\TransaksiDoResource::getUrl('index')),
+                // TablesAction::make('refresh')
+                //     ->label('Refresh Data')
+                //     ->icon('heroicon-o-arrow-path')
+                //     ->color('gray')
+                //     ->url(fn() => \App\Filament\Resources\TransaksiDos\TransaksiDoResource::getUrl('index')),
+
+                TablesAction::make('filter_tanggal')
+                    ->label('Pilih Periode Transaksi')
+                    ->icon('heroicon-o-calendar')
+                    ->color('info')
+                    ->form([
+                        DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal')
+                            ->default(now())
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                        DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal')
+                            ->default(now())
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                    ])
+                    ->action(function (array $data, $livewire) {
+                        $livewire->tableFilters['tanggal'] = [
+                            'dari_tanggal' => $data['dari_tanggal'],
+                            'sampai_tanggal' => $data['sampai_tanggal'],
+                        ];
+                        
+                        // Set ke tab semua agar hasil filter terlihat
+                        $livewire->activeTab = 'semua';
+                    }),
 
                 CreateAction::make()
                     ->icon('heroicon-o-plus')
@@ -194,7 +254,7 @@ class TransaksiDoTable
                     RestoreBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('tanggal', 'desc')
             ->striped()
             ->paginated([10, 25, 50, 100]);
     }
