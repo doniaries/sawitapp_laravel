@@ -190,12 +190,14 @@ class TransaksiDoTable
                             ->label('Dari Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today()),
+                            ->default(today())
+                            ->live(),
                         DatePicker::make('sampai_tanggal')
                             ->label('Sampai Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today()),
+                            ->default(today())
+                            ->live(),
                     ])
                     ->columns(2)
                     ->query(function (Builder $query, array $data): Builder {
@@ -219,34 +221,11 @@ class TransaksiDoTable
                         }
                         return $indicators;
                     }),
-            ], layout: FiltersLayout::Modal)
+            ])
             ->headerActions([
-                TablesAction::make('filter_periode')
-                    ->label('Filter Periode')
-                    ->icon('heroicon-o-calendar')
-                    ->color('info')
-                    ->form([
-                        DatePicker::make('dari_tanggal')
-                            ->label('Dari Tanggal')
-                            ->native(false)
-                            ->displayFormat('d/m/Y')
-                            ->default(fn ($livewire) => $livewire->tableFilters['tanggal_range']['dari_tanggal'] ?? today()),
-                        DatePicker::make('sampai_tanggal')
-                            ->label('Sampai Tanggal')
-                            ->native(false)
-                            ->displayFormat('d/m/Y')
-                            ->default(fn ($livewire) => $livewire->tableFilters['tanggal_range']['sampai_tanggal'] ?? today()),
-                    ])
-                    ->action(function (array $data, $livewire) {
-                        $livewire->tableFilters['tanggal_range'] = [
-                            'dari_tanggal' => $data['dari_tanggal'],
-                            'sampai_tanggal' => $data['sampai_tanggal'],
-                        ];
-                    }),
                 CreateAction::make()
                     ->icon('heroicon-o-plus')
                     ->label('Tambah Transaksi'),
-                
             ])
             ->recordActions([
                 TablesAction::make('cetak_do')
