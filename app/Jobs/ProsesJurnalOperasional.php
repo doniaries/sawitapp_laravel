@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\TransaksiOperasional;
 use App\Models\JurnalKeuangan;
+use App\Models\Perusahaan;
 use App\Actions\Finance\RecordFinanceTransactionAction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class ProcessOperasionalJournals implements ShouldQueue
+class ProsesJurnalOperasional implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -35,11 +36,25 @@ class ProcessOperasionalJournals implements ShouldQueue
         try {
             DB::beginTransaction();
 
-            // 1. Hapus laporan keuangan yang lama
-            JurnalKeuangan::where([
+            // 1. REVERSE balance and DELETE existing journals
+            $existingJournals = JurnalKeuangan::where([
                 'kategori' => 'Operasional',
                 'referensi_id' => $this->operasional->id
-            ])->delete();
+            ])->get();
+
+            foreach ($existingJournals as $journal) {
+                if ($journal->mempengaruhi_kas) {
+                    $perusahaan = Perusahaan::find($journal->perusahaan_id);
+                    if ($perusahaan) {
+                        if ($journal->jenis_transaksi === 'Pemasukan') {
+                            $perusahaan->decrement('saldo', $journal->nominal);
+                        } else {
+                            $perusahaan->increment('saldo', $journal->nominal);
+                        }
+                    }
+                }
+                $journal->forceDelete();
+            }
 
             if ($this->operasional->trashed()) {
                 DB::commit();
@@ -76,7 +91,7 @@ class ProcessOperasionalJournals implements ShouldQueue
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Job ProcessOperasionalJournals Error:', ['error' => $e->getMessage()]);
+            Log::error('Job ProsesJurnalOperasional Error:', ['error' => $e->getMessage()]);
             throw $e;
         }
     }

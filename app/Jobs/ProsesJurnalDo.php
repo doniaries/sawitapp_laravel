@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\TransaksiDo;
 use App\Models\JurnalKeuangan;
+use App\Models\Perusahaan;
 use App\Actions\Finance\RecordFinanceTransactionAction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,7 +14,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class ProcessDoJournals implements ShouldQueue
+class ProsesJurnalDo implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -35,11 +36,25 @@ class ProcessDoJournals implements ShouldQueue
         try {
             DB::beginTransaction();
 
-            // 1. DELETE existing journals for this DO
-            JurnalKeuangan::where([
+            // 1. REVERSE balance and DELETE existing journals for this DO
+            $existingJournals = JurnalKeuangan::where([
                 'sumber_transaksi' => 'DO',
                 'referensi_id' => $this->transaksiDo->id
-            ])->delete();
+            ])->get();
+
+            foreach ($existingJournals as $journal) {
+                if ($journal->mempengaruhi_kas) {
+                    $perusahaan = Perusahaan::find($journal->perusahaan_id);
+                    if ($perusahaan) {
+                        if ($journal->jenis_transaksi === 'Pemasukan') {
+                            $perusahaan->decrement('saldo', $journal->nominal);
+                        } else {
+                            $perusahaan->increment('saldo', $journal->nominal);
+                        }
+                    }
+                }
+                $journal->forceDelete(); // Gunakan forceDelete agar tidak menumpuk di soft deletes
+            }
 
             if ($this->transaksiDo->trashed()) {
                 DB::commit();
@@ -170,7 +185,7 @@ class ProcessDoJournals implements ShouldQueue
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Job ProcessDoJournals Error:', ['error' => $e->getMessage()]);
+            Log::error('Job ProsesJurnalDo Error:', ['error' => $e->getMessage()]);
             throw $e;
         }
     }

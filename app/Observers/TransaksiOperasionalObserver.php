@@ -18,7 +18,7 @@ class TransaksiOperasionalObserver
         try {
             DB::beginTransaction();
             $this->processHutang($operasional);
-            \App\Jobs\ProcessOperasionalJournals::dispatch($operasional);
+            \App\Jobs\ProsesJurnalOperasional::dispatch($operasional);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -30,7 +30,7 @@ class TransaksiOperasionalObserver
     {
         try {
             DB::beginTransaction();
-            \App\Jobs\ProcessOperasionalJournals::dispatch($operasional);
+            \App\Jobs\ProsesJurnalOperasional::dispatch($operasional);
             if ($operasional->isDirty(['nominal', 'kategori'])) {
                 $this->rollbackHutang($operasional);
                 $this->processHutang($operasional);
@@ -46,7 +46,7 @@ class TransaksiOperasionalObserver
     {
         try {
             DB::beginTransaction();
-            \App\Jobs\ProcessOperasionalJournals::dispatch($operasional);
+            \App\Jobs\ProsesJurnalOperasional::dispatch($operasional);
             $this->rollbackHutang($operasional);
             DB::commit();
         } catch (\Exception $e) {
@@ -59,7 +59,7 @@ class TransaksiOperasionalObserver
     {
         try {
             DB::beginTransaction();
-            \App\Jobs\ProcessOperasionalJournals::dispatch($operasional);
+            \App\Jobs\ProsesJurnalOperasional::dispatch($operasional);
             $this->processHutang($operasional);
             DB::commit();
         } catch (\Exception $e) {
@@ -72,7 +72,7 @@ class TransaksiOperasionalObserver
     {
         try {
             DB::beginTransaction();
-            \App\Jobs\ProcessOperasionalJournals::dispatch($operasional);
+            \App\Jobs\ProsesJurnalOperasional::dispatch($operasional);
             $this->rollbackHutang($operasional);
             DB::commit();
         } catch (\Exception $e) {

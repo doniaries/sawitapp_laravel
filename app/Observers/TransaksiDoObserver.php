@@ -33,7 +33,7 @@ class TransaksiDoObserver
 
     public function created(TransaksiDo $transaksiDo)
     {
-        \App\Jobs\ProcessDoJournals::dispatch($transaksiDo);
+        \App\Jobs\ProsesJurnalDo::dispatch($transaksiDo);
     }
 
     public function updating(TransaksiDo $transaksiDo)
@@ -41,6 +41,9 @@ class TransaksiDoObserver
         try {
             DB::beginTransaction();
             
+            // Kalkulasi ulang nilai sebelum update
+            $this->prepareForSave($transaksiDo);
+
             // Reversal PembayaranHutang sebelumnya jika ada perubahan nominal
             $oldPembayaranHutang = $transaksiDo->getOriginal('pembayaran_hutang', 0);
             if ($oldPembayaranHutang != $transaksiDo->pembayaran_hutang) {
@@ -66,7 +69,7 @@ class TransaksiDoObserver
 
     public function updated(TransaksiDo $transaksiDo)
     {
-        \App\Jobs\ProcessDoJournals::dispatch($transaksiDo);
+        \App\Jobs\ProsesJurnalDo::dispatch($transaksiDo);
     }
 
     public function deleted(TransaksiDo $transaksiDo)
@@ -88,7 +91,7 @@ class TransaksiDoObserver
                 "Pembatalan transaksi DO #{$transaksiDo->nomor}"
             );
 
-            \App\Jobs\ProcessDoJournals::dispatch($transaksiDo);
+            \App\Jobs\ProsesJurnalDo::dispatch($transaksiDo);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -192,7 +195,7 @@ class TransaksiDoObserver
                 if ($transaksiDo->sisa_bayar > 0) $perusahaan->decrement('saldo', $transaksiDo->sisa_bayar);
             }
             if ($transaksiDo->pembayaran_hutang > 0) $this->handleHutangPenjual($transaksiDo);
-            \App\Jobs\ProcessDoJournals::dispatch($transaksiDo);
+            \App\Jobs\ProsesJurnalDo::dispatch($transaksiDo);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
