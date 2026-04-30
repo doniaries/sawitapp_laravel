@@ -45,6 +45,9 @@ class CreateTransaksiDo extends CreateRecord
                 $data['tanggal'] = now();
             }
 
+            // Pastikan Nomor DO selalu tergenerate baru sesuai tanggal saat simpan
+            $data['nomor'] = \App\Models\TransaksiDo::generateMonthlyNumber($data['tanggal']);
+
             // Validasi hutang dan pembayaran
             if ($data['penjual_id']) {
                 $penjual = Penjual::find($data['penjual_id']);

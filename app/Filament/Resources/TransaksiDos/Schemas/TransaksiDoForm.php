@@ -49,6 +49,12 @@ class TransaksiDoForm
                                 ->displayFormat('d/m/Y H:i:s')
                                 ->default(Carbon::now())
                                 ->required()
+                                ->live()
+                                ->afterStateUpdated(function ($state, Set $set) {
+                                    if ($state) {
+                                        $set('nomor', TransaksiDo::generateMonthlyNumber($state));
+                                    }
+                                })
                                 ->rules([
                                     fn ($get) => function (string $attribute, $value, $fail) use ($get) {
                                         $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
