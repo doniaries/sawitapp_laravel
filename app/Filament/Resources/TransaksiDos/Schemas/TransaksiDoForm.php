@@ -81,7 +81,7 @@ class TransaksiDoForm
                                         if ($penjual) {
                                             $sisaHutang = (float) $penjual->hutang;
                                             $set('hutang_awal', $sisaHutang);
-                                            $set('pembayaran_hutang', null);
+                                            $set('pembayaran_hutang', 0);
                                             self::hitungSisaBayar($get, $set);
                                         }
                                     }
@@ -132,6 +132,7 @@ class TransaksiDoForm
                                 ->required()
                                 ->live(onBlur: true)
                                 ->debounce(500)
+                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungTotal($state, $get, $set)),
                             TextInput::make('harga_satuan')
                                 ->label('Harga Satuan')
@@ -140,6 +141,7 @@ class TransaksiDoForm
                                 ->required()
                                 ->live(onBlur: true)
                                 ->debounce(500)
+                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungTotal($get('tonase'), $get, $set)),
                             TextInput::make('sub_total')
                                 ->label('Sub Total')
@@ -159,18 +161,20 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(null)
+                                ->default(0)
                                 ->live(onBlur: true)
                                 ->debounce(500)
+                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
                             TextInput::make('biaya_lain')
                                 ->label('Biaya Lain/Pengambilan')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(null)
+                                ->default(0)
                                 ->live(onBlur: true)
                                 ->debounce(500)
+                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
                             TextInput::make('pembayaran_hutang')
                                 ->label('Potong Hutang')
@@ -180,9 +184,10 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(null)
+                                ->default(0)
                                 ->live(onBlur: true)
                                 ->debounce(500)
+                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set))
                                 ->rules([
                                     fn(Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
@@ -269,10 +274,12 @@ class TransaksiDoForm
                                 ->helperText('Jumlah cash yang diambil')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
-                                ->placeholder('0') // Use placeholder instead of default 0
+                                ->placeholder('0')
+                                ->default(0)
                                 ->required()
                                 ->live(onBlur: true)
                                 ->debounce(500)
+                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->visible(fn(Get $get) => $get('cara_bayar') === 'tunai & transfer')
                                 ->rules([
                                     function (Get $get) {
@@ -289,6 +296,7 @@ class TransaksiDoForm
 
                         // Hidden field untuk referensi hitung
                         TextInput::make('hutang_awal')
+                            ->default(0)
                             ->hidden()
                             ->dehydrated(),
                     ]),

@@ -165,8 +165,15 @@ class TransaksiDoObserver
         if (!$transaksiDo->nomor) {
             $transaksiDo->nomor = $transaksiDo->generateMonthlyNumber($transaksiDo->tanggal);
         }
+
+        // Pastikan tidak ada nilai null untuk field database yang non-nullable
+        $transaksiDo->upah_bongkar = $transaksiDo->upah_bongkar ?? 0;
+        $transaksiDo->biaya_lain = $transaksiDo->biaya_lain ?? 0;
+        $transaksiDo->pembayaran_hutang = $transaksiDo->pembayaran_hutang ?? 0;
+        $transaksiDo->nominal_tunai = $transaksiDo->nominal_tunai ?? 0;
+
         $transaksiDo->sub_total = $transaksiDo->tonase * $transaksiDo->harga_satuan;
-        $komponenPengurangan = ($transaksiDo->upah_bongkar ?? 0) + ($transaksiDo->biaya_lain ?? 0) + ($transaksiDo->pembayaran_hutang ?? 0);
+        $komponenPengurangan = $transaksiDo->upah_bongkar + $transaksiDo->biaya_lain + $transaksiDo->pembayaran_hutang;
         $transaksiDo->sisa_bayar = max(0, $transaksiDo->sub_total - $komponenPengurangan);
     }
 
