@@ -189,11 +189,13 @@ class TransaksiDoTable
                         DatePicker::make('dari_tanggal')
                             ->label('Dari Tanggal')
                             ->native(false)
-                            ->displayFormat('d/m/Y'),
+                            ->displayFormat('d/m/Y')
+                            ->default(today()),
                         DatePicker::make('sampai_tanggal')
                             ->label('Sampai Tanggal')
                             ->native(false)
-                            ->displayFormat('d/m/Y'),
+                            ->displayFormat('d/m/Y')
+                            ->default(today()),
                     ])
                     ->columns(2)
                     ->query(function (Builder $query, array $data): Builder {
@@ -228,12 +230,12 @@ class TransaksiDoTable
                             ->label('Dari Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today()),
+                            ->default(fn ($livewire) => $livewire->tableFilters['tanggal_range']['dari_tanggal'] ?? today()),
                         DatePicker::make('sampai_tanggal')
                             ->label('Sampai Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today()),
+                            ->default(fn ($livewire) => $livewire->tableFilters['tanggal_range']['sampai_tanggal'] ?? today()),
                     ])
                     ->action(function (array $data, $livewire) {
                         $livewire->tableFilters['tanggal_range'] = [
