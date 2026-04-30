@@ -61,6 +61,10 @@ class TransaksiDoForm
                                 ->preload()
                                 ->live()
                                 ->required()
+                                ->noOptionsMessage('Data penjual belum ada')
+                                ->searchingMessage('Mencari penjual...')
+                                ->loadingMessage('Memuat data...')
+                                ->placeholder('Pilih Penjual')
                                 ->createOptionForm([
                                     TextInput::make('nama')
                                         ->required()
@@ -100,6 +104,10 @@ class TransaksiDoForm
                                 ->searchable()
                                 ->preload()
                                 ->required()
+                                ->noOptionsMessage('Data supir belum ada')
+                                ->searchingMessage('Mencari supir...')
+                                ->loadingMessage('Memuat data...')
+                                ->placeholder('Pilih Supir')
                                 ->createOptionForm([
                                     TextInput::make('nama')
                                         ->required()
@@ -149,7 +157,6 @@ class TransaksiDoForm
                                 ->prefix('Rp')
                                 ->disabled()
                                 ->dehydrated()
-                                ->formatStateUsing(fn($state) => number_format((float) ($state ?? 0), 0, ',', '.'))
                                 ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->extraInputAttributes(['class' => 'bg-gray-50 font-bold text-xl']),
                         ])->columns(3),
@@ -179,8 +186,9 @@ class TransaksiDoForm
                             TextInput::make('pembayaran_hutang')
                                 ->label('Potong Hutang')
                                 ->hint(fn(Get $get) => $get('penjual_id') ? 'Sisa Hutang: Rp ' . number_format($get('hutang_awal') ?? 0, 0, ',', '.') : null)
-                                ->hintColor('primary')
-                                ->hintIcon('heroicon-m-information-circle')
+                                ->hintColor('danger')
+                                ->hintIcon('heroicon-m-exclamation-circle')
+                                ->helperText(fn(Get $get) => $get('penjual_id') ? 'Hutang penjual saat ini: Rp ' . number_format($get('hutang_awal') ?? 0, 0, ',', '.') : 'Pilih penjual untuk melihat hutang')
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->prefix('Rp')
                                 ->placeholder('0')
@@ -249,7 +257,6 @@ class TransaksiDoForm
                                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->readOnly()
                                 ->dehydrated()
-                                ->formatStateUsing(fn($state) => number_format((float) ($state ?? 0), 0, ',', '.'))
                                 ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->extraAttributes([
                                     'class' => 'bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-2',
@@ -308,7 +315,9 @@ class TransaksiDoForm
         $tonaseValue = self::formatCurrency($tonase);
         $hargaSatuan = self::formatCurrency($get('harga_satuan'));
         $subTotal = $tonaseValue * $hargaSatuan;
-        $set('sub_total', $subTotal);
+        
+        // Simpan sebagai integer bulat
+        $set('sub_total', (int) round($subTotal));
         self::hitungSisaBayar($get, $set);
     }
 
@@ -318,16 +327,39 @@ class TransaksiDoForm
         $upahBongkar = self::formatCurrency($get('upah_bongkar'));
         $biayaLain = self::formatCurrency($get('biaya_lain'));
         $bayarHutang = self::formatCurrency($get('pembayaran_hutang'));
-        $sisaBayar = max(0, $subTotal - ($upahBongkar + $biayaLain + $bayarHutang));
-        $set('sisa_bayar', $sisaBayar);
+        
+        $sisaBayar = $subTotal - ($upahBongkar + $biayaLain + $bayarHutang);
+        $set('sisa_bayar', max(0, (int) round($sisaBayar)));
     }
 
-    private static function formatCurrency(mixed $number): int
+    private static function formatCurrency(mixed $number): float
     {
         if (empty($number)) return 0;
-        if (is_string($number)) {
-            return (int) str_replace(['.', ','], '', $number);
+        
+        // Jika sudah numeric (int/float) dan bukan string numerik
+        if (is_numeric($number) && !is_string($number)) {
+            return (float) $number;
         }
-        return (int) $number;
+
+        $str = (string) $number;
+        
+        // Hapus spasi jika ada
+        $str = str_replace(' ', '', $str);
+
+        // Jika mengandung koma, berarti format Indonesia (1.234,56)
+        if (str_contains($str, ',')) {
+            // Hapus titik ribuan, ganti koma desimal jadi titik
+            $str = str_replace('.', '', $str);
+            $str = str_replace(',', '.', $str);
+        } 
+        // Jika HANYA mengandung titik
+        elseif (str_contains($str, '.')) {
+            // Karena kita menggunakan precision 0 (integer) di hampir semua field,
+            // maka titik dalam input string "29.000" kemungkinan besar adalah ribuan.
+            // Kita hapus titiknya agar menjadi 29000, bukan 29.
+            $str = str_replace('.', '', $str);
+        }
+        
+        return (float) $str;
     }
 }

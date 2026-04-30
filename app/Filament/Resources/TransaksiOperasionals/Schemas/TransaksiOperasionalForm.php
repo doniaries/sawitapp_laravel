@@ -42,6 +42,9 @@ class TransaksiOperasionalForm
                                     ->searchable()
                                     ->searchDebounce(500)
                                     ->live()
+                                    ->noOptionsMessage('Kategori tidak ditemukan')
+                                    ->searchingMessage('Mencari kategori...')
+                                    ->placeholder('Pilih Kategori')
                                     ->afterStateUpdated(function ($state, Set $set) {
                                         if ($state) {
                                             $kat = KategoriOperasional::tryFrom($state);
@@ -78,21 +81,27 @@ class TransaksiOperasionalForm
                                     ->searchable()
                                     ->searchDebounce(500)
                                     ->required()
-                                    ->visible(fn(Get $get) => !!$get('pihak_type')),
+                                    ->visible(fn(Get $get) => !!$get('pihak_type'))
+                                    ->noOptionsMessage('Data tidak ditemukan')
+                                    ->searchingMessage('Mencari nama...')
+                                    ->loadingMessage('Memuat data...')
+                                    ->placeholder('Pilih Nama')
+,
                                 TextInput::make('nominal')
                                     ->label('Nominal')
                                     ->required()
                                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                     ->prefix('Rp')
-                                    ->numeric()
                                     ->default(null)
                                     ->debounce(500)
+                                    ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                     ->rules([
                                         function (Get $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
                                                 if ($get('operasional') === 'pengeluaran') {
                                                     $perusahaan = \Filament\Facades\Filament::getTenant();
-                                                    if ($perusahaan && $value > $perusahaan->saldo) {
+                                                    $nominalVal = self::formatCurrency($value);
+                                                    if ($perusahaan && $nominalVal > $perusahaan->saldo) {
                                                         $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . ")");
                                                     }
                                                 }
@@ -136,5 +145,26 @@ class TransaksiOperasionalForm
                             ]),
                     ]),
             ]);
+    }
+
+    private static function formatCurrency(mixed $number): float
+    {
+        if (empty($number)) return 0;
+        
+        if (is_numeric($number) && !is_string($number)) {
+            return (float) $number;
+        }
+
+        $str = (string) $number;
+        $str = str_replace(' ', '', $str);
+
+        if (str_contains($str, ',')) {
+            $str = str_replace('.', '', $str);
+            $str = str_replace(',', '.', $str);
+        } elseif (str_contains($str, '.')) {
+            $str = str_replace('.', '', $str);
+        }
+        
+        return (float) $str;
     }
 }
