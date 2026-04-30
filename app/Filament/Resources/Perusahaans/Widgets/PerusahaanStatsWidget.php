@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Perusahaans\Widgets;
 
-use App\Models\{Perusahaan, User};
+use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -28,7 +28,8 @@ class PerusahaanStatsWidget extends BaseWidget
 
             return Cache::remember($cacheKey, 60, function () use ($perusahaan) {
                 // 1. Get kasir names in one query
-                $kasirNames = User::where('perusahaan_id', $perusahaan->id)
+                $kasirNames = User::query()
+                    ->where('perusahaan_id', $perusahaan->id)
                     ->where('is_active', true)
                     ->whereHas('roles', fn ($q) => $q->where('name', 'kasir'))
                     ->pluck('name')
@@ -96,7 +97,7 @@ class PerusahaanStatsWidget extends BaseWidget
         }
     }
 
-    private function getSaldoColor($saldo): string
+    private function getSaldoColor(float $saldo): string
     {
         return match (true) {
             $saldo > 100000000 => 'success',
