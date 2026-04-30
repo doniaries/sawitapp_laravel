@@ -98,11 +98,17 @@ class TransaksiOperasionalForm
                                     ->rules([
                                         function (Get $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                $user = Auth::user();
+                                                // Admin bypass validasi saldo
+                                                if ($user && method_exists($user, 'isAdminOrSuperAdmin') && $user->isAdminOrSuperAdmin()) {
+                                                    return;
+                                                }
+
                                                 if ($get('operasional') === 'pengeluaran') {
                                                     $perusahaan = \Filament\Facades\Filament::getTenant();
                                                     $nominalVal = self::formatCurrency($value);
                                                     if ($perusahaan && $nominalVal > $perusahaan->saldo) {
-                                                        $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . ")");
+                                                        $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "). Hanya Admin yang dapat melanjutkan transaksi ini.");
                                                     }
                                                 }
                                             };

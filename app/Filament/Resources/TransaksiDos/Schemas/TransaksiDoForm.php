@@ -199,15 +199,15 @@ class TransaksiDoForm
                                 ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set))
                                 ->rules([
                                     fn(Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                        $val = (float) str_replace(['.', ','], '', $value ?? 0);
-                                        $hutang = (float) ($get('hutang_awal') ?? 0);
+                                        $val = self::formatCurrency($value);
+                                        $hutang = self::formatCurrency($get('hutang_awal'));
                                         if ($val > $hutang) {
                                             $fail("Potongan tidak boleh melebihi sisa hutang (Rp " . number_format($hutang, 0, ',', '.') . ")");
                                         }
 
-                                        $subTotal = (float) str_replace(['.', ','], '', $get('sub_total') ?? 0);
-                                        $upah = (float) str_replace(['.', ','], '', $get('upah_bongkar') ?? 0);
-                                        $lain = (float) str_replace(['.', ','], '', $get('biaya_lain') ?? 0);
+                                        $subTotal = self::formatCurrency($get('sub_total'));
+                                        $upah = self::formatCurrency($get('upah_bongkar'));
+                                        $lain = self::formatCurrency($get('biaya_lain'));
                                         $pengurangan = $upah + $lain;
                                         $maxBayar = max(0, $subTotal - $pengurangan);
 
@@ -234,18 +234,24 @@ class TransaksiDoForm
                                 ->rules([
                                     function (Get $get) {
                                         return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                            $user = Auth::user();
+                                            // Jika Admin/SuperAdmin/Pimpinan, boleh lanjut meskipun saldo tidak cukup
+                                            if ($user && method_exists($user, 'isAdminOrSuperAdmin') && $user->isAdminOrSuperAdmin()) {
+                                                return;
+                                            }
+
                                             $perusahaan = \Filament\Facades\Filament::getTenant();
                                             if (!$perusahaan) return;
 
                                             $cekNominal = 0;
                                             if ($value === 'tunai') {
-                                                $cekNominal = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
+                                                $cekNominal = self::formatCurrency($get('sisa_bayar'));
                                             } elseif ($value === 'tunai & transfer') {
-                                                $cekNominal = (int) str_replace(['.', ','], '', $get('nominal_tunai') ?? 0);
+                                                $cekNominal = self::formatCurrency($get('nominal_tunai'));
                                             }
 
                                             if ($cekNominal > 0 && $cekNominal > $perusahaan->saldo) {
-                                                $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . ")");
+                                                $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "). Hanya Admin yang dapat melanjutkan transaksi ini.");
                                             }
                                         };
                                     },
@@ -291,8 +297,8 @@ class TransaksiDoForm
                                 ->rules([
                                     function (Get $get) {
                                         return function (string $attribute, $value, \Closure $fail) use ($get) {
-                                            $sisaBayar = (int) str_replace(['.', ','], '', $get('sisa_bayar') ?? 0);
-                                            $val = (int) str_replace(['.', ','], '', $value ?? 0);
+                                            $sisaBayar = self::formatCurrency($get('sisa_bayar'));
+                                            $val = self::formatCurrency($value);
                                             if ($val > $sisaBayar) {
                                                 $fail("Nominal tunai tidak boleh melebihi total bayar (Rp " . number_format($sisaBayar, 0, ',', '.') . ")");
                                             }

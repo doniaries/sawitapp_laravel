@@ -149,14 +149,16 @@ class TransaksiDoObserver
         };
 
         if ($nominalDibutuhkan > 0) {
-            $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
-            // Saldo diperbolehkan minus, jadi kita tidak melempar Exception lagi
-            // Jika ingin mengaktifkan blokir saldo kembali, uncomment baris dibawah:
-            /*
-            if ($perusahaan->saldo < $nominalDibutuhkan) {
-                throw new \Exception("Saldo tidak mencukupi untuk bayar tunai.");
+            $user = auth()->user();
+            // Jika user adalah Admin/SuperAdmin, abaikan validasi saldo (boleh minus)
+            if ($user && method_exists($user, 'isAdminOrSuperAdmin') && $user->isAdminOrSuperAdmin()) {
+                return;
             }
-            */
+
+            $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
+            if ($perusahaan && $perusahaan->saldo < $nominalDibutuhkan) {
+                throw new \Exception("Saldo perusahaan tidak mencukupi untuk pembayaran tunai (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "). Transaksi hanya bisa dilanjutkan oleh Admin.");
+            }
         }
     }
 

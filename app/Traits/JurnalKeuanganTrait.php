@@ -5,6 +5,17 @@ namespace App\Traits;
 use App\Models\{JurnalKeuangan, Perusahaan};
 use Illuminate\Support\Facades\{DB, Log};
 
+/**
+ * @property float $tonase
+ * @property float $harga_satuan
+ * @property float $upah_bongkar
+ * @property float $biaya_lain
+ * @property float $pembayaran_hutang
+ * @property float $hutang_awal
+ * @property string $cara_bayar
+ * @property string $nomor
+ * @property int $id
+ */
 trait JurnalKeuanganTrait
 {
     /**
