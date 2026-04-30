@@ -69,6 +69,8 @@ class TransaksiDo extends Model
         'sisa_bayar',
         'bukti_transfer',
         'keterangan_pembayaran',
+        'is_mismatch',
+        'bukti_rekap',
         // 'file_do',
         // 'status_bayar',
         // 'catatan',
@@ -88,6 +90,7 @@ class TransaksiDo extends Model
         'sisa_hutang_penjual' => 'decimal:0', // Updated
         'nominal_tunai' => 'decimal:0',
         'sisa_bayar' => 'decimal:0',
+        'is_mismatch' => 'boolean',
         // 'status_bayar' => 'string',
     ];
 

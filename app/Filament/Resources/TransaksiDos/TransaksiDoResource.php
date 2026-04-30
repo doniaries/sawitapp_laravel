@@ -43,7 +43,6 @@ class TransaksiDoResource extends Resource
     {
         return parent::getEloquentQuery()
             ->with(['penjual', 'supir'])
-            ->currentMonth()
             ->latest('tanggal');
     }
 

@@ -198,7 +198,12 @@
             @foreach ($transaksiDo as $index => $transaksi)
             <tr>
                 <td class="amount">{{ $index + 1 }}</td>
-                <td>{{ $transaksi->penjual->nama ?? '-' }}</td>
+                <td>
+                    {{ $transaksi->penjual->nama ?? '-' }}
+                    @if($transaksi->is_mismatch)
+                        <span style="color: red; font-weight: bold; font-size: 11px;" title="Hitungan Tidak Cocok">(!)</span>
+                    @endif
+                </td>
                 <td>{{ $transaksi->supir->nama ?? '-' }}</td>
                 <td class="amount">{{ number_format($transaksi->tonase, 0) }}</td>
                 <td class="amount">{{ number_format($transaksi->harga_satuan, 0) }}</td>
@@ -234,6 +239,9 @@
             </tr>
         </tbody>
     </table>
+    <div style="font-size: 8px; color: red; margin-bottom: 10px;">
+        * (!) : Menandakan data pembukuan dengan sistem tidak cocok (Input Manual Kasir)
+    </div>
 
 
 

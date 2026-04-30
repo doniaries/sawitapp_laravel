@@ -16,6 +16,9 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Support\Colors\Color;
 use App\Models\TransaksiDo;
@@ -28,6 +31,12 @@ class TransaksiDoTable
             ->poll('30s')
             ->deferLoading()
             ->columns([
+                TextColumn::make('tanggal')
+                    ->label('Tanggal')
+                    ->badge()
+                    ->formatStateUsing(fn($state) => $state->translatedFormat('d F Y H:i'))
+                    ->sortable(),
+
                 TextColumn::make('nomor')
                     ->label('Nomor')
                     ->searchable()
@@ -37,11 +46,20 @@ class TransaksiDoTable
                     ->badge()
                     ->color(Color::Blue),
 
-                TextColumn::make('tanggal')
-                    ->label('Tanggal')
-                    ->badge()
-                    ->dateTime('d F Y H:i')
-                    ->sortable(),
+                IconColumn::make('is_mismatch')
+                    ->label('Status')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-exclamation-triangle')
+                    ->falseIcon('heroicon-o-check-circle')
+                    ->trueColor('danger')
+                    ->falseColor('success')
+                    ->tooltip(fn($record) => $record->is_mismatch ? 'Hitungan Sistem Tidak Cocok' : 'Data Cocok/Sesuai'),
+
+                ImageColumn::make('bukti_rekap')
+                    ->label('Bukti')
+                    ->disk('public')
+                    ->circular()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('penjual.nama')
                     ->label('Penjual')
@@ -66,9 +84,10 @@ class TransaksiDoTable
                 TextColumn::make('tonase')
                     ->label('Tonase')
                     ->suffix(' Kg')
-                    ->numeric()
+                    ->numeric(0, ',', '.')
                     ->summarize([
                         Sum::make()->suffix(' Kg')
+                            ->numeric(0, ',', '.')
                     ])
                     ->sortable(),
 
@@ -165,7 +184,7 @@ class TransaksiDoTable
             ])
             ->filters([
                 TrashedFilter::make(),
-                Filter::make('tanggal')
+                Filter::make('tanggal_range')
                     ->form([
                         DatePicker::make('dari_tanggal')
                             ->label('Dari Tanggal')
@@ -176,15 +195,16 @@ class TransaksiDoTable
                             ->native(false)
                             ->displayFormat('d/m/Y'),
                     ])
+                    ->columns(2)
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['dari_tanggal'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date, 'and'),
+                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date),
                             )
                             ->when(
                                 $data['sampai_tanggal'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date, 'and'),
+                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
@@ -197,43 +217,33 @@ class TransaksiDoTable
                         }
                         return $indicators;
                     }),
-            ])
+            ], layout: FiltersLayout::Modal)
             ->headerActions([
-                // TablesAction::make('refresh')
-                //     ->label('Refresh Data')
-                //     ->icon('heroicon-o-arrow-path')
-                //     ->color('gray')
-                //     ->url(fn() => \App\Filament\Resources\TransaksiDos\TransaksiDoResource::getUrl('index')),
-
-                TablesAction::make('filter_tanggal')
-                    ->label('Pilih Periode Transaksi')
+                CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->label('Tambah Transaksi'),
+                TablesAction::make('filter_periode')
+                    ->label('Filter Periode')
                     ->icon('heroicon-o-calendar')
                     ->color('info')
                     ->form([
                         DatePicker::make('dari_tanggal')
                             ->label('Dari Tanggal')
-                            ->default(now())
                             ->native(false)
-                            ->displayFormat('d/m/Y'),
+                            ->displayFormat('d/m/Y')
+                            ->default(today()),
                         DatePicker::make('sampai_tanggal')
                             ->label('Sampai Tanggal')
-                            ->default(now())
                             ->native(false)
-                            ->displayFormat('d/m/Y'),
+                            ->displayFormat('d/m/Y')
+                            ->default(today()),
                     ])
                     ->action(function (array $data, $livewire) {
-                        $livewire->tableFilters['tanggal'] = [
+                        $livewire->tableFilters['tanggal_range'] = [
                             'dari_tanggal' => $data['dari_tanggal'],
                             'sampai_tanggal' => $data['sampai_tanggal'],
                         ];
-                        
-                        // Set ke tab semua agar hasil filter terlihat
-                        $livewire->activeTab = 'semua';
                     }),
-
-                CreateAction::make()
-                    ->icon('heroicon-o-plus')
-                    ->label('Tambah Transaksi'),
             ])
             ->recordActions([
                 TablesAction::make('cetak_do')

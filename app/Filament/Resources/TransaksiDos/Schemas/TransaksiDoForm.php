@@ -10,6 +10,8 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Auth;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
@@ -35,15 +37,10 @@ class TransaksiDoForm
                     ->components([
                         // 1. Tanggal & Nama Penjual
                         Group::make([
-                            TextInput::make('nomor')
-                                ->label('Nomor DO')
-                                ->default(fn() => TransaksiDo::generateMonthlyNumber())
-                                ->required()
-                                ->maxLength(255)
-                                ->disabled()
-                                ->dehydrated(),
+                            
                             DateTimePicker::make('tanggal')
                                 ->label('Tanggal')
+                                
                                 ->format('Y-m-d H:i:s')
                                 ->native(false)
                                 ->displayFormat('d/m/Y H:i:s')
@@ -63,6 +60,13 @@ class TransaksiDoForm
                                         }
                                     },
                                 ]),
+                                TextInput::make('nomor')
+                                ->label('Nomor DO')
+                                ->default(fn() => TransaksiDo::generateMonthlyNumber())
+                                ->required()
+                                ->maxLength(255)
+                                ->disabled()
+                                ->dehydrated(),
 
                             Select::make('penjual_id')
                                 ->label('Nama Penjual')
@@ -321,8 +325,33 @@ class TransaksiDoForm
                                 ]),
                         ])->columns(2),
 
+                        Section::make('Validasi & Lampiran')
+                            ->description('Penanda kecocokan data dan unggah bukti rekap')
+                            ->collapsible()
+                            ->components([
+                                Toggle::make('is_mismatch')
+                                    ->label('Hitungan Sistem Tidak Cocok')
+                                    ->helperText('Tandai jika data pembukuan tidak sesuai dengan hitungan sistem')
+                                    ->onColor('danger')
+                                    ->onIcon('heroicon-m-exclamation-triangle')
+                                    ->offIcon('heroicon-m-check-circle'),
+                                
+                                FileUpload::make('bukti_rekap')
+                                    ->label('Unggah Bukti Pedoman Rekap Kasir')
+                                    ->disk('public')
+                                    ->directory('bukti-rekap')
+                                    ->image()
+                                    ->openable()
+                                    ->downloadable()
+                                    ->helperText('Unggah foto/scan bukti rekap dari kasir'),
+                            ])->columns(2),
+
                         // Hidden field untuk referensi hitung
                         TextInput::make('hutang_awal')
+                            ->default(0)
+                            ->hidden()
+                            ->dehydrated(),
+                        TextInput::make('sisa_hutang_penjual')
                             ->default(0)
                             ->hidden()
                             ->dehydrated(),
@@ -347,9 +376,13 @@ class TransaksiDoForm
         $upahBongkar = self::formatCurrency($get('upah_bongkar'));
         $biayaLain = self::formatCurrency($get('biaya_lain'));
         $bayarHutang = self::formatCurrency($get('pembayaran_hutang'));
+        $hutangAwal = self::formatCurrency($get('hutang_awal'));
         
         $sisaBayar = $subTotal - ($upahBongkar + $biayaLain + $bayarHutang);
         $set('sisa_bayar', max(0, (int) round($sisaBayar)));
+
+        $sisaHutang = $hutangAwal - $bayarHutang;
+        $set('sisa_hutang_penjual', max(0, (int) round($sisaHutang)));
     }
 
     private static function formatCurrency(mixed $number): float

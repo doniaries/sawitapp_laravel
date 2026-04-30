@@ -129,7 +129,7 @@
         </tr>
         <tr>
             <td>Tonase (Kg)</td>
-            <td>{{ number_format($transaksi->tonase, 2) }}</td>
+            <td>{{ number_format($transaksi->tonase, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Harga Satuan</td>
@@ -167,6 +167,12 @@
             <td>Sisa Bayar</td>
             <td><strong>Rp{{ number_format($transaksi->sisa_bayar, 0, ',', '.') }}</strong></td>
         </tr>
+        @if($transaksi->is_mismatch)
+        <tr>
+            <td style="color: red;">Catatan Penting</td>
+            <td style="color: red;"><strong>SISTEM TIDAK COCOK</strong></td>
+        </tr>
+        @endif
 
     </table>
 

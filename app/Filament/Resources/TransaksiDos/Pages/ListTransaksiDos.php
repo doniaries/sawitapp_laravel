@@ -93,7 +93,7 @@ class ListTransaksiDos extends ListRecords
     // Handle filter date changes
     public function updatedTableFilters(): void
     {
-        $filter = $this->tableFilters['tanggal'] ?? null;
+        $filter = $this->tableFilters['tanggal_range'] ?? null;
         if ($filter && isset($filter['dari_tanggal'], $filter['sampai_tanggal'])) {
             $this->dispatch('filter-transaksi', [
                 'startDate' => $filter['dari_tanggal'],
@@ -105,6 +105,18 @@ class ListTransaksiDos extends ListRecords
     // Handle tab changes
     public function updatedActiveTab(): void
     {
+        if ($this->activeTab === 'hari_ini') {
+            $this->tableFilters['tanggal_range'] = [
+                'dari_tanggal' => today()->toDateString(),
+                'sampai_tanggal' => today()->toDateString(),
+            ];
+        } elseif ($this->activeTab === 'kemarin') {
+            $this->tableFilters['tanggal_range'] = [
+                'dari_tanggal' => now()->subDay()->toDateString(),
+                'sampai_tanggal' => now()->subDay()->toDateString(),
+            ];
+        }
+
         $this->dispatch('tab-changed', [
             'tab' => $this->activeTab
         ]);
@@ -126,7 +138,7 @@ class ListTransaksiDos extends ListRecords
 
     public function getDefaultActiveTab(): string | int | null
     {
-        return 'hari_ini';
+        return 'semua';
     }
 
     public function getTabs(): array
@@ -179,13 +191,12 @@ class ListTransaksiDos extends ListRecords
     protected function getTabCount(string $tab): int
     {
         $query = TransaksiDo::query();
-        $filter = $this->tableFilters['tanggal'] ?? null;
+        $filter = $this->tableFilters['tanggal_range'] ?? null;
 
         if (in_array($tab, ['semua', 'tunai', 'transfer', 'cair_luar', 'belum_dibayar'])) {
-            if ($filter && !empty($filter['dari_tanggal']) && !empty($filter['sampai_tanggal'])) {
-                $query->whereBetween('tanggal', [$filter['dari_tanggal'], $filter['sampai_tanggal']], 'and', false);
-            } else {
-                $query->currentMonth();
+            if ($filter) {
+                $query->when($filter['dari_tanggal'] ?? null, fn($q, $date) => $q->whereDate('tanggal', '>=', $date))
+                      ->when($filter['sampai_tanggal'] ?? null, fn($q, $date) => $q->whereDate('tanggal', '<=', $date));
             }
         }
 
