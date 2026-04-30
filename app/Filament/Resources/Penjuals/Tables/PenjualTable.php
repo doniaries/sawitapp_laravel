@@ -7,8 +7,12 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 
@@ -143,8 +147,21 @@ class PenjualTable
                             $action->halt();
                         }
                     }),
+                RestoreAction::make()->label('Pulihkan'),
+                ForceDeleteAction::make()
+                    ->label('Hapus Selamanya')
+                    ->before(function (ForceDeleteAction $action, $record) {
+                        if ($record->sisa_hutang > 0 && !Filament::auth()->user()->hasRole('super_admin')) {
+                            Notification::make()
+                                ->title('Gagal menghapus selamanya')
+                                ->body("Penjual masih memiliki hutang. Hanya Super Admin yang dapat menghapus permanen data ini.")
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    }),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
@@ -162,6 +179,9 @@ class PenjualTable
                             });
                             Notification::make()->title('Data berhasil diproses')->success()->send();
                         })
+                        ->requiresConfirmation(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make()
                         ->requiresConfirmation(),
                 ]),
             ])
