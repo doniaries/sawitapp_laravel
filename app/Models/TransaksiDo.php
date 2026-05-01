@@ -284,4 +284,59 @@ class TransaksiDo extends Model
             'sisa_hutang_penjual' => $sisaHutang,
         ];
     }
+
+    /**
+     * Logika Validasi Bisnis
+     */
+    public static function validatePotonganHutang($value, $hutangAwal, $subTotal, $upahBongkar, $biayaLain): ?string
+    {
+        $val = \App\Traits\HasCurrencyInput::sanitizeNumber($value);
+        $hutang = \App\Traits\HasCurrencyInput::sanitizeNumber($hutangAwal);
+        
+        if ($val > $hutang) {
+            return "Potongan tidak boleh melebihi sisa hutang (Rp " . number_format($hutang, 0, ',', '.') . ")";
+        }
+
+        $pengurangan = \App\Traits\HasCurrencyInput::sanitizeNumber($upahBongkar) + \App\Traits\HasCurrencyInput::sanitizeNumber($biayaLain);
+        $maxBayar = max(0, \App\Traits\HasCurrencyInput::sanitizeNumber($subTotal) - $pengurangan);
+
+        if ($val > $maxBayar) {
+            return "Potongan tidak boleh melebihi sisa hasil transaksi (Rp " . number_format($maxBayar, 0, ',', '.') . ")";
+        }
+
+        return null;
+    }
+
+    public static function validateCaraBayar($value, $sisaBayar, $nominalTunai, $perusahaanSaldo, $user): ?string
+    {
+        // Jika Admin/SuperAdmin/Pimpinan, boleh lanjut meskipun saldo tidak cukup
+        if ($user && method_exists($user, 'isAdminOrSuperAdmin') && $user->isAdminOrSuperAdmin()) {
+            return null;
+        }
+
+        $cekNominal = 0;
+        if ($value === 'tunai') {
+            $cekNominal = \App\Traits\HasCurrencyInput::sanitizeNumber($sisaBayar);
+        } elseif ($value === 'tunai & transfer') {
+            $cekNominal = \App\Traits\HasCurrencyInput::sanitizeNumber($nominalTunai);
+        }
+
+        if ($cekNominal > 0 && $cekNominal > $perusahaanSaldo) {
+            return "Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaanSaldo, 0, ',', '.') . "). Hanya Admin yang dapat melanjutkan transaksi ini.";
+        }
+
+        return null;
+    }
+
+    public static function validateNominalTunai($value, $sisaBayar): ?string
+    {
+        $totalBayar = \App\Traits\HasCurrencyInput::sanitizeNumber($sisaBayar);
+        $val = \App\Traits\HasCurrencyInput::sanitizeNumber($value);
+        
+        if ($val > $totalBayar) {
+            return "Nominal tunai tidak boleh melebihi total bayar (Rp " . number_format($totalBayar, 0, ',', '.') . ")";
+        }
+
+        return null;
+    }
 }

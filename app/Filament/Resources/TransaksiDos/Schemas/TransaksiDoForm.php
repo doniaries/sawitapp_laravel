@@ -216,21 +216,14 @@ class TransaksiDoForm
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set))
                                 ->rules([
                                     fn(Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                        $val = self::sanitizeNumber($value);
-                                        $hutang = self::sanitizeNumber($get('hutang_awal'));
-                                        if ($val > $hutang) {
-                                            $fail("Potongan tidak boleh melebihi sisa hutang (Rp " . number_format($hutang, 0, ',', '.') . ")");
-                                        }
-
-                                        $subTotal = self::sanitizeNumber($get('sub_total'));
-                                        $upah = self::sanitizeNumber($get('upah_bongkar'));
-                                        $lain = self::sanitizeNumber($get('biaya_lain'));
-                                        $pengurangan = $upah + $lain;
-                                        $maxBayar = max(0, $subTotal - $pengurangan);
-
-                                        if ($val > $maxBayar) {
-                                            $fail("Potongan tidak boleh melebihi sisa hasil transaksi (Rp " . number_format($maxBayar, 0, ',', '.') . ")");
-                                        }
+                                        $error = TransaksiDo::validatePotonganHutang(
+                                            $value, 
+                                            $get('hutang_awal'),
+                                            $get('sub_total'),
+                                            $get('upah_bongkar'),
+                                            $get('biaya_lain')
+                                        );
+                                        if ($error) $fail($error);
                                     },
                                 ]),
                         ])->columns(3),
@@ -251,25 +244,14 @@ class TransaksiDoForm
                                 ->rules([
                                     function (Get $get) {
                                         return function (string $attribute, $value, \Closure $fail) use ($get) {
-                                            $user = Auth::user();
-                                            // Jika Admin/SuperAdmin/Pimpinan, boleh lanjut meskipun saldo tidak cukup
-                                            if ($user && method_exists($user, 'isAdminOrSuperAdmin') && $user->isAdminOrSuperAdmin()) {
-                                                return;
-                                            }
-
-                                            $perusahaan = \Filament\Facades\Filament::getTenant();
-                                            if (!$perusahaan) return;
-
-                                            $cekNominal = 0;
-                                            if ($value === 'tunai') {
-                                                $cekNominal = self::sanitizeNumber($get('sisa_bayar'));
-                                            } elseif ($value === 'tunai & transfer') {
-                                                $cekNominal = self::sanitizeNumber($get('nominal_tunai'));
-                                            }
-
-                                            if ($cekNominal > 0 && $cekNominal > $perusahaan->saldo) {
-                                                $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "). Hanya Admin yang dapat melanjutkan transaksi ini.");
-                                            }
+                                            $error = TransaksiDo::validateCaraBayar(
+                                                $value,
+                                                $get('sisa_bayar'),
+                                                $get('nominal_tunai'),
+                                                \Filament\Facades\Filament::getTenant()->saldo ?? 0,
+                                                Auth::user()
+                                            );
+                                            if ($error) $fail($error);
                                         };
                                     },
                                 ]),
@@ -307,11 +289,8 @@ class TransaksiDoForm
                                 ->rules([
                                     function (Get $get) {
                                         return function (string $attribute, $value, \Closure $fail) use ($get) {
-                                            $sisaBayar = self::sanitizeNumber($get('sisa_bayar'));
-                                            $val = self::sanitizeNumber($value);
-                                            if ($val > $sisaBayar) {
-                                                $fail("Nominal tunai tidak boleh melebihi total bayar (Rp " . number_format($sisaBayar, 0, ',', '.') . ")");
-                                            }
+                                            $error = TransaksiDo::validateNominalTunai($value, $get('sisa_bayar'));
+                                            if ($error) $fail($error);
                                         };
                                     },
                                 ]),
@@ -354,6 +333,7 @@ class TransaksiDoForm
     /**
      * Memanggil logika perhitungan dari model dan memperbarui state form.
      * Dibuat private agar tidak bisa diakses dari luar sesuai best practice.
+     * Letaknya tetap di Form/Schema (Resource) karena berinteraksi langsung dengan Set/Get Filament.
      */
     private static function applyCalculations(Get $get, Set $set): void
     {
