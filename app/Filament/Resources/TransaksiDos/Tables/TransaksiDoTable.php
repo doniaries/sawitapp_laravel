@@ -54,7 +54,7 @@ class TransaksiDoTable
                     ->falseIcon('heroicon-o-check-circle')
                     ->trueColor('danger')
                     ->falseColor('success')
-                    ->tooltip(fn($record) => $record->is_mismatch ? 'Hitungan Sistem Tidak Cocok' : 'Data Cocok/Sesuai'),
+                    ->tooltip(fn($record) => $record->is_mismatch ? 'Rekapan Meragukan' : 'Rekapan Sesuai'),
 
                 ImageColumn::make('bukti_rekap')
                     ->label('Bukti')
