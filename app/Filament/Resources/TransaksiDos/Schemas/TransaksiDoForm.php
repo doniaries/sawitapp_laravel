@@ -48,9 +48,6 @@ class TransaksiDoForm
                                 ->maxLength(255)
                                 ->disabled()
                                 ->dehydrated(),
-
-
-
                         ])->columns(2),
 
                         \Filament\Schemas\Components\Group::make([
@@ -174,25 +171,19 @@ class TransaksiDoForm
 
                         // 4. Tonase & Harga -> Sub Total
                         \Filament\Schemas\Components\Group::make([
-                            self::numericInput(
-                                TextInput::make('tonase'),
-                                precision: 0,
-                                suffix: 'Kg'
-                            )
-                                ->label('Tonase (Kg)')
-                                ->required()
-                                ->live(onBlur: true)
-                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(
-                                TextInput::make('harga_satuan')
-                            )
+                            self::currencyInput(TextInput::make('harga_satuan'))
                                 ->label('Harga Satuan')
                                 ->required()
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(
-                                TextInput::make('sub_total')
-                            )
+
+                            self::currencyInput(TextInput::make('tonase'))
+                                ->label('Tonase (Kg)')
+                                ->suffix('Kg')
+                                ->required()
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
+                            self::currencyInput(TextInput::make('sub_total'))
                                 ->label('Sub Total')
                                 ->disabled()
                                 ->dehydrated()
@@ -204,29 +195,31 @@ class TransaksiDoForm
                                 ->extraInputAttributes([
                                     'style' => 'font-size: 1.25rem !important; font-weight: 800; color: #de8209 !important; -webkit-text-fill-color: #de8209 !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
                                     'class' => 'text-blue-600 dark:text-blue-400'
-                                ]),
+                                ])
+
                         ])->columns(3),
 
                         // 5. Pengurangan (Biaya & Hutang)
                         \Filament\Schemas\Components\Group::make([
-                            self::currencyInput(
-                                TextInput::make('upah_bongkar')
-                            )
+
+                            TextInput::make('upah_bongkar')
                                 ->label('Upah Bongkar')
                                 ->placeholder('0')
-                                // ->default(0)
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(
-                                TextInput::make('biaya_lain')
-                            )
+
+                            TextInput::make('biaya_lain')
                                 ->label('Biaya Lain/Pengambilan')
                                 ->placeholder('0')
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(
-                                TextInput::make('pembayaran_hutang')
-                            )
+                            TextInput::make('pembayaran_hutang')
+                                ->label('Potong Hutang')
+                                ->placeholder('0')
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
+
+                            TextInput::make('pembayaran_hutang')
                                 ->label('Potong Hutang')
                                 ->hint(fn(Get $get) => $get('penjual_id') ? 'Sisa Hutang: ' . money($get('hutang_awal') ?? 0, 'IDR') : null)
                                 ->hintColor('danger')
