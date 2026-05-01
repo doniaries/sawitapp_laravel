@@ -144,7 +144,7 @@ class TransaksiDoTable
 
                 TextColumn::make('sisa_bayar')
                     ->label('Sisa Bayar')
-
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->color(Color::Green)
                     ->weight('bold')
                     ->summarize([
