@@ -98,7 +98,7 @@ trait HasHutangTrait
 
         return $query->addSelect([
             'total_pembayaran_sum' => PembayaranHutang::query()->selectRaw('COALESCE(SUM(nominal), 0)')
-                ->whereColumn($foreignKey, "{$table}.id")
+                ->where($foreignKey, "{$table}.id")
         ])->selectRaw("({$table}.hutang - (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE {$foreignKey} = {$table}.id)) as sisa_hutang_sum");
     }
 

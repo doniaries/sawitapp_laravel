@@ -83,76 +83,79 @@ class TransaksiDoTable
                     ->searchable()
                     ->wrap(),
 
-                self::numericColumn(
-                    TextColumn::make('tonase')
-                        ->label('Tonase'),
-                    precision: 0,
-                    suffix: 'Kg'
-                )
+
+                TextColumn::make('tonase')
+                    ->label('Tonase')
+                    ->suffix(' Kg')
                     ->summarize([
-                        self::numericSummarizer(Sum::make(), precision: 0, suffix: 'Kg')
+                        Sum::make()
+                            ->suffix(' Kg')
                     ])
+                    ->numeric()
                     ->sortable(),
 
-                self::currencyColumn(
-                    TextColumn::make('harga_satuan')
-                        ->label('Harga')
-                )
+
+                TextColumn::make('harga_satuan')
+                    ->label('Harga Satuan')
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->sortable(),
 
-                self::currencyColumn(
-                    TextColumn::make('sub_total')
-                        ->label('Sub Total')
-                )
+                TextColumn::make('sub_total')
+                    ->label('Sub Total')
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->color(Color::Amber)
                     ->weight('bold')
                     ->summarize([
-                        self::currencySummarizer(Sum::make())
+                        Sum::make()
+                            ->currency('IDR', true)
                     ])
                     ->sortable(),
 
-                self::currencyColumn(
-                    TextColumn::make('upah_bongkar')
-                        ->label('Bongkar')
-                )
+
+                TextColumn::make('upah_bongkar')
+                    ->label('Upah Bongkar')
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->summarize([
-                        self::currencySummarizer(Sum::make())
+                        Sum::make()
+                            ->currency('IDR', true)
                     ])
                     ->sortable(),
 
-                self::currencyColumn(
-                    TextColumn::make('biaya_lain')
-                        ->label('Biaya Lain/Pengambilan')
-                )
+
+                TextColumn::make('biaya_lain')
+                    ->label('Biaya Lain/Pengambilan')
+
                     ->summarize([
-                        self::currencySummarizer(Sum::make())
+                        Sum::make()
+                            ->currency('IDR', true)
                     ])
                     ->sortable(),
 
-                self::currencyColumn(
-                    TextColumn::make('pembayaran_hutang')
-                        ->label('Bayar Hutang')
-                )
+
+                TextColumn::make('pembayaran_hutang')
+                    ->label('Bayar Hutang')
+
                     ->summarize([
-                        self::currencySummarizer(Sum::make())
+                        Sum::make()
+                            ->currency('IDR', true)
                     ])
                     ->sortable(),
 
-                self::currencyColumn(
-                    TextColumn::make('sisa_bayar')
-                        ->label('Sisa Bayar')
-                )
+
+                TextColumn::make('sisa_bayar')
+                    ->label('Sisa Bayar')
+
                     ->color(Color::Green)
                     ->weight('bold')
                     ->summarize([
-                        self::currencySummarizer(Sum::make())
+                        Sum::make()
+                            ->currency('IDR', true)
                     ])
                     ->sortable(),
 
-                self::currencyColumn(
-                    TextColumn::make('nominal_tunai')
-                        ->label('Tunai (Split)')
-                )
+
+                TextColumn::make('nominal_tunai')
+                    ->label('Tunai (Split)')
                     ->description(fn($record) => $record->cara_bayar === 'tunai & transfer' ? 'Dari total sisa bayar' : null)
                     ->toggleable(isToggledHiddenByDefault: true),
 
