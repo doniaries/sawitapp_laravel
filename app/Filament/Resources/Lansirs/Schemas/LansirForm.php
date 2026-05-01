@@ -58,10 +58,10 @@ class LansirForm
                             ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                             ->suffix('Kg')
                             ->live(onBlur: true)
-                            ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                             ->afterStateUpdated(function ($state, $get, $set) {
-                                $tonase = self::formatCurrency($state);
-                                $harga = self::formatCurrency($get('harga_satuan'));
+                                // Simple cleanup for calculation
+                                $tonase = (float) str_replace(['.', ','], ['', '.'], $state);
+                                $harga = (float) str_replace(['.', ','], ['', '.'], $get('harga_satuan'));
                                 
                                 // Total = Tonase * Harga Satuan
                                 $set('total', (int) round($tonase * $harga));
@@ -75,10 +75,9 @@ class LansirForm
                             ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                             ->prefix('Rp')
                             ->live(onBlur: true)
-                            ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                             ->afterStateUpdated(function ($state, $get, $set) {
-                                $harga = self::formatCurrency($state);
-                                $tonase = self::formatCurrency($get('tonase'));
+                                $harga = (float) str_replace(['.', ','], ['', '.'], $state);
+                                $tonase = (float) str_replace(['.', ','], ['', '.'], $get('tonase'));
                                 
                                 $set('total', (int) round($tonase * $harga));
                             }),
@@ -89,7 +88,6 @@ class LansirForm
                             ->prefix('Rp')
                             ->readOnly()
                             ->dehydrated()
-                            ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                             ->extraAttributes(['class' => 'bg-gray-100 font-bold']),
                         TextInput::make('upah')
                             ->label('Upah Supir (Rp 100k/Ton)')
@@ -98,30 +96,8 @@ class LansirForm
                             ->prefix('Rp')
                             ->readOnly()
                             ->dehydrated()
-                            ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                             ->extraAttributes(['class' => 'bg-blue-50 font-bold']),
                     ]),
             ]);
-    }
-
-    private static function formatCurrency(mixed $number): float
-    {
-        if (empty($number)) return 0;
-        
-        if (is_numeric($number) && !is_string($number)) {
-            return (float) $number;
-        }
-
-        $str = (string) $number;
-        $str = str_replace(' ', '', $str);
-
-        if (str_contains($str, ',')) {
-            $str = str_replace('.', '', $str);
-            $str = str_replace(',', '.', $str);
-        } elseif (str_contains($str, '.')) {
-            $str = str_replace('.', '', $str);
-        }
-        
-        return (float) $str;
     }
 }

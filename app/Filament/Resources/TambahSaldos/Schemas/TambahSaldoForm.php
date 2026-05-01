@@ -39,33 +39,11 @@ class TambahSaldoForm
                     ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                     ->prefix('Rp')
                     ->default(null)
-                    ->debounce(500)
-                    ->dehydrateStateUsing(fn($state) => self::formatCurrency($state)),
+                    ->debounce(500),
                 Textarea::make('keterangan')
                     ->columnSpanFull()
                     ->maxLength(100)
                     ->debounce(500),
             ]);
-    }
-
-    private static function formatCurrency(mixed $number): float
-    {
-        if (empty($number)) return 0;
-        
-        if (is_numeric($number) && !is_string($number)) {
-            return (float) $number;
-        }
-
-        $str = (string) $number;
-        $str = str_replace(' ', '', $str);
-
-        if (str_contains($str, ',')) {
-            $str = str_replace('.', '', $str);
-            $str = str_replace(',', '.', $str);
-        } elseif (str_contains($str, '.')) {
-            $str = str_replace('.', '', $str);
-        }
-        
-        return (float) $str;
     }
 }

@@ -22,9 +22,11 @@ use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Support\Colors\Color;
 use App\Models\TransaksiDo;
+use App\Traits\HasCurrencyInput;
 
 class TransaksiDoTable
 {
+    use HasCurrencyInput;
     public static function configure(Table $table): Table
     {
         return $table
@@ -81,85 +83,76 @@ class TransaksiDoTable
                     ->searchable()
                     ->wrap(),
 
-                TextColumn::make('tonase')
-                    ->label('Tonase')
-                    ->suffix(' Kg')
-                    ->numeric(0, ',', '.')
+                self::numericColumn(
+                    TextColumn::make('tonase')
+                        ->label('Tonase'),
+                    precision: 0,
+                    suffix: 'Kg'
+                )
                     ->summarize([
-                        Sum::make()->suffix(' Kg')
-                            ->numeric(0, ',', '.')
+                        self::numericSummarizer(Sum::make(), precision: 0, suffix: 'Kg')
                     ])
                     ->sortable(),
 
-                TextColumn::make('harga_satuan')
-                    ->label('Harga')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                self::currencyColumn(
+                    TextColumn::make('harga_satuan')
+                        ->label('Harga')
+                )
                     ->sortable(),
 
-                TextColumn::make('sub_total')
-                    ->label('Sub Total')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                self::currencyColumn(
+                    TextColumn::make('sub_total')
+                        ->label('Sub Total')
+                )
                     ->color(Color::Amber)
                     ->weight('bold')
                     ->summarize([
-                        Sum::make()
-                            ->numeric(0, ',', '.')
-                            ->prefix('Rp ')
+                        self::currencySummarizer(Sum::make())
                     ])
                     ->sortable(),
 
-                TextColumn::make('upah_bongkar')
-                    ->label('Bongkar')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                self::currencyColumn(
+                    TextColumn::make('upah_bongkar')
+                        ->label('Bongkar')
+                )
                     ->summarize([
-                        Sum::make()
-                            ->numeric(0, ',', '.')
-                            ->prefix('Rp ')
+                        self::currencySummarizer(Sum::make())
                     ])
                     ->sortable(),
 
-                TextColumn::make('biaya_lain')
-                    ->label('Biaya Lain/Pengambilan')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                self::currencyColumn(
+                    TextColumn::make('biaya_lain')
+                        ->label('Biaya Lain/Pengambilan')
+                )
                     ->summarize([
-                        Sum::make()
-                            ->numeric(0, ',', '.')
-                            ->prefix('Rp ')
+                        self::currencySummarizer(Sum::make())
                     ])
                     ->sortable(),
 
-                TextColumn::make('pembayaran_hutang')
-                    ->label('Bayar Hutang')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                self::currencyColumn(
+                    TextColumn::make('pembayaran_hutang')
+                        ->label('Bayar Hutang')
+                )
                     ->summarize([
-                        Sum::make()
-                            ->numeric(0, ',', '.')
-                            ->prefix('Rp ')
+                        self::currencySummarizer(Sum::make())
                     ])
                     ->sortable(),
 
-                TextColumn::make('sisa_bayar')
-                    ->label('Sisa Bayar')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                self::currencyColumn(
+                    TextColumn::make('sisa_bayar')
+                        ->label('Sisa Bayar')
+                )
                     ->color(Color::Green)
                     ->weight('bold')
                     ->summarize([
-                        Sum::make()
-                            ->numeric(0, ',', '.')
-                            ->prefix('Rp ')
+                        self::currencySummarizer(Sum::make())
                     ])
                     ->sortable(),
 
-                TextColumn::make('nominal_tunai')
-                    ->label('Tunai (Split)')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                self::currencyColumn(
+                    TextColumn::make('nominal_tunai')
+                        ->label('Tunai (Split)')
+                )
                     ->description(fn($record) => $record->cara_bayar === 'tunai & transfer' ? 'Dari total sisa bayar' : null)
                     ->toggleable(isToggledHiddenByDefault: true),
 

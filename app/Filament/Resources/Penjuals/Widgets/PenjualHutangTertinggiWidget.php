@@ -40,8 +40,7 @@ class PenjualHutangTertinggiWidget extends BaseWidget
 
                 Tables\Columns\TextColumn::make('sisa_hutang')
                     ->label('Sisa Hutang')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->alignEnd()
                     ->sortable()
                     ->badge()

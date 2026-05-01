@@ -32,8 +32,7 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('nominal')
                     ->label('Jumlah Bayar')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->alignEnd()
                     ->color('success')
                     ->weight('bold')
@@ -57,11 +56,12 @@ class RiwayatPembayaranHutangRelationManager extends RelationManager
                             ->disabled()
                             ->dehydrated(false)
                             ->prefix('Rp')
-                            ->default(fn() => number_format($this->getOwnerRecord()->sisa_hutang, 0, ',', '.')),
+                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
+                            ->default(fn() => $this->getOwnerRecord()->sisa_hutang),
 
                         TextInput::make('nominal')
                             ->label('Nominal Pembayaran')
-                            ->numeric()
+                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                             ->required()
                             ->prefix('Rp')
                             ->default(fn() => $this->getOwnerRecord()->sisa_hutang)

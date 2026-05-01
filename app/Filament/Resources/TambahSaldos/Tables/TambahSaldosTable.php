@@ -36,8 +36,7 @@ class TambahSaldosTable
                     ->label('Entry Oleh')
                     ->searchable(),
                 TextColumn::make('nominal')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->sortable(),
                 TextColumn::make('keterangan')
                     ->searchable()

@@ -13,13 +13,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Auth;
-use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
-
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use App\Traits\HasCurrencyInput;
 
 class TransaksiDoForm
@@ -36,15 +35,13 @@ class TransaksiDoForm
                 Hidden::make('user_id')
                     ->default(fn() => Auth::id()),
 
-                Section::make('Transaksi DO')
+                \Filament\Schemas\Components\Section::make('Transaksi DO')
                     ->icon('heroicon-m-document-text')
                     ->components([
                         // 1. Tanggal & Nama Penjual
-                        Group::make([
-                            
+                        \Filament\Schemas\Components\Group::make([
                             DateTimePicker::make('tanggal')
                                 ->label('Tanggal')
-                                
                                 ->format('Y-m-d H:i:s')
                                 ->native(false)
                                 ->displayFormat('d/m/Y H:i:s')
@@ -57,14 +54,14 @@ class TransaksiDoForm
                                     }
                                 })
                                 ->rules([
-                                    fn ($get) => function (string $attribute, $value, $fail) use ($get) {
+                                    fn($get) => function (string $attribute, $value, $fail) use ($get) {
                                         $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
                                         if (!\App\Models\TutupHari::canModify($value, $perusahaanId)) {
                                             $fail("Data tidak dapat ditambah/diubah karena hari tersebut sudah ditutup.");
                                         }
                                     },
                                 ]),
-                                TextInput::make('nomor')
+                            TextInput::make('nomor')
                                 ->label('Nomor DO')
                                 ->default(fn() => TransaksiDo::generateMonthlyNumber())
                                 ->required()
@@ -123,7 +120,7 @@ class TransaksiDoForm
                         ])->columns(2),
 
                         // 2. Nama Supir & Nomor Polisi
-                        Group::make([
+                        \Filament\Schemas\Components\Group::make([
                             Select::make('supir_id')
                                 ->label('Nama Supir')
                                 ->relationship(
@@ -171,19 +168,26 @@ class TransaksiDoForm
 
 
                         // 4. Tonase & Harga -> Sub Total
-                        Group::make([
-                            self::currencyInput(TextInput::make('tonase'))
+                        \Filament\Schemas\Components\Group::make([
+                            self::numericInput(
+                                TextInput::make('tonase'),
+                                precision: 0,
+                                suffix: 'Kg'
+                            )
                                 ->label('Tonase (Kg)')
-                                ->suffix('Kg')
                                 ->required()
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(TextInput::make('harga_satuan'))
+                            self::currencyInput(
+                                TextInput::make('harga_satuan')
+                            )
                                 ->label('Harga Satuan')
                                 ->required()
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(TextInput::make('sub_total'))
+                            self::currencyInput(
+                                TextInput::make('sub_total')
+                            )
                                 ->label('Sub Total')
                                 ->disabled()
                                 ->dehydrated()
@@ -191,25 +195,31 @@ class TransaksiDoForm
                         ])->columns(3),
 
                         // 5. Pengurangan (Biaya & Hutang)
-                        Group::make([
-                            self::currencyInput(TextInput::make('upah_bongkar'))
+                        \Filament\Schemas\Components\Group::make([
+                            self::currencyInput(
+                                TextInput::make('upah_bongkar')
+                            )
                                 ->label('Upah Bongkar')
                                 ->placeholder('0')
                                 ->default(0)
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(TextInput::make('biaya_lain'))
+                            self::currencyInput(
+                                TextInput::make('biaya_lain')
+                            )
                                 ->label('Biaya Lain/Pengambilan')
                                 ->placeholder('0')
                                 ->default(0)
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(TextInput::make('pembayaran_hutang'))
+                            self::currencyInput(
+                                TextInput::make('pembayaran_hutang')
+                            )
                                 ->label('Potong Hutang')
-                                ->hint(fn(Get $get) => $get('penjual_id') ? 'Sisa Hutang: Rp ' . number_format($get('hutang_awal') ?? 0, 0, ',', '.') : null)
+                                ->hint(fn(Get $get) => $get('penjual_id') ? 'Sisa Hutang: ' . money($get('hutang_awal') ?? 0, 'IDR') : null)
                                 ->hintColor('danger')
                                 ->hintIcon('heroicon-m-exclamation-circle')
-                                ->helperText(fn(Get $get) => $get('penjual_id') ? 'Hutang penjual saat ini: Rp ' . number_format($get('hutang_awal') ?? 0, 0, ',', '.') : 'Pilih penjual untuk melihat hutang')
+                                ->helperText(fn(Get $get) => $get('penjual_id') ? 'Hutang penjual saat ini: ' . money($get('hutang_awal') ?? 0, 'IDR') : 'Pilih penjual untuk melihat hutang')
                                 ->placeholder('0')
                                 ->default(0)
                                 ->live(onBlur: true)
@@ -217,7 +227,7 @@ class TransaksiDoForm
                                 ->rules([
                                     fn(Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                                         $error = TransaksiDo::validatePotonganHutang(
-                                            $value, 
+                                            $value,
                                             $get('hutang_awal'),
                                             $get('sub_total'),
                                             $get('upah_bongkar'),
@@ -229,7 +239,7 @@ class TransaksiDoForm
                         ])->columns(3),
 
                         // Ringkasan & Total
-                        Group::make([
+                        \Filament\Schemas\Components\Group::make([
                             Select::make('cara_bayar')
                                 ->label('Cara Bayar')
                                 ->options(TransaksiDo::CARA_BAYAR)
@@ -256,7 +266,9 @@ class TransaksiDoForm
                                     },
                                 ]),
 
-                            self::currencyInput(TextInput::make('sisa_bayar'))
+                            self::currencyInput(
+                                TextInput::make('sisa_bayar')
+                            )
                                 ->label('Total Bayar ke Penjual')
                                 ->readOnly()
                                 ->dehydrated()
@@ -269,16 +281,18 @@ class TransaksiDoForm
                                     'class' => 'text-blue-600 dark:text-blue-400'
                                 ]),
 
-                            Text::make(fn() => 'Saldo Perusahaan: Rp ' . number_format(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 0, ',', '.'))
+                            Text::make(fn() => 'Saldo Perusahaan: ' . money(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 'IDR'))
                                 ->weight('bold')
                                 ->extraAttributes([
-                                    'style' => 'font-weight: 700; font-size: 1rem; color: #ffffff !important; background-color: #2563eb !important; display: inline-block; padding: 6px 16px; border-radius: 8px; border: 1px solid #1d4ed8; box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1);',
+                                    'style' => 'font-weight: 700; font-size: 1rem; color: #010d10 !important; background-color: #e6ca28 !important; display: inline-block; padding: 6px 16px; border-radius: 8px; box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1);',
                                     'class' => 'mt-1 mb-4'
                                 ]),
 
-                            
 
-                            self::currencyInput(TextInput::make('nominal_tunai'))
+
+                            self::currencyInput(
+                                TextInput::make('nominal_tunai')
+                            )
                                 ->label('Nominal Tunai')
                                 ->helperText('Jumlah cash yang diambil')
                                 ->placeholder('0')
@@ -296,7 +310,7 @@ class TransaksiDoForm
                                 ]),
                         ])->columns(2),
 
-                        Section::make('Validasi & Lampiran')
+                        \Filament\Schemas\Components\Section::make('Validasi & Lampiran')
                             ->description('Penanda kecocokan data dan unggah bukti rekap')
                             ->collapsible()
                             ->components([
@@ -306,7 +320,7 @@ class TransaksiDoForm
                                     ->onColor('danger')
                                     ->onIcon('heroicon-m-exclamation-triangle')
                                     ->offIcon('heroicon-m-check-circle'),
-                                
+
                                 FileUpload::make('bukti_rekap')
                                     ->label('Unggah Bukti Pedoman Rekap Kasir')
                                     ->disk('public')
@@ -345,7 +359,7 @@ class TransaksiDoForm
             'pembayaran_hutang' => $get('pembayaran_hutang'),
             'hutang_awal' => $get('hutang_awal'),
         ]);
-        
+
         $set('sub_total', $results['sub_total']);
         $set('sisa_bayar', $results['sisa_bayar']);
         $set('sisa_hutang_penjual', $results['sisa_hutang_penjual']);

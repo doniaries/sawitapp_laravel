@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @mixin \Illuminate\Database\Eloquent\Model
+ */
 trait HasHutangTrait
 {
     public static function bootHasHutangTrait()
@@ -131,7 +134,7 @@ trait HasHutangTrait
      */
     public function getFormattedHutangAttribute(): string
     {
-        return 'Rp ' . number_format($this->hutang ?? 0, 0, ',', '.');
+        return (string) money($this->hutang ?? 0, 'IDR');
     }
 
     /**
@@ -141,8 +144,8 @@ trait HasHutangTrait
     {
         if ($nominal > $this->sisa_hutang) {
             throw new \Exception(
-                "Pembayaran Rp " . number_format($nominal, 0, ',', '.') .
-                    " melebihi sisa hutang Rp " . number_format($this->sisa_hutang, 0, ',', '.')
+                "Pembayaran " . money($nominal, 'IDR') .
+                    " melebihi sisa hutang " . money($this->sisa_hutang, 'IDR')
             );
         }
         return true;

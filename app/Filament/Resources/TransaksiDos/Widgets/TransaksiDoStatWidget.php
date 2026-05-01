@@ -65,7 +65,7 @@ class TransaksiDoStatWidget extends BaseWidget
 
                 return [
                     Stat::make('DO Hari Ini', (int)$doStats->count)
-                        ->description('Total: Rp ' . number_format($doStats->total ?? 0, 0, ',', '.'))
+                        ->description('Total: ' . money($doStats->total ?? 0, 'IDR'))
                         ->descriptionIcon('heroicon-m-clock')
                         ->color('info')
                         ->url(TransaksiDoResource::getUrl('index', ['activeTab' => 'hari_ini'])),
@@ -73,14 +73,14 @@ class TransaksiDoStatWidget extends BaseWidget
                     // Total Income (Today)
                     Stat::make('Uang Masuk (Hari Ini)', new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-success-600 text-white font-bold text-base shadow-sm">
-                            Rp ' . number_format($totalIncomingToday, 0, ',', '.') . '
+                            ' . money($totalIncomingToday, 'IDR') . '
                         </div>
                     '))
                         ->description(sprintf(
-                            "Bayar Hutang: Rp %s | Bayar Sisa: Rp %s\nOperasional: Rp %s",
-                            number_format($doStats->total_debt_payments ?? 0, 0, ',', '.'),
-                            number_format($doStats->remaining_payments ?? 0, 0, ',', '.'),
-                            number_format($opStats->total_pemasukan ?? 0, 0, ',', '.')
+                            "Bayar Hutang: %s | Bayar Sisa: %s\nOperasional: %s",
+                            money($doStats->total_debt_payments ?? 0, 'IDR'),
+                            money($doStats->remaining_payments ?? 0, 'IDR'),
+                            money($opStats->total_pemasukan ?? 0, 'IDR')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-up')
                         ->color('success')
@@ -92,13 +92,13 @@ class TransaksiDoStatWidget extends BaseWidget
                     // Total Expenditure (Today)
                     Stat::make('Pengeluaran (Hari Ini)', new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-danger-600 text-white font-bold text-base shadow-sm">
-                            Rp ' . number_format($totalExpenditureToday, 0, ',', '.') . '
+                            ' . money($totalExpenditureToday, 'IDR') . '
                         </div>
                     '))
                         ->description(sprintf(
-                            "DO: Rp %s | Operasional: Rp %s",
-                            number_format($doStats->total ?? 0, 0, ',', '.'),
-                            number_format($opStats->total_pengeluaran ?? 0, 0, ',', '.')
+                            "DO: %s | Operasional: %s",
+                            money($doStats->total ?? 0, 'IDR'),
+                            money($opStats->total_pengeluaran ?? 0, 'IDR')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-down')
                         ->color('danger')

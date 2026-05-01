@@ -115,7 +115,7 @@ class TransaksiDoObserver
         if (!$penjual) throw new \Exception('Data penjual tidak ditemukan');
 
         if ($transaksiDo->pembayaran_hutang > $penjual->sisa_hutang) {
-            throw new \Exception("Pembayaran hutang Rp " . number_format($transaksiDo->pembayaran_hutang, 0, ',', '.') . " melebihi sisa hutang Rp " . number_format($penjual->sisa_hutang, 0, ',', '.'));
+            throw new \Exception("Pembayaran hutang " . money($transaksiDo->pembayaran_hutang, 'IDR') . " melebihi sisa hutang " . money($penjual->sisa_hutang, 'IDR'));
         }
 
         // 1. Create PembayaranHutang record for the trait calculation
@@ -160,7 +160,7 @@ class TransaksiDoObserver
 
             $perusahaan = Perusahaan::lockForUpdate()->find($transaksiDo->perusahaan_id);
             if ($perusahaan && $perusahaan->saldo < $nominalDibutuhkan) {
-                throw new \Exception("Saldo perusahaan tidak mencukupi untuk pembayaran tunai (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "). Transaksi hanya bisa dilanjutkan oleh Admin.");
+                throw new \Exception("Saldo perusahaan tidak mencukupi untuk pembayaran tunai (Saldo: " . money($perusahaan->saldo, 'IDR') . "). Transaksi hanya bisa dilanjutkan oleh Admin.");
             }
         }
     }

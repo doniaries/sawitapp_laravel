@@ -110,6 +110,6 @@ class TransaksiOperasional extends Model
     // Tambahkan accessor untuk memformat hutang
     public function getFormattedHutangAttribute(): string
     {
-        return 'Rp ' . number_format($this->hutang_awal ?? 0, 0, ',', '.');
+        return (string) money($this->hutang_awal ?? 0, 'IDR');
     }
 }

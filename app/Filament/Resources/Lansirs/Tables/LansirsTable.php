@@ -34,29 +34,23 @@ class LansirsTable
                     ->sortable(),
                 TextColumn::make('tonase')
                     ->label('Tonase')
-                    ->numeric(2, ',', '.')
+                    ->numeric(0, ',', '.')
                     ->suffix(' Kg')
                     ->alignment('right')
                     ->sortable(),
                 TextColumn::make('harga_satuan')
                     ->label('Harga')
-                    ->numeric(2, ',', '.')
-                    ->prefix('Rp ')
-                    ->alignment('right')
+                    ->currency('IDR')
                     ->sortable(),
                 TextColumn::make('total')
                     ->label('Total')
-                    ->numeric(2, ',', '.')
-                    ->prefix('Rp ')
-                    ->alignment('right')
+                    ->currency('IDR')
                     ->weight('bold')
                     ->color('primary')
                     ->sortable(),
                 TextColumn::make('upah')
                     ->label('Upah Supir')
-                    ->numeric(2, ',', '.')
-                    ->prefix('Rp ')
-                    ->alignment('right')
+                    ->currency('IDR')
                     ->color('success')
                     ->sortable(),
                 TextColumn::make('created_at')

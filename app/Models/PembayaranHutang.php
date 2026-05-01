@@ -62,7 +62,7 @@ class PembayaranHutang extends Model
     // Helper method untuk format nominal
     public function getFormattedNominalAttribute(): string
     {
-        return 'Rp ' . number_format($this->nominal, 0, ',', '.');
+        return (string) money($this->nominal, 'IDR');
     }
 
     // Helper untuk ambil nama pembayar

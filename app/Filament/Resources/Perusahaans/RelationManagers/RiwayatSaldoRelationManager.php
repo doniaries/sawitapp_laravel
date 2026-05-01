@@ -38,8 +38,7 @@ class RiwayatSaldoRelationManager extends RelationManager
                 //     ->label('oleh')
                 //     ->searchable(),
                 Tables\Columns\TextColumn::make('nominal')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('cara_pembayaran')
                     ->badge(),

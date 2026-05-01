@@ -57,7 +57,7 @@ trait JurnalKeuanganTrait
      */
     protected function formatCurrency(float $nominal): string
     {
-        return number_format($nominal, 0, ',', '.');
+        return (string) money($nominal, 'IDR');
     }
 
     /**

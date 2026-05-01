@@ -74,30 +74,30 @@ class DashboardStatsWidget extends BaseWidget
         $blueTextStyle = 'text-base font-bold text-blue-600 dark:text-blue-400';
 
         return [
-            Stat::make('SELISIH KAS (PERIODE)', new \Illuminate\Support\HtmlString('<div class="' . $blueTextStyle . '">Rp ' . number_format($selisihKas, 0, ',', '.') . '</div>'))
+            Stat::make('SELISIH KAS (PERIODE)', new \Illuminate\Support\HtmlString('<div class="' . $blueTextStyle . '">' . money($selisihKas, 'IDR') . '</div>'))
                 ->description($selisihKas < 0 ? 'Peringatan: Pengeluaran melebihi pemasukan hari ini.' : 'Total Uang Masuk - Total Pengeluaran')
                 ->icon('heroicon-m-scale')
                 ->color($selisihKas >= 0 ? 'success' : 'danger'),
 
-            Stat::make('TOTAL SALDO/UANG MASUK', new \Illuminate\Support\HtmlString('<div class="' . $blueTextStyle . '">Rp ' . number_format($uangMasukTotal, 0, ',', '.') . '</div>'))
+            Stat::make('TOTAL SALDO/UANG MASUK', new \Illuminate\Support\HtmlString('<div class="' . $blueTextStyle . '">' . money($uangMasukTotal, 'IDR') . '</div>'))
                 ->description(sprintf(
-                    "Transfer: Rp %s | Hutang: Rp %s",
-                    number_format($totalTransfer, 0, ',', '.'),
-                    number_format($potongHutang, 0, ',', '.')
+                    "Transfer: %s | Hutang: %s",
+                    money($totalTransfer, 'IDR'),
+                    money($potongHutang, 'IDR')
                 ))
                 ->icon('heroicon-m-arrow-down-circle')
                 ->color('success'),
 
-            Stat::make('PENGELUARAN/UANG KELUAR', new \Illuminate\Support\HtmlString('<div class="' . $blueTextStyle . '">Rp ' . number_format($pengeluaranTotal, 0, ',', '.') . '</div>'))
+            Stat::make('PENGELUARAN/UANG KELUAR', new \Illuminate\Support\HtmlString('<div class="' . $blueTextStyle . '">' . money($pengeluaranTotal, 'IDR') . '</div>'))
                 ->description(sprintf(
-                    "Total DO: Rp %s | Operasional: Rp %s",
-                    number_format($totalDoBruto, 0, ',', '.'),
-                    number_format($totalOperasional, 0, ',', '.')
+                    "Total DO: %s | Operasional: %s",
+                    money($totalDoBruto, 'IDR'),
+                    money($totalOperasional, 'IDR')
                 ))
                 ->icon('heroicon-m-arrow-up-circle')
                 ->color('danger'),
 
-            Stat::make('SALDO AKHIR PERUSAHAAN', new \Illuminate\Support\HtmlString('<div class="' . $blueBadgeStyle . '">Rp ' . number_format($displaySaldoAkhir, 0, ',', '.') . '</div>'))
+            Stat::make('SALDO AKHIR PERUSAHAAN', new \Illuminate\Support\HtmlString('<div class="' . $blueBadgeStyle . '">' . money($displaySaldoAkhir, 'IDR') . '</div>'))
                 ->description($displaySaldoAkhir < 0 ? 'Peringatan: Saldo minus (Aset kas kosong).' : "Saldo Real (Termasuk Profit Biaya)")
                 ->icon('heroicon-m-banknotes')
                 ->color($displaySaldoAkhir >= 0 ? 'success' : 'danger'),

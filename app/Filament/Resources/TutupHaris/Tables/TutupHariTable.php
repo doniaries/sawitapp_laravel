@@ -41,28 +41,24 @@ class TutupHariTable
 
                 TextColumn::make('total_do_rupiah')
                     ->label('Total DO (Rp)')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->toggleable(),
 
                 TextColumn::make('saldo_akhir_sistem')
                     ->label('Saldo Sistem')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->color(Color::Blue)
                     ->weight('bold'),
 
                 TextColumn::make('saldo_akhir_fisik')
                     ->label('Saldo Fisik')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->color(Color::Green)
                     ->weight('bold'),
 
                 TextColumn::make('selisih')
                     ->label('Selisih')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->color(fn ($state) => $state < 0 ? 'danger' : ($state > 0 ? 'warning' : 'success'))
                     ->weight('bold'),
 

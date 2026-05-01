@@ -33,14 +33,11 @@ class PekerjaTable
                 TextColumn::make('telepon')
                     ->searchable(),
                 TextColumn::make('pendapatan')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->sortable(),
                 TextColumn::make('sisa_hutang_sum')
                     ->label('Sisa Hutang')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
-                    ->alignment('right')
+                    ->currency('IDR')
                     ->sortable()
                     ->color(fn($state) => $state > 0 ? 'danger' : 'success')
                     ->weight('bold'),

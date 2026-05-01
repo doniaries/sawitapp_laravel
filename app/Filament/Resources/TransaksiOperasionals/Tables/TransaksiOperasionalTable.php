@@ -48,13 +48,11 @@ class TransaksiOperasionalTable
 
                 TextColumn::make('nominal')
                     ->label('Nominal')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->alignRight()
                     ->sortable()
                     ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()
-                        ->numeric(0, ',', '.')
-                        ->prefix('Rp ')),
+                        ->currency('IDR')),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([

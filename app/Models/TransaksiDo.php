@@ -294,14 +294,14 @@ class TransaksiDo extends Model
         $hutang = \App\Traits\HasCurrencyInput::sanitizeNumber($hutangAwal);
         
         if ($val > $hutang) {
-            return "Potongan tidak boleh melebihi sisa hutang (Rp " . number_format($hutang, 0, ',', '.') . ")";
+            return "Potongan tidak boleh melebihi sisa hutang (" . money($hutang, 'IDR') . ")";
         }
 
         $pengurangan = \App\Traits\HasCurrencyInput::sanitizeNumber($upahBongkar) + \App\Traits\HasCurrencyInput::sanitizeNumber($biayaLain);
         $maxBayar = max(0, \App\Traits\HasCurrencyInput::sanitizeNumber($subTotal) - $pengurangan);
 
         if ($val > $maxBayar) {
-            return "Potongan tidak boleh melebihi sisa hasil transaksi (Rp " . number_format($maxBayar, 0, ',', '.') . ")";
+            return "Potongan tidak boleh melebihi sisa hasil transaksi (" . money($maxBayar, 'IDR') . ")";
         }
 
         return null;
@@ -322,7 +322,7 @@ class TransaksiDo extends Model
         }
 
         if ($cekNominal > 0 && $cekNominal > $perusahaanSaldo) {
-            return "Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaanSaldo, 0, ',', '.') . "). Hanya Admin yang dapat melanjutkan transaksi ini.";
+            return "Saldo perusahaan tidak mencukupi (Saldo: " . money($perusahaanSaldo, 'IDR') . "). Hanya Admin yang dapat melanjutkan transaksi ini.";
         }
 
         return null;
@@ -334,7 +334,7 @@ class TransaksiDo extends Model
         $val = \App\Traits\HasCurrencyInput::sanitizeNumber($value);
         
         if ($val > $totalBayar) {
-            return "Nominal tunai tidak boleh melebihi total bayar (Rp " . number_format($totalBayar, 0, ',', '.') . ")";
+            return "Nominal tunai tidak boleh melebihi total bayar (" . money($totalBayar, 'IDR') . ")";
         }
 
         return null;

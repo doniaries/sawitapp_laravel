@@ -14,11 +14,8 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 
-use App\Traits\HasCurrencyInput;
-
 class TransaksiOperasionalForm
 {
-    use HasCurrencyInput;
 
     public static function configure(Schema $schema): Schema
     {
@@ -91,10 +88,12 @@ class TransaksiOperasionalForm
                                     ->loadingMessage('Memuat data...')
                                     ->placeholder('Pilih Nama')
 ,
-                                self::currencyInput(TextInput::make('nominal'))
+                                TextInput::make('nominal')
+                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
+                                    ->prefix('Rp')
+                                    ->debounce(500)
                                     ->label('Nominal')
                                     ->required()
-                                    ->dehydrateStateUsing(fn($state) => self::sanitizeNumber($state))
                                     ->rules([
                                         function (Get $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
@@ -106,9 +105,11 @@ class TransaksiOperasionalForm
 
                                                 if ($get('operasional') === 'pengeluaran') {
                                                     $perusahaan = \Filament\Facades\Filament::getTenant();
-                                                    $nominalVal = self::sanitizeNumber($value);
+                                                    // Plugin returns plain number, so we cast to float
+                                                    $nominalVal = (float) $value;
+                                                    
                                                     if ($perusahaan && $nominalVal > $perusahaan->saldo) {
-                                                        $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "). Hanya Admin yang dapat melanjutkan transaksi ini.");
+                                                        $fail("Saldo perusahaan tidak mencukupi (Saldo: " . money($perusahaan->saldo, 'IDR') . "). Hanya Admin yang dapat melanjutkan transaksi ini.");
                                                     }
                                                 }
                                             };

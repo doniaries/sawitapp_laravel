@@ -39,15 +39,13 @@ class RiwayatHutangPinjamanRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('nominal')
                     ->label('Nominal')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->alignEnd()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('saldo_akhir')
                     ->label('Sisa Hutang')
-                    ->numeric(0, ',', '.')
-                    ->prefix('Rp ')
+                    ->currency('IDR')
                     ->alignEnd()
                     ->color(fn($state) => $state > 0 ? 'danger' : 'success')
                     ->weight('bold'),

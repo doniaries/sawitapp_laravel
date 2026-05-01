@@ -23,7 +23,7 @@ class TutupHariForm
                     ->native(false),
                 \Filament\Forms\Components\TextInput::make('saldo_akhir_fisik')
                     ->label('Saldo Kas Fisik')
-                    ->numeric()
+                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                     ->prefix('Rp')
                     ->required()
                     ->default(0),

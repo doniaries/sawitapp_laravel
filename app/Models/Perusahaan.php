@@ -82,7 +82,7 @@ class Perusahaan extends Model implements HasMedia
     // Helper method untuk format saldo
     public function getFormattedSaldoAttribute()
     {
-        return 'Rp ' . number_format($this->saldo, 0, ',', '.');
+        return (string) money($this->saldo, 'IDR');
     }
 
     public function riwayatSaldo()

@@ -44,14 +44,14 @@ class TransaksiOperasionalStatsWidget extends BaseWidget
         });
 
         return [
-            Stat::make('Pemasukan Hari Ini', new \Illuminate\Support\HtmlString('<div class="text-base font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($stats['pemasukan'], 0, ',', '.') . '</div>'))
+            Stat::make('Pemasukan Hari Ini', new \Illuminate\Support\HtmlString('<div class="text-base font-bold text-blue-600 dark:text-blue-400">' . money($stats['pemasukan'], 'IDR') . '</div>'))
                 ->description($stats['count_pemasukan'] . ' transaksi pemasukan hari ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success')
                 ->icon('heroicon-o-arrow-up-circle')
                 ->url(TransaksiOperasionalResource::getUrl('index', ['activeTab' => 'pemasukan'])),
 
-            Stat::make('Pengeluaran Hari Ini', new \Illuminate\Support\HtmlString('<div class="text-sm font-bold text-blue-600 dark:text-blue-400">Rp ' . number_format($stats['pengeluaran'], 0, ',', '.') . '</div>'))
+            Stat::make('Pengeluaran Hari Ini', new \Illuminate\Support\HtmlString('<div class="text-sm font-bold text-blue-600 dark:text-blue-400">' . money($stats['pengeluaran'], 'IDR') . '</div>'))
                 ->description($stats['count_pengeluaran'] . ' transaksi pengeluaran hari ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-down')
                 ->color('danger')

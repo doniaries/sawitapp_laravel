@@ -47,7 +47,7 @@ class PerusahaanTable
                 TextColumn::make('saldo')
                     ->weight('5')
                     ->badge()
-                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->currency('IDR')
                     ->alignRight()
                     ->sortable(),
                 TextColumn::make('alamat')
@@ -133,7 +133,7 @@ class PerusahaanTable
                         try {
                             DB::beginTransaction();
 
-                            $nominal = (int)str_replace(['.', ','], '', $data['nominal']);
+                            $nominal = (float) $data['nominal'];
 
                             $record->increment('saldo', $nominal);
                             event(new SaldoUpdated($nominal));
@@ -165,10 +165,10 @@ class PerusahaanTable
                                 ->success()
                                 ->duration(3000)
                                 ->body(sprintf(
-                                    "Saldo bertambah Rp %s\nCara bayar: %s\nSaldo akhir: Rp %s",
-                                    number_format((float) $nominal, 0, ',', '.'),
+                                    "Saldo bertambah %s\nCara bayar: %s\nSaldo akhir: %s",
+                                    money($nominal, 'IDR'),
                                     $data['cara_bayar'],
-                                    number_format((float) $record->fresh()->saldo, 0, ',', '.')
+                                    money($record->fresh()->saldo, 'IDR')
                                 ))
                                 ->send();
                         } catch (\Exception $e) {

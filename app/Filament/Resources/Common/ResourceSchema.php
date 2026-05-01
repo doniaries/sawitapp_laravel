@@ -7,11 +7,8 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 use Filament\Forms\Get;
 
-use App\Traits\HasCurrencyInput;
-
 class ResourceSchema
 {
-    use HasCurrencyInput;
     public static function getContactSection(string $label = 'Informasi'): Section
     {
         return Section::make($label)
@@ -50,17 +47,20 @@ class ResourceSchema
             ->description('Informasi hutang dan pembayaran')
             ->compact()
             ->components([
-                self::currencyInput(TextInput::make('hutang'))
+                TextInput::make('hutang')
+                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                     ->label(fn($context) => $context === 'create' ? 'Hutang Awal' : 'Total Akumulasi Hutang')
                     ->helperText(fn($context) => $context === 'create' ? 'Masukkan hutang awal jika ada.' : 'Total hutang awal + penambahan dari transaksi.')
                     ->default(0),
 
-                self::currencyInput(TextInput::make('total_pembayaran'))
+                TextInput::make('total_pembayaran')
+                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                     ->label('Total Sudah Dibayar')
                     ->disabled()
                     ->dehydrated(false),
 
-                self::currencyInput(TextInput::make('sisa_hutang'))
+                TextInput::make('sisa_hutang')
+                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                     ->label('Sisa Hutang Saat Ini')
                     ->disabled()
                     ->dehydrated(false)

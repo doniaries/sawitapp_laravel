@@ -137,7 +137,7 @@ class JurnalKeuangan extends Model
 
     public function getFormattedNominalAttribute()
     {
-        return 'Rp ' . number_format($this->nominal, 0, ',', '.');
+        return (string) money($this->nominal, 'IDR');
     }
 
     public function getBadgeColorAttribute()
