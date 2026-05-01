@@ -85,9 +85,18 @@ class TransaksiDoForm
                                 ->placeholder('Pilih Penjual')
                                 ->createOptionForm([
                                     TextInput::make('nama')
+                                        ->label('Nama')
                                         ->required()
                                         ->maxLength(255)
+                                        ->unique(Penjual::class, 'nama', modifyRuleUsing: function ($rule) {
+                                            return $rule->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id);
+                                        })
+                                        ->validationMessages([
+                                            'unique' => ':attribute sudah terdaftar di sistem.',
+                                        ])
+                                        ->validationAttribute('Nama Penjual')
                                         ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
+                                        ->debounce(500)
                                         ->dehydrateStateUsing(fn($state) => strtoupper($state)),
                                     TextInput::make('alamat')
                                         ->maxLength(255)
@@ -128,9 +137,18 @@ class TransaksiDoForm
                                 ->placeholder('Pilih Supir')
                                 ->createOptionForm([
                                     TextInput::make('nama')
+                                        ->label('Nama')
                                         ->required()
                                         ->maxLength(255)
+                                        ->unique(\App\Models\Supir::class, 'nama', modifyRuleUsing: function ($rule) {
+                                            return $rule->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id);
+                                        })
+                                        ->validationMessages([
+                                            'unique' => ':attribute sudah terdaftar di sistem.',
+                                        ])
+                                        ->validationAttribute('Nama Supir')
                                         ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
+                                        ->debounce(500)
                                         ->dehydrateStateUsing(fn($state) => strtoupper($state)),
                                     TextInput::make('alamat')
                                         ->maxLength(255)

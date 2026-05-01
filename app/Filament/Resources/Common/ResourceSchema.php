@@ -16,8 +16,14 @@ class ResourceSchema
             ->compact()
             ->components([
                 TextInput::make('nama')
+                    ->label('Nama')
                     ->required()
-                    ->unique(ignoreRecord: true)
+                    ->unique(ignoreRecord: true, modifyRuleUsing: function ($rule) {
+                        return $rule->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id);
+                    })
+                    ->validationMessages([
+                        'unique' => ':attribute sudah terdaftar di sistem.',
+                    ])
                     ->maxLength(255)
                     ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
                     ->afterStateHydrated(fn($state, $set) => $set('nama', strtoupper($state)))
