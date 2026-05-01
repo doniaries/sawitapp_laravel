@@ -40,11 +40,26 @@ class TransaksiDoForm
                     ->components([
                         // 1. Tanggal & Nama Penjual
                         \Filament\Schemas\Components\Group::make([
+
+                            TextInput::make('nomor')
+                                ->label('Nomor DO')
+                                ->default(fn() => TransaksiDo::generateMonthlyNumber())
+                                ->required()
+                                ->maxLength(255)
+                                ->disabled()
+                                ->dehydrated(),
+
+
+
+                        ])->columns(2),
+
+                        \Filament\Schemas\Components\Group::make([
                             DateTimePicker::make('tanggal')
                                 ->label('Tanggal')
                                 ->format('Y-m-d H:i:s')
                                 ->native(false)
-                                ->displayFormat('d/m/Y H:i:s')
+                                ->autofocus()
+                                ->displayFormat('d M Y')
                                 ->default(Carbon::now())
                                 ->required()
                                 ->live()
@@ -61,19 +76,6 @@ class TransaksiDoForm
                                         }
                                     },
                                 ]),
-                            TextInput::make('nomor')
-                                ->label('Nomor DO')
-                                ->default(fn() => TransaksiDo::generateMonthlyNumber())
-                                ->required()
-                                ->maxLength(255)
-                                ->disabled()
-                                ->dehydrated(),
-
-
-
-                        ])->columns(2),
-
-                        \Filament\Schemas\Components\Group::make([
                             Select::make('penjual_id')
                                 ->label('Nama Penjual')
                                 ->relationship(
@@ -167,7 +169,7 @@ class TransaksiDoForm
                                 ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
                                 ->dehydrateStateUsing(fn($state) => strtoupper($state)),
 
-                        ])->columns(3),
+                        ])->columns(4),
 
 
                         // 4. Tonase & Harga -> Sub Total
