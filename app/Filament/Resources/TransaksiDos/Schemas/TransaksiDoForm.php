@@ -5,21 +5,22 @@ namespace App\Filament\Resources\TransaksiDos\Schemas;
 
 use App\Models\Penjual;
 use App\Models\TransaksiDo;
+use App\Traits\HasCurrencyInput;
 use Carbon\Carbon;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\FileUpload;
-use Illuminate\Support\Facades\Auth;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Text;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use App\Traits\HasCurrencyInput;
+use Filament\Schemas\Schema;
+use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Auth;
 
 class TransaksiDoForm
 {
@@ -313,7 +314,7 @@ class TransaksiDoForm
                             ->collapsible()
                             ->components([
                                 Toggle::make('is_mismatch')
-                                    ->label('Hitungan Sistem Tidak Cocok')
+                                    ->label('Hitungan Meragukan')
                                     ->helperText('Tandai jika data pembukuan tidak sesuai dengan hitungan sistem')
                                     ->onColor('danger')
                                     ->onIcon('heroicon-m-exclamation-triangle')

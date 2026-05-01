@@ -77,13 +77,13 @@ class TransaksiDoTable
                     ->wrap(),
 
                 TextColumn::make('no_polisi')
-                    ->label('No Kendaraan')
+                    ->label('No Pol')
                     ->formatStateUsing(fn(string $state): string => mb_strtoupper($state))
                     ->searchable()
                     ->wrap(),
 
                 TextColumn::make('harga_satuan')
-                    ->label('Harga Satuan')
+                    ->label('Harga')
                     ->weight('bold')
                     ->color(Color::Blue)
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
