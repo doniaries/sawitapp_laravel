@@ -7,8 +7,11 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 use Filament\Forms\Get;
 
+use App\Traits\HasCurrencyInput;
+
 class ResourceSchema
 {
+    use HasCurrencyInput;
     public static function getContactSection(string $label = 'Informasi'): Section
     {
         return Section::make($label)
@@ -47,23 +50,17 @@ class ResourceSchema
             ->description('Informasi hutang dan pembayaran')
             ->compact()
             ->components([
-                TextInput::make('hutang')
+                self::currencyInput(TextInput::make('hutang'))
                     ->label(fn($context) => $context === 'create' ? 'Hutang Awal' : 'Total Akumulasi Hutang')
                     ->helperText(fn($context) => $context === 'create' ? 'Masukkan hutang awal jika ada.' : 'Total hutang awal + penambahan dari transaksi.')
-                    ->prefix('Rp')
-                    ->numeric()
-                    ->default(0)
-                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                    ->debounce(500),
+                    ->default(0),
 
-                TextInput::make('total_pembayaran')
+                self::currencyInput(TextInput::make('total_pembayaran'))
                     ->label('Total Sudah Dibayar')
                     ->disabled()
-                    ->dehydrated(false)
-                    ->prefix('Rp')
-                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0),
+                    ->dehydrated(false),
 
-                TextInput::make('sisa_hutang')
+                self::currencyInput(TextInput::make('sisa_hutang'))
                     ->label('Sisa Hutang Saat Ini')
                     ->disabled()
                     ->dehydrated(false)
@@ -71,8 +68,6 @@ class ResourceSchema
                         if (!$record) return 'Rp 0';
                         return 'Rp ' . number_format($record->sisa_hutang, 0, ',', '.');
                     })
-                    ->prefix('Rp')
-                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                     ->extraInputAttributes(['class' => 'font-bold text-danger-600']),
             ]);
     }

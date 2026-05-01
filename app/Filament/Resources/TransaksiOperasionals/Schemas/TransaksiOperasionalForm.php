@@ -14,8 +14,12 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 
+use App\Traits\HasCurrencyInput;
+
 class TransaksiOperasionalForm
 {
+    use HasCurrencyInput;
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -87,14 +91,10 @@ class TransaksiOperasionalForm
                                     ->loadingMessage('Memuat data...')
                                     ->placeholder('Pilih Nama')
 ,
-                                TextInput::make('nominal')
+                                self::currencyInput(TextInput::make('nominal'))
                                     ->label('Nominal')
                                     ->required()
-                                    ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                    ->prefix('Rp')
-                                    ->default(null)
-                                    ->debounce(500)
-                                    ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
+                                    ->dehydrateStateUsing(fn($state) => self::sanitizeNumber($state))
                                     ->rules([
                                         function (Get $get) {
                                             return function (string $attribute, $value, \Closure $fail) use ($get) {
@@ -106,7 +106,7 @@ class TransaksiOperasionalForm
 
                                                 if ($get('operasional') === 'pengeluaran') {
                                                     $perusahaan = \Filament\Facades\Filament::getTenant();
-                                                    $nominalVal = self::formatCurrency($value);
+                                                    $nominalVal = self::sanitizeNumber($value);
                                                     if ($perusahaan && $nominalVal > $perusahaan->saldo) {
                                                         $fail("Saldo perusahaan tidak mencukupi (Saldo: Rp " . number_format($perusahaan->saldo, 0, ',', '.') . "). Hanya Admin yang dapat melanjutkan transaksi ini.");
                                                     }
@@ -151,26 +151,5 @@ class TransaksiOperasionalForm
                             ]),
                     ]),
             ]);
-    }
-
-    private static function formatCurrency(mixed $number): float
-    {
-        if (empty($number)) return 0;
-        
-        if (is_numeric($number) && !is_string($number)) {
-            return (float) $number;
-        }
-
-        $str = (string) $number;
-        $str = str_replace(' ', '', $str);
-
-        if (str_contains($str, ',')) {
-            $str = str_replace('.', '', $str);
-            $str = str_replace(',', '.', $str);
-        } elseif (str_contains($str, '.')) {
-            $str = str_replace('.', '', $str);
-        }
-        
-        return (float) $str;
     }
 }

@@ -20,8 +20,12 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 
+use App\Traits\HasCurrencyInput;
+
 class TransaksiDoForm
 {
+    use HasCurrencyInput;
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -110,10 +114,9 @@ class TransaksiDoForm
                                     if ($state) {
                                         $penjual = \App\Models\Penjual::query()->find($state);
                                         if ($penjual) {
-                                            $sisaHutang = (float) $penjual->hutang;
-                                            $set('hutang_awal', $sisaHutang);
-                                            $set('pembayaran_hutang', null);
-                                            self::hitungSisaBayar($get, $set);
+                                            $set('hutang_awal', (float) $penjual->hutang);
+                                            $set('pembayaran_hutang', 0);
+                                            self::applyCalculations($get, $set);
                                         }
                                     }
                                 }),
@@ -169,81 +172,59 @@ class TransaksiDoForm
 
                         // 4. Tonase & Harga -> Sub Total
                         Group::make([
-                            TextInput::make('tonase')
+                            self::currencyInput(TextInput::make('tonase'))
                                 ->label('Tonase (Kg)')
-                                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->suffix('Kg')
                                 ->required()
                                 ->live(onBlur: true)
-                                ->debounce(500)
-                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
-                                ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungTotal($state, $get, $set)),
-                            TextInput::make('harga_satuan')
+                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
+                            self::currencyInput(TextInput::make('harga_satuan'))
                                 ->label('Harga Satuan')
-                                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                ->prefix('Rp')
                                 ->required()
                                 ->live(onBlur: true)
-                                ->debounce(500)
-                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
-                                ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungTotal($get('tonase'), $get, $set)),
-                            TextInput::make('sub_total')
+                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
+                            self::currencyInput(TextInput::make('sub_total'))
                                 ->label('Sub Total')
-                                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                ->prefix('Rp')
                                 ->disabled()
                                 ->dehydrated()
-                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->extraInputAttributes(['class' => 'bg-gray-50 font-bold text-xl']),
                         ])->columns(3),
 
                         // 5. Pengurangan (Biaya & Hutang)
                         Group::make([
-                            TextInput::make('upah_bongkar')
+                            self::currencyInput(TextInput::make('upah_bongkar'))
                                 ->label('Upah Bongkar')
-                                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(null)
+                                ->default(0)
                                 ->live(onBlur: true)
-                                ->debounce(500)
-                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
-                                ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
-                            TextInput::make('biaya_lain')
+                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
+                            self::currencyInput(TextInput::make('biaya_lain'))
                                 ->label('Biaya Lain/Pengambilan')
-                                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(null)
+                                ->default(0)
                                 ->live(onBlur: true)
-                                ->debounce(500)
-                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
-                                ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set)),
-                            TextInput::make('pembayaran_hutang')
+                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
+                            self::currencyInput(TextInput::make('pembayaran_hutang'))
                                 ->label('Potong Hutang')
                                 ->hint(fn(Get $get) => $get('penjual_id') ? 'Sisa Hutang: Rp ' . number_format($get('hutang_awal') ?? 0, 0, ',', '.') : null)
                                 ->hintColor('danger')
                                 ->hintIcon('heroicon-m-exclamation-circle')
                                 ->helperText(fn(Get $get) => $get('penjual_id') ? 'Hutang penjual saat ini: Rp ' . number_format($get('hutang_awal') ?? 0, 0, ',', '.') : 'Pilih penjual untuk melihat hutang')
-                                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(null)
+                                ->default(0)
                                 ->live(onBlur: true)
-                                ->debounce(500)
-                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
-                                ->afterStateUpdated(fn($state, Get $get, Set $set) => self::hitungSisaBayar($get, $set))
+                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set))
                                 ->rules([
                                     fn(Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                        $val = self::formatCurrency($value);
-                                        $hutang = self::formatCurrency($get('hutang_awal'));
+                                        $val = self::sanitizeNumber($value);
+                                        $hutang = self::sanitizeNumber($get('hutang_awal'));
                                         if ($val > $hutang) {
                                             $fail("Potongan tidak boleh melebihi sisa hutang (Rp " . number_format($hutang, 0, ',', '.') . ")");
                                         }
 
-                                        $subTotal = self::formatCurrency($get('sub_total'));
-                                        $upah = self::formatCurrency($get('upah_bongkar'));
-                                        $lain = self::formatCurrency($get('biaya_lain'));
+                                        $subTotal = self::sanitizeNumber($get('sub_total'));
+                                        $upah = self::sanitizeNumber($get('upah_bongkar'));
+                                        $lain = self::sanitizeNumber($get('biaya_lain'));
                                         $pengurangan = $upah + $lain;
                                         $maxBayar = max(0, $subTotal - $pengurangan);
 
@@ -281,9 +262,9 @@ class TransaksiDoForm
 
                                             $cekNominal = 0;
                                             if ($value === 'tunai') {
-                                                $cekNominal = self::formatCurrency($get('sisa_bayar'));
+                                                $cekNominal = self::sanitizeNumber($get('sisa_bayar'));
                                             } elseif ($value === 'tunai & transfer') {
-                                                $cekNominal = self::formatCurrency($get('nominal_tunai'));
+                                                $cekNominal = self::sanitizeNumber($get('nominal_tunai'));
                                             }
 
                                             if ($cekNominal > 0 && $cekNominal > $perusahaan->saldo) {
@@ -293,13 +274,10 @@ class TransaksiDoForm
                                     },
                                 ]),
 
-                            TextInput::make('sisa_bayar')
+                            self::currencyInput(TextInput::make('sisa_bayar'))
                                 ->label('Total Bayar ke Penjual')
-                                ->prefix('Rp')
-                                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
                                 ->readOnly()
                                 ->dehydrated()
-                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->extraAttributes([
                                     'class' => 'bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-2',
                                     'style' => 'width: 100%;'
@@ -318,23 +296,19 @@ class TransaksiDoForm
 
                             
 
-                            TextInput::make('nominal_tunai')
+                            self::currencyInput(TextInput::make('nominal_tunai'))
                                 ->label('Nominal Tunai')
                                 ->helperText('Jumlah cash yang diambil')
-                                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 0)
-                                ->prefix('Rp')
                                 ->placeholder('0')
-                                ->default(null)
+                                ->default(0)
                                 ->required()
                                 ->live(onBlur: true)
-                                ->debounce(500)
-                                ->dehydrateStateUsing(fn($state) => self::formatCurrency($state))
                                 ->visible(fn(Get $get) => $get('cara_bayar') === 'tunai & transfer')
                                 ->rules([
                                     function (Get $get) {
                                         return function (string $attribute, $value, \Closure $fail) use ($get) {
-                                            $sisaBayar = self::formatCurrency($get('sisa_bayar'));
-                                            $val = self::formatCurrency($value);
+                                            $sisaBayar = self::sanitizeNumber($get('sisa_bayar'));
+                                            $val = self::sanitizeNumber($value);
                                             if ($val > $sisaBayar) {
                                                 $fail("Nominal tunai tidak boleh melebihi total bayar (Rp " . number_format($sisaBayar, 0, ',', '.') . ")");
                                             }
@@ -377,60 +351,16 @@ class TransaksiDoForm
             ]);
     }
 
-    public static function hitungTotal(mixed $tonase, Get $get, Set $set): void
+    /**
+     * Memanggil logika perhitungan dari model dan memperbarui state form.
+     * Dibuat private agar tidak bisa diakses dari luar sesuai best practice.
+     */
+    private static function applyCalculations(Get $get, Set $set): void
     {
-        $tonaseValue = self::formatCurrency($tonase);
-        $hargaSatuan = self::formatCurrency($get('harga_satuan'));
-        $subTotal = $tonaseValue * $hargaSatuan;
+        $results = TransaksiDo::updateCalculations($get->all());
         
-        // Simpan sebagai integer bulat
-        $set('sub_total', (int) round($subTotal));
-        self::hitungSisaBayar($get, $set);
-    }
-
-    public static function hitungSisaBayar(Get $get, Set $set): void
-    {
-        $subTotal = self::formatCurrency($get('sub_total'));
-        $upahBongkar = self::formatCurrency($get('upah_bongkar'));
-        $biayaLain = self::formatCurrency($get('biaya_lain'));
-        $bayarHutang = self::formatCurrency($get('pembayaran_hutang'));
-        $hutangAwal = self::formatCurrency($get('hutang_awal'));
-        
-        $sisaBayar = $subTotal - ($upahBongkar + $biayaLain + $bayarHutang);
-        $set('sisa_bayar', max(0, (int) round($sisaBayar)));
-
-        $sisaHutang = $hutangAwal - $bayarHutang;
-        $set('sisa_hutang_penjual', max(0, (int) round($sisaHutang)));
-    }
-
-    private static function formatCurrency(mixed $number): float
-    {
-        if (empty($number)) return 0;
-        
-        // Jika sudah numeric (int/float) dan bukan string numerik
-        if (is_numeric($number) && !is_string($number)) {
-            return (float) $number;
-        }
-
-        $str = (string) $number;
-        
-        // Hapus spasi jika ada
-        $str = str_replace(' ', '', $str);
-
-        // Jika mengandung koma, berarti format Indonesia (1.234,56)
-        if (str_contains($str, ',')) {
-            // Hapus titik ribuan, ganti koma desimal jadi titik
-            $str = str_replace('.', '', $str);
-            $str = str_replace(',', '.', $str);
-        } 
-        // Jika HANYA mengandung titik
-        elseif (str_contains($str, '.')) {
-            // Karena kita menggunakan precision 0 (integer) di hampir semua field,
-            // maka titik dalam input string "29.000" kemungkinan besar adalah ribuan.
-            // Kita hapus titiknya agar menjadi 29000, bukan 29.
-            $str = str_replace('.', '', $str);
-        }
-        
-        return (float) $str;
+        $set('sub_total', $results['sub_total']);
+        $set('sisa_bayar', $results['sisa_bayar']);
+        $set('sisa_hutang_penjual', $results['sisa_hutang_penjual']);
     }
 }

@@ -59,27 +59,7 @@ class ListTransaksiDos extends ListRecords
                         return;
                     }
 
-                    $totalTonase = TransaksiDo::whereDate('tanggal', '=', $tanggal, 'and')->sum('tonase');
-                    $totalRupiah = TransaksiDo::whereDate('tanggal', '=', $tanggal, 'and')->sum('sub_total');
-                    $totalMasuk = JurnalKeuangan::whereDate('tanggal', '=', $tanggal, 'and')->where('jenis_transaksi', '=', 'Pemasukan', 'and')->sum('nominal');
-                    $totalKeluar = JurnalKeuangan::whereDate('tanggal', '=', $tanggal, 'and')->where('jenis_transaksi', '=', 'Pengeluaran', 'and')->sum('nominal');
-                    
-                    $saldoSistem = $totalMasuk - $totalKeluar; 
-                    
-                    TutupHari::create([
-                        'perusahaan_id' => $perusahaanId,
-                        'tanggal' => $tanggal,
-                        'total_do_tonase' => $totalTonase,
-                        'total_do_rupiah' => $totalRupiah,
-                        'total_pemasukan' => $totalMasuk,
-                        'total_pengeluaran' => $totalKeluar,
-                        'saldo_akhir_sistem' => $saldoSistem,
-                        'saldo_akhir_fisik' => $data['saldo_akhir_fisik'],
-                        'selisih' => $data['saldo_akhir_fisik'] - $saldoSistem,
-                        'catatan' => $data['catatan'],
-                        'user_id' => auth()->id(),
-                        'status' => 'closed',
-                    ]);
+                    TutupHari::performClosing($data, $perusahaanId);
 
                     Notification::make()
                         ->title('Berhasil')

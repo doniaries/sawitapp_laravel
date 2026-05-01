@@ -238,4 +238,50 @@ class TransaksiDo extends Model
             return $this->getAttribute($key);
         });
     }
+
+    /**
+     * Logika Perhitungan Bisnis
+     */
+    public static function calculateSubTotal(float $tonase, float $hargaSatuan): float
+    {
+        return (float) round($tonase * $hargaSatuan);
+    }
+
+    public static function calculateSisaBayar(float $subTotal, float $upahBongkar, float $biayaLain, float $bayarHutang): float
+    {
+        $sisa = $subTotal - ($upahBongkar + $biayaLain + $bayarHutang);
+        return (float) max(0, round($sisa));
+    }
+
+    public static function calculateSisaHutang(float $hutangAwal, float $bayarHutang): float
+    {
+        $sisa = $hutangAwal - $bayarHutang;
+        return (float) max(0, round($sisa));
+    }
+
+    /**
+     * Update semua perhitungan berdasarkan data input form
+     * Digunakan oleh Filament afterStateUpdated
+     */
+    public static function updateCalculations(array $data): array
+    {
+        $tonase = \App\Traits\HasCurrencyInput::sanitizeNumber($data['tonase'] ?? 0);
+        $hargaSatuan = \App\Traits\HasCurrencyInput::sanitizeNumber($data['harga_satuan'] ?? 0);
+        
+        $subTotal = self::calculateSubTotal($tonase, $hargaSatuan);
+        
+        $upahBongkar = \App\Traits\HasCurrencyInput::sanitizeNumber($data['upah_bongkar'] ?? 0);
+        $biayaLain = \App\Traits\HasCurrencyInput::sanitizeNumber($data['biaya_lain'] ?? 0);
+        $bayarHutang = \App\Traits\HasCurrencyInput::sanitizeNumber($data['pembayaran_hutang'] ?? 0);
+        $hutangAwal = \App\Traits\HasCurrencyInput::sanitizeNumber($data['hutang_awal'] ?? 0);
+        
+        $sisaBayar = self::calculateSisaBayar($subTotal, $upahBongkar, $biayaLain, $bayarHutang);
+        $sisaHutang = self::calculateSisaHutang($hutangAwal, $bayarHutang);
+
+        return [
+            'sub_total' => $subTotal,
+            'sisa_bayar' => $sisaBayar,
+            'sisa_hutang_penjual' => $sisaHutang,
+        ];
+    }
 }

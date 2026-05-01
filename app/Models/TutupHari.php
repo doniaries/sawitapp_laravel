@@ -80,4 +80,39 @@ class TutupHari extends Model
         // Jika tidak, cek apakah hari sudah ditutup
         return !self::isClosed($date, $perusahaanId);
     }
+
+    /**
+     * Melakukan proses penutupan hari
+     */
+    public static function performClosing(array $data, int $perusahaanId): self
+    {
+        $tanggal = $data['tanggal'];
+        
+        $totalTonase = TransaksiDo::whereDate('tanggal', $tanggal)->sum('tonase');
+        $totalRupiah = TransaksiDo::whereDate('tanggal', $tanggal)->sum('sub_total');
+        $totalMasuk = JurnalKeuangan::whereDate('tanggal', $tanggal)
+            ->where('jenis_transaksi', 'Pemasukan')
+            ->sum('nominal');
+        $totalKeluar = JurnalKeuangan::whereDate('tanggal', $tanggal)
+            ->where('jenis_transaksi', 'Pengeluaran')
+            ->sum('nominal');
+        
+        $saldoSistem = $totalMasuk - $totalKeluar;
+        $saldoFisik = (float) ($data['saldo_akhir_fisik'] ?? 0);
+
+        return self::create([
+            'perusahaan_id' => $perusahaanId,
+            'tanggal' => $tanggal,
+            'total_do_tonase' => $totalTonase,
+            'total_do_rupiah' => $totalRupiah,
+            'total_pemasukan' => $totalMasuk,
+            'total_pengeluaran' => $totalKeluar,
+            'saldo_akhir_sistem' => $saldoSistem,
+            'saldo_akhir_fisik' => $saldoFisik,
+            'selisih' => $saldoFisik - $saldoSistem,
+            'catatan' => $data['catatan'] ?? null,
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+            'status' => 'closed',
+        ]);
+    }
 }
