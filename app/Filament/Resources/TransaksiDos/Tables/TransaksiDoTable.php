@@ -83,17 +83,26 @@ class TransaksiDoTable
                     ->wrap(),
 
 
-                TextColumn::make('tonase')
-                    ->label('Tonase')
-                    ->suffix(' Kg')
-                    ->numeric()
-                    ->sortable(),
-
 
                 TextColumn::make('harga_satuan')
                     ->label('Harga Satuan')
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->sortable(),
+                TextColumn::make('tonase')
+                    ->label('Tonase')
+                    ->suffix(' Kg')
+                    ->numeric()
+                    ->sortable()
+                    ->summarize(
+                        Sum::make()
+                            ->label('Total')
+                            ->suffix(' Kg')
+                            ->visible(function ($livewire) {
+                                $filter = $livewire->getTableFilterState('tanggal_range');
+
+                                return ($filter['dari_tanggal'] ?? null) || ($filter['sampai_tanggal'] ?? null);
+                            })
+                    ),
 
                 TextColumn::make('sub_total')
                     ->label('Sub Total')
@@ -106,17 +115,46 @@ class TransaksiDoTable
                 TextColumn::make('upah_bongkar')
                     ->label('Upah Bongkar')
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(
+                        Sum::make()
+                            ->label('Total')
+                            ->currency('IDR', true)
+                            ->visible(function ($livewire) {
+                                $filter = $livewire->getTableFilterState('tanggal_range');
 
+                                return ($filter['dari_tanggal'] ?? null) || ($filter['sampai_tanggal'] ?? null);
+                            })
+                    ),
 
                 TextColumn::make('biaya_lain')
                     ->label('Biaya Lain/Pengambilan')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(
+                        Sum::make()
+                            ->label('Total')
+                            ->currency('IDR', true)
+                            ->visible(function ($livewire) {
+                                $filter = $livewire->getTableFilterState('tanggal_range');
+
+                                return ($filter['dari_tanggal'] ?? null) || ($filter['sampai_tanggal'] ?? null);
+                            })
+                    ),
 
 
                 TextColumn::make('pembayaran_hutang')
                     ->label('Bayar Hutang')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(
+                        Sum::make()
+                            ->label('Total')
+                            ->currency('IDR', true)
+                            ->visible(function ($livewire) {
+                                $filter = $livewire->getTableFilterState('tanggal_range');
+
+                                return ($filter['dari_tanggal'] ?? null) || ($filter['sampai_tanggal'] ?? null);
+                            })
+                    ),
 
 
                 TextColumn::make('sisa_bayar')
@@ -124,7 +162,17 @@ class TransaksiDoTable
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->color(Color::Green)
                     ->weight('bold')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(
+                        Sum::make()
+                            ->label('Total')
+                            ->currency('IDR', true)
+                            ->visible(function ($livewire) {
+                                $filter = $livewire->getTableFilterState('tanggal_range');
+
+                                return ($filter['dari_tanggal'] ?? null) || ($filter['sampai_tanggal'] ?? null);
+                            })
+                    ),
 
 
                 TextColumn::make('nominal_tunai')
