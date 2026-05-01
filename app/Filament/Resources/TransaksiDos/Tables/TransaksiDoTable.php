@@ -82,10 +82,10 @@ class TransaksiDoTable
                     ->searchable()
                     ->wrap(),
 
-
-
                 TextColumn::make('harga_satuan')
                     ->label('Harga Satuan')
+                    ->weight('bold')
+                    ->color(Color::Blue)
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->sortable(),
                 TextColumn::make('tonase')
