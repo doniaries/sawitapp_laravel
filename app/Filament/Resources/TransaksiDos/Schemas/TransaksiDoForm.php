@@ -202,24 +202,22 @@ class TransaksiDoForm
                         // 5. Pengurangan (Biaya & Hutang)
                         \Filament\Schemas\Components\Group::make([
 
-                            TextInput::make('upah_bongkar')
+                            self::currencyInput(TextInput::make('upah_bongkar'))
                                 ->label('Upah Bongkar')
                                 ->placeholder('0')
-                                ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
 
-                            TextInput::make('biaya_lain')
+                            self::currencyInput(TextInput::make('biaya_lain'))
                                 ->label('Biaya Lain/Pengambilan')
                                 ->placeholder('0')
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            TextInput::make('pembayaran_hutang')
+                            self::currencyInput(TextInput::make('pembayaran_hutang'))
                                 ->label('Potong Hutang')
-                                ->placeholder('0')
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
 
-                            TextInput::make('pembayaran_hutang')
+                            self::currencyInput(TextInput::make('pembayaran_hutang'))
                                 ->label('Potong Hutang')
                                 ->hint(fn(Get $get) => $get('penjual_id') ? 'Sisa Hutang: ' . money($get('hutang_awal') ?? 0, 'IDR') : null)
                                 ->hintColor('danger')
@@ -270,9 +268,7 @@ class TransaksiDoForm
                                     },
                                 ]),
 
-                            self::currencyInput(
-                                TextInput::make('sisa_bayar')
-                            )
+                            self::currencyInput(TextInput::make('sisa_bayar'))
                                 ->label('Total Bayar ke Penjual')
                                 ->readOnly()
                                 ->dehydrated()
@@ -294,9 +290,7 @@ class TransaksiDoForm
 
 
 
-                            self::currencyInput(
-                                TextInput::make('nominal_tunai')
-                            )
+                            self::currencyInput(TextInput::make('nominal_tunai'))
                                 ->label('Nominal Tunai')
                                 ->helperText('Jumlah cash yang diambil')
                                 ->placeholder('0')
