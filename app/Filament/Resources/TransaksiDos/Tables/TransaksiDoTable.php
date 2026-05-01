@@ -35,7 +35,7 @@ class TransaksiDoTable
                 TextColumn::make('tanggal')
                     ->label('Tanggal')
                     ->badge()
-                    ->formatStateUsing(fn($state) => $state->translatedFormat('d F Y H:i'))
+                    ->formatStateUsing(fn($state) => $state->translatedFormat('d F Y'))
                     ->sortable(),
 
                 TextColumn::make('nomor')
@@ -86,10 +86,6 @@ class TransaksiDoTable
                 TextColumn::make('tonase')
                     ->label('Tonase')
                     ->suffix(' Kg')
-                    ->summarize([
-                        Sum::make()
-                            ->suffix(' Kg')
-                    ])
                     ->numeric()
                     ->sortable(),
 
@@ -104,40 +100,22 @@ class TransaksiDoTable
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->color(Color::Amber)
                     ->weight('bold')
-                    ->summarize([
-                        Sum::make()
-                            ->currency('IDR', true)
-                    ])
                     ->sortable(),
 
 
                 TextColumn::make('upah_bongkar')
                     ->label('Upah Bongkar')
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
-                    ->summarize([
-                        Sum::make()
-                            ->currency('IDR', true)
-                    ])
                     ->sortable(),
 
 
                 TextColumn::make('biaya_lain')
                     ->label('Biaya Lain/Pengambilan')
-
-                    ->summarize([
-                        Sum::make()
-                            ->currency('IDR', true)
-                    ])
                     ->sortable(),
 
 
                 TextColumn::make('pembayaran_hutang')
                     ->label('Bayar Hutang')
-
-                    ->summarize([
-                        Sum::make()
-                            ->currency('IDR', true)
-                    ])
                     ->sortable(),
 
 
@@ -146,10 +124,6 @@ class TransaksiDoTable
                     ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->color(Color::Green)
                     ->weight('bold')
-                    ->summarize([
-                        Sum::make()
-                            ->currency('IDR', true)
-                    ])
                     ->sortable(),
 
 
@@ -185,13 +159,13 @@ class TransaksiDoTable
                             ->label('Dari Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today())
+                            // ->default(today())
                             ->live(),
                         DatePicker::make('sampai_tanggal')
                             ->label('Sampai Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today())
+                            // ->default(today())
                             ->live(),
                     ])
                     ->columns(2)

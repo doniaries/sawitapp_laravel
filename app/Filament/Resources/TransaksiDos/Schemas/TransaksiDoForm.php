@@ -196,7 +196,15 @@ class TransaksiDoForm
                                 ->label('Sub Total')
                                 ->disabled()
                                 ->dehydrated()
-                                ->extraInputAttributes(['class' => 'bg-gray-50 font-bold text-xl']),
+                                ->extraInputAttributes(['class' => 'bg-gray-50 font-bold text-xl'])
+                                ->extraAttributes([
+                                    'class' => 'bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-2',
+                                    'style' => 'width: 100%;'
+                                ])
+                                ->extraInputAttributes([
+                                    'style' => 'font-size: 1.25rem !important; font-weight: 800; color: #de8209 !important; -webkit-text-fill-color: #de8209 !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
+                                    'class' => 'text-blue-600 dark:text-blue-400'
+                                ]),
                         ])->columns(3),
 
                         // 5. Pengurangan (Biaya & Hutang)
@@ -206,7 +214,7 @@ class TransaksiDoForm
                             )
                                 ->label('Upah Bongkar')
                                 ->placeholder('0')
-                                ->default(0)
+                                // ->default(0)
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
                             self::currencyInput(
@@ -214,7 +222,6 @@ class TransaksiDoForm
                             )
                                 ->label('Biaya Lain/Pengambilan')
                                 ->placeholder('0')
-                                ->default(0)
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
                             self::currencyInput(
@@ -226,7 +233,6 @@ class TransaksiDoForm
                                 ->hintIcon('heroicon-m-exclamation-circle')
                                 ->helperText(fn(Get $get) => $get('penjual_id') ? 'Hutang penjual saat ini: ' . money($get('hutang_awal') ?? 0, 'IDR') : 'Pilih penjual untuk melihat hutang')
                                 ->placeholder('0')
-                                ->default(0)
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set))
                                 ->rules([
@@ -282,7 +288,7 @@ class TransaksiDoForm
                                     'style' => 'width: 100%;'
                                 ])
                                 ->extraInputAttributes([
-                                    'style' => 'font-size: 1.25rem !important; font-weight: 800; color: #2563eb !important; -webkit-text-fill-color: #2563eb !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
+                                    'style' => 'font-size: 1.25rem !important; font-weight: 800; color: #17b035 !important; -webkit-text-fill-color: #17b035 !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
                                     'class' => 'text-blue-600 dark:text-blue-400'
                                 ]),
 
