@@ -213,10 +213,6 @@ class TransaksiDoForm
                                 ->placeholder('0')
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
-                            self::currencyInput(TextInput::make('pembayaran_hutang'))
-                                ->label('Potong Hutang')
-                                ->live(onBlur: true)
-                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
 
                             self::currencyInput(TextInput::make('pembayaran_hutang'))
                                 ->label('Potong Hutang')
