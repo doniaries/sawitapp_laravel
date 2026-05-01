@@ -337,7 +337,14 @@ class TransaksiDoForm
      */
     private static function applyCalculations(Get $get, Set $set): void
     {
-        $results = TransaksiDo::updateCalculations($get->all());
+        $results = TransaksiDo::updateCalculations([
+            'tonase' => $get('tonase'),
+            'harga_satuan' => $get('harga_satuan'),
+            'upah_bongkar' => $get('upah_bongkar'),
+            'biaya_lain' => $get('biaya_lain'),
+            'pembayaran_hutang' => $get('pembayaran_hutang'),
+            'hutang_awal' => $get('hutang_awal'),
+        ]);
         
         $set('sub_total', $results['sub_total']);
         $set('sisa_bayar', $results['sisa_bayar']);
