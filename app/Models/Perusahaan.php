@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
+/**
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ * @mixin \Illuminate\Database\Eloquent\Model
+ */
 class Perusahaan extends Model implements HasMedia
 {
     use HasFactory, SoftDeletes, InteractsWithMedia;
@@ -75,7 +79,7 @@ class Perusahaan extends Model implements HasMedia
     public function rollbackSaldo(float $amount): void
     {
         DB::transaction(function () use ($amount) {
-            $this->decrement('saldo', $amount);
+            $this->decrement('saldo', $amount, []);
         });
     }
 

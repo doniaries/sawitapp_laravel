@@ -135,9 +135,8 @@ class PerusahaanTable
 
                             $nominal = (float) $data['nominal'];
 
-                            $record->increment('saldo', $nominal);
-                            event(new SaldoUpdated($nominal));
-
+                            $record->increment('saldo', $nominal, []);
+                            
                             JurnalKeuangan::create([
                                 'perusahaan_id' => $record->id,
                                 'tanggal' => $data['tanggal'],

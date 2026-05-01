@@ -12,22 +12,36 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @mixin \Illuminate\Database\Eloquent\Model
+ * @property-read float $total_pembayaran
+ * @property-read float $sisa_hutang
+ * @property-read float $total_pinjaman
+ * @property-read string $formatted_hutang
+ * @property float $hutang
+ * @property string $nama
+ * @property string $slug
+ * @method static void creating(\Closure $callback)
+ * @method static void updating(\Closure $callback)
+ * @method bool hasAttribute(string $key)
+ * @method mixed getAttribute(string $key)
+ * @method void setAttribute(string $key, mixed $value)
+ * @method string getTable()
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany hasMany(string $related, string $foreignKey = null, string $localKey = null)
  */
 trait HasHutangTrait
 {
     public static function bootHasHutangTrait()
     {
         static::creating(function ($model) {
-            if (isset($model->nama)) {
-                $model->nama = mb_strtoupper($model->nama);
-                $model->slug = Str::slug($model->nama);
+            if ($model->hasAttribute('nama')) {
+                $model->setAttribute('nama', mb_strtoupper($model->getAttribute('nama')));
+                $model->setAttribute('slug', Str::slug($model->getAttribute('nama')));
             }
         });
 
         static::updating(function ($model) {
-            if (isset($model->nama)) {
-                $model->nama = mb_strtoupper($model->nama);
-                $model->slug = Str::slug($model->nama);
+            if ($model->hasAttribute('nama')) {
+                $model->setAttribute('nama', mb_strtoupper($model->getAttribute('nama')));
+                $model->setAttribute('slug', Str::slug($model->getAttribute('nama')));
             }
         });
     }
@@ -83,7 +97,7 @@ trait HasHutangTrait
         }
 
         return $query->addSelect([
-            'total_pembayaran_sum' => PembayaranHutang::selectRaw('COALESCE(SUM(nominal), 0)')
+            'total_pembayaran_sum' => PembayaranHutang::query()->selectRaw('COALESCE(SUM(nominal), 0)')
                 ->whereColumn($foreignKey, "{$table}.id")
         ])->selectRaw("({$table}.hutang - (SELECT COALESCE(SUM(nominal), 0) FROM pembayaran_hutang WHERE {$foreignKey} = {$table}.id)) as sisa_hutang_sum");
     }
@@ -101,8 +115,8 @@ trait HasHutangTrait
         ];
 
         foreach ($keys as $key) {
-            if (array_key_exists($key, $this->attributes)) {
-                return (float) $this->attributes[$key];
+            if ($this->hasAttribute($key)) {
+                return (float) $this->getAttribute($key);
             }
         }
 
@@ -114,11 +128,11 @@ trait HasHutangTrait
      */
     public function getSisaHutangAttribute(): float
     {
-        if (array_key_exists('sisa_hutang_sum', $this->attributes)) {
-            return (float) $this->attributes['sisa_hutang_sum'];
+        if ($this->hasAttribute('sisa_hutang_sum')) {
+            return (float) $this->getAttribute('sisa_hutang_sum');
         }
 
-        return (float) ($this->hutang ?? 0) - $this->total_pembayaran;
+        return (float) ($this->getAttribute('hutang') ?? 0) - $this->total_pembayaran;
     }
 
     /**
@@ -134,7 +148,7 @@ trait HasHutangTrait
      */
     public function getFormattedHutangAttribute(): string
     {
-        return (string) money($this->hutang ?? 0, 'IDR');
+        return (string) money($this->getAttribute('hutang') ?? 0, 'IDR');
     }
 
     /**
@@ -151,3 +165,4 @@ trait HasHutangTrait
         return true;
     }
 }
+
