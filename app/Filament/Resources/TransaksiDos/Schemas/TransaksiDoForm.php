@@ -177,7 +177,7 @@ class TransaksiDoForm
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
 
-                            TextInput::make('tonase')
+                            self::currencyInput(TextInput::make('tonase'))
                                 ->label('Tonase (Kg)')
                                 ->suffix('Kg')
                                 ->required()
