@@ -16,7 +16,6 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder;

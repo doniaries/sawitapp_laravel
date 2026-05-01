@@ -69,6 +69,11 @@ class TransaksiDoForm
                                 ->disabled()
                                 ->dehydrated(),
 
+
+
+                        ])->columns(2),
+
+                        \Filament\Schemas\Components\Group::make([
                             Select::make('penjual_id')
                                 ->label('Nama Penjual')
                                 ->relationship(
@@ -117,10 +122,7 @@ class TransaksiDoForm
                                         }
                                     }
                                 }),
-                        ])->columns(2),
 
-                        // 2. Nama Supir & Nomor Polisi
-                        \Filament\Schemas\Components\Group::make([
                             Select::make('supir_id')
                                 ->label('Nama Supir')
                                 ->relationship(
@@ -164,7 +166,8 @@ class TransaksiDoForm
                                 ->placeholder('B 1234 ABC')
                                 ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
                                 ->dehydrateStateUsing(fn($state) => strtoupper($state)),
-                        ])->columns(2),
+
+                        ])->columns(3),
 
 
                         // 4. Tonase & Harga -> Sub Total
