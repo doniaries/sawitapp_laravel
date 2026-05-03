@@ -334,26 +334,7 @@ class TransaksiDoForm
                                 ]),
                         ])->columns(2),
 
-                        \Filament\Schemas\Components\Section::make('Validasi & Lampiran')
-                            ->description('Penanda kecocokan data dan unggah bukti rekap')
-                            ->collapsible()
-                            ->components([
-                                Toggle::make('is_mismatch')
-                                    ->label('Hitungan Meragukan')
-                                    ->helperText('Tandai jika data pembukuan tidak sesuai dengan hitungan sistem')
-                                    ->onColor('danger')
-                                    ->onIcon('heroicon-m-exclamation-triangle')
-                                    ->offIcon('heroicon-m-check-circle'),
 
-                                FileUpload::make('bukti_rekap')
-                                    ->label('Unggah Bukti Pedoman Rekap Kasir')
-                                    ->disk('public')
-                                    ->directory('bukti-rekap')
-                                    ->image()
-                                    ->openable()
-                                    ->downloadable()
-                                    ->helperText('Unggah foto/scan bukti rekap dari kasir'),
-                            ])->columns(2),
 
                         // Hidden field untuk referensi hitung
                         TextInput::make('hutang_awal')

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TransaksiDos\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -47,20 +48,12 @@ class TransaksiDoTable
                     ->badge()
                     ->color(Color::Blue),
 
-                IconColumn::make('is_mismatch')
+                \Filament\Tables\Columns\CheckboxColumn::make('is_mismatch')
                     ->label('Status Data')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-exclamation-triangle')
-                    ->falseIcon('heroicon-o-check-circle')
-                    ->trueColor('danger')
-                    ->falseColor('success')
-                    ->tooltip(fn($record) => $record->is_mismatch ? 'Rekapan Meragukan' : 'Rekapan Sesuai'),
+                    ->tooltip('Centang jika data ini meragukan atau salah')
+                    ->alignCenter(),
 
-                ImageColumn::make('bukti_rekap')
-                    ->label('Bukti')
-                    ->disk('public')
-                    ->circular()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
 
                 TextColumn::make('penjual.nama')
                     ->label('Penjual')
@@ -254,13 +247,13 @@ class TransaksiDoTable
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
+            ->bulkActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make()
                         ->requiresConfirmation(),
-                    ForceDeleteBulkAction::make()
+                    \Filament\Actions\ForceDeleteBulkAction::make()
                         ->requiresConfirmation(),
-                    RestoreBulkAction::make(),
+                    \Filament\Actions\RestoreBulkAction::make(),
                 ]),
             ])
             ->defaultSort('tanggal', 'desc')

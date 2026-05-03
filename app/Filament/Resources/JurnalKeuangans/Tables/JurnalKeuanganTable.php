@@ -151,8 +151,8 @@ class JurnalKeuanganTable
                                         }
 
                                         $url = route('jurnal-keuangan.rekap', [
-                                            'dari' => $dari,
-                                            'sampai' => $sampai,
+                                            'start_date' => $dari,
+                                            'end_date' => $sampai,
                                             't' => time()
                                         ]);
 

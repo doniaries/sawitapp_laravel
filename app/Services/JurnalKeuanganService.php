@@ -102,19 +102,23 @@ class JurnalKeuanganService
                 ->orderBy('tanggal', 'asc')
                 ->get();
 
-            $operasional = TransaksiOperasional::whereBetween('tanggal', [
-                Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay()
-            ])->get();
+            // Ambil semua data dari Jurnal Keuangan untuk rincian bawah
+            $operasional = \App\Models\JurnalKeuangan::with(['supir', 'penjual', 'pekerja'])
+                ->whereBetween('tanggal', [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay()
+                ])
+                ->orderBy('tanggal', 'asc')
+                ->get();
 
-            // Pembayaran per metode DO
+            // Pembayaran per metode DO (diambil dari koleksi transaksiDo)
             $pembayaranTunai = $transaksiDo->where('cara_bayar', 'tunai')->sum('sisa_bayar');
             $pembayaranTransfer = $transaksiDo->where('cara_bayar', 'transfer')->sum('sisa_bayar');
             $pembayaranCairDiluar = $transaksiDo->where('cara_bayar', 'cair di luar')->sum('sisa_bayar');
             $pembayaranBelumDibayar = $transaksiDo->where('cara_bayar', 'belum dibayar')->sum('sisa_bayar');
 
-            $pemasukanOperasional = $operasional->where('operasional', 'pemasukan')->sum('nominal');
-            $pengeluaranOperasional = $operasional->where('operasional', 'pengeluaran')->sum('nominal');
+            $pemasukanOperasional = $operasional->where('jenis_transaksi', 'Pemasukan')->sum('nominal');
+            $pengeluaranOperasional = $operasional->where('jenis_transaksi', 'Pengeluaran')->sum('nominal');
             
             // Hitung seluruh komponen DO
             $totalBiaya = $transaksiDo->sum(fn($item) => ($item->biaya_lain ?? 0) + ($item->upah_bongkar ?? 0));

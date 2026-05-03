@@ -18,7 +18,7 @@ class CreateTransaksiOperasional extends CreateRecord
         
         $notif = \Filament\Notifications\Notification::make()
             ->title('Transaksi Operasional Baru')
-            ->body("Transaksi sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " untuk {$record->kategori}")
+            ->body("Transaksi sebesar Rp " . number_format($record->nominal, 0, ',', '.') . " untuk " . ($record->kategori?->getLabel() ?? $record->kategori?->value ?? '-'))
             ->success()
             ->actions([
                 \Filament\Actions\Action::make('lihat')

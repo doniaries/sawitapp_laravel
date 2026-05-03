@@ -131,9 +131,31 @@
 
 <body>
     <div class="report-header">
-        <h2>{{ $perusahaan->name }}</h2>
-        <h3>LAPORAN KEUANGAN HARIAN</h3>
-        <p>{{ Carbon\Carbon::parse($tanggal)->isoFormat('dddd, D MMMM Y') }}</p>
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="width: 15%; border: none; text-align: left; vertical-align: middle;">
+                    @if($perusahaan->logo)
+                        @php
+                            $path = storage_path('app/public/' . $perusahaan->logo);
+                            if (file_exists($path)) {
+                                $type = pathinfo($path, PATHINFO_EXTENSION);
+                                $data = file_get_contents($path);
+                                $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                            }
+                        @endphp
+                        @if(isset($base64))
+                            <img src="{{ $base64 }}" style="height: 60px; width: auto;">
+                        @endif
+                    @endif
+                </td>
+                <td style="width: 70%; border: none; text-align: center;">
+                    <h2>{{ $perusahaan->name }}</h2>
+                    <h3>LAPORAN KEUANGAN HARIAN</h3>
+                    <p>{{ Carbon\Carbon::parse($tanggal)->isoFormat('dddd, D MMMM Y') }}</p>
+                </td>
+                <td style="width: 15%; border: none;"></td>
+            </tr>
+        </table>
     </div>
 
     <table class="saldo-header">
@@ -253,8 +275,8 @@
         </tr>
 
         @php
-        $pemasukan = $operasional->where('operasional', 'pemasukan')->values();
-        $pengeluaran = $operasional->where('operasional', 'pengeluaran')->values();
+        $pemasukan = $operasional->where('jenis_transaksi', 'Pemasukan')->values();
+        $pengeluaran = $operasional->where('jenis_transaksi', 'Pengeluaran')->values();
         $maxRows = max($pemasukan->count(), $pengeluaran->count());
         @endphp
 
@@ -268,26 +290,16 @@
             <!-- Pemasukan -->
             @if ($i < $pemasukan->count())
                 <td style="width: 25%;">
-                    {{ strtoupper($pemasukan[$i]->kategoriLabel) }}
-                    {{-- @if ($pemasukan[$i]->user)
-                                <br><small>Oleh: {{ $pemasukan[$i]->user->name }}</small>
-                    @endif --}}
-                    @if ($pemasukan[$i]->tipe_nama)
-                    <br><small>
-                        @switch($pemasukan[$i]->tipe_nama)
-                        @case('supir')
-                        Peminjam: {{ $pemasukan[$i]->supir->nama ?? '-' }} (Supir)
-                        @break
-
-                        @case('penjual')
-                        Peminjam: {{ $pemasukan[$i]->penjual->nama ?? '-' }} (Penjual)
-                        @break
-
-                        @case('pekerja')
-                        Peminjam: {{ $pemasukan[$i]->pekerja->nama ?? '-' }} (Pekerja)
-                        @break
-                        @endswitch
-                    </small>
+                    <div style="font-weight: bold;">{{ strtoupper($pemasukan[$i]->kategori) }}</div>
+                    <div style="font-size: 8px; color: #555;">{{ $pemasukan[$i]->sub_kategori }}</div>
+                    
+                    @if ($pemasukan[$i]->pihak_terkait)
+                    <div style="font-size: 8px; font-style: italic;">
+                        Pihak: {{ $pemasukan[$i]->pihak_terkait }}
+                    </div>
+                    @endif
+                    @if ($pemasukan[$i]->keterangan)
+                    <div style="font-size: 8px; color: #666;">Ket: {{ $pemasukan[$i]->keterangan }}</div>
                     @endif
                 </td>
                 <td style="width: 25%;" class="amount">
@@ -301,25 +313,16 @@
                 <!-- Pengeluaran -->
                 @if ($i < $pengeluaran->count())
                     <td style="width: 25%;">
-                        {{ strtoupper($pengeluaran[$i]->kategoriLabel) }}
-                        @if ($pengeluaran[$i]->kategori === 'pinjaman')
+                        <div style="font-weight: bold;">{{ strtoupper($pengeluaran[$i]->kategori) }}</div>
+                        <div style="font-size: 8px; color: #555;">{{ $pengeluaran[$i]->sub_kategori }}</div>
+
+                        @if ($pengeluaran[$i]->pihak_terkait)
+                        <div style="font-size: 8px; font-style: italic;">
+                            Pihak: {{ $pengeluaran[$i]->pihak_terkait }}
+                        </div>
                         @endif
-                        @if ($pengeluaran[$i]->tipe_nama)
-                        <br><small>
-                            @switch($pengeluaran[$i]->tipe_nama)
-                            @case('supir')
-                            Peminjam: {{ $pengeluaran[$i]->supir->nama ?? '-' }} (Supir)
-                            @break
-
-                            @case('penjual')
-                            Peminjam: {{ $pengeluaran[$i]->penjual->nama ?? '-' }} (Penjual)
-                            @break
-
-                            @case('pekerja')
-                            Peminjam: {{ $pengeluaran[$i]->pekerja->nama ?? '-' }} (Pekerja)
-                            @break
-                            @endswitch
-                        </small>
+                        @if ($pengeluaran[$i]->keterangan)
+                        <div style="font-size: 8px; color: #666;">Ket: {{ $pengeluaran[$i]->keterangan }}</div>
                         @endif
                     </td>
                     <td style="width: 25%;" class="amount">
