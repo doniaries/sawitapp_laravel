@@ -49,8 +49,8 @@ class CreateTransaksiDo extends CreateRecord
             $data['nomor'] = \App\Models\TransaksiDo::generateMonthlyNumber($data['tanggal']);
 
             // Validasi hutang dan pembayaran
-            if ($data['penjual_id']) {
-                $penjual = Penjual::find($data['penjual_id']);
+            if (!empty($data['penjual_id'])) {
+                $penjual = \App\Models\Penjual::query()->find($data['penjual_id']);
                 if ($penjual) {
                     // Pastikan hutang_awal sesuai dengan sisa hutang penjual saat ini
                     $data['hutang_awal'] = (float) $penjual->sisa_hutang;
@@ -78,8 +78,6 @@ class CreateTransaksiDo extends CreateRecord
                 ->title('Error Validasi Data')
                 ->body($e->getMessage())
                 ->danger()
-                ->duration(3000)
-                ->persistent(false)
                 ->send();
 
             throw $e;
@@ -122,8 +120,6 @@ class CreateTransaksiDo extends CreateRecord
                 ->title('Error')
                 ->body('Terjadi kesalahan: ' . $e->getMessage())
                 ->danger()
-                ->duration(3000) // Set durasi 3 detik
-                ->persistent(false) // Notifikasi akan otomatis hilang
                 ->send();
 
             throw $e;
