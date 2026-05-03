@@ -11,8 +11,11 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Get;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Joaopaulolndev\FilamentPdfViewer\Forms\Components\PdfViewerField;
+use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
@@ -99,32 +102,47 @@ class JurnalKeuanganTable
                     ->label('Preview Laporan (Rentang)')
                     ->icon('heroicon-o-printer')
                     ->color('info')
+                    ->modalWidth('6xl')
+                    ->modalSubmitActionLabel('Download PDF')
                     ->schema([
                         Grid::make()
                             ->schema([
                                 DatePicker::make('start_date')
                                     ->label('Dari Tanggal')
                                     ->required()
+                                    ->live()
                                     ->default(now()->startOfMonth())
                                     ->displayFormat('d/m/Y')
                                     ->native(false),
                                 DatePicker::make('end_date')
                                     ->label('Sampai Tanggal')
                                     ->required()
+                                    ->live()
                                     ->default(now())
                                     ->displayFormat('d/m/Y')
                                     ->native(false),
                             ])
-                            ->columns(2)
+                            ->columns(2),
+                        
+                        PdfViewerField::make('pdf_preview')
+                            ->label('Pratinjau Laporan')
+                            ->minHeight('60svh')
+                            ->hidden(fn (Get $get) => !$get('start_date') || !$get('end_date'))
+                            ->file(function (Get $get) {
+                                if (!$get('start_date') || !$get('end_date')) return null;
+                                
+                                return route('jurnal-keuangan.rekap', [
+                                    'start_date' => $get('start_date'),
+                                    'end_date' => $get('end_date'),
+                                ]);
+                            }),
                     ])
                     ->action(function (array $data) {
-                        $url = route('jurnal-keuangan.rekap', [
+                        return redirect()->to(route('jurnal-keuangan.rekap', [
                             'start_date' => $data['start_date'],
                             'end_date' => $data['end_date'],
-                        ]);
-
-                        // Gunakan script untuk buka tab baru karena redirect() biasa tidak bisa open in new tab
-                        return redirect()->to($url);
+                            'download' => 1
+                        ]));
                     }),
             ])
             ->defaultSort('created_at', 'desc')
