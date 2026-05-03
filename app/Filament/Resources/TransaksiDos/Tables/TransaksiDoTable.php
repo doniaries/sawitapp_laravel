@@ -5,11 +5,6 @@ namespace App\Filament\Resources\TransaksiDos\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\Action as TablesAction;
 use Filament\Tables\Columns\TextColumn;
@@ -17,8 +12,6 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Support\Colors\Color;
 use App\Models\TransaksiDo;
@@ -173,18 +166,11 @@ class TransaksiDoTable
                     ->description(fn($record) => $record->cara_bayar === 'tunai & transfer' ? 'Dari total sisa bayar' : null)
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('cara_bayar')
+                \Filament\Tables\Columns\SelectColumn::make('cara_bayar')
                     ->label('Metode')
-                    ->searchable()
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'tunai' => 'success',
-                        'transfer' => 'info',
-                        'tunai & transfer' => 'info',
-                        'cair di luar' => 'warning',
-                        'belum dibayar' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->options(\App\Models\TransaksiDo::CARA_BAYAR)
+                    ->selectablePlaceholder(false)
+                    ->searchable(),
 
                 TextColumn::make('catatan')
                     ->label('Catatan')
