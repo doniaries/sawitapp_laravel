@@ -76,6 +76,10 @@ jobs:
                       android/
                       successmandiri-Update/
                       capacitor_backup/
+                      .android-home/
+                      .gradle-home/
+                      .npm-cache/
+                      scratch/
                       load-test.js
                       phpunit.xml
                       .editorconfig
