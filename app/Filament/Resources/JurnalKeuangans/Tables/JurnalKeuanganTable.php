@@ -197,6 +197,23 @@ class JurnalKeuanganTable
             ->filtersFormColumns(2)
             ->recordActions([
                 ViewAction::make(),
+                Action::make('previewKwitansi')
+                    ->label('Pratinjau')
+                    ->icon('heroicon-o-document-magnifying-glass')
+                    ->color('warning')
+                    ->modalHeading('Pratinjau Kwitansi DO')
+                    ->modalWidth('5xl')
+                    ->visible(fn ($record) => $record->kategori === 'DO' && $record->referensi_id)
+                    ->modalSubmitActionLabel('Download PDF')
+                    ->schema([
+                        PdfViewerField::make('pdf_kwitansi')
+                            ->label('Kwitansi DO')
+                            ->minHeight('60svh')
+                            ->file(fn ($record) => route('transaksi-do.pdf', ['id' => $record->referensi_id])),
+                    ])
+                    ->action(function ($record) {
+                        return redirect()->to(route('transaksi-do.pdf', ['id' => $record->referensi_id, 'download' => 1]));
+                    }),
             ])
             ->striped()
             ->paginated([10, 25, 50, 100]);
