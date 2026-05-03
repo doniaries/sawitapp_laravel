@@ -1,6 +1,6 @@
 # Offline Android Sync
 
-Filament tetap menjadi admin panel web. Untuk Android offline, aplikasi perlu memakai UI mobile sendiri yang menyimpan input ke database lokal, lalu sync ke API saat koneksi tersedia.
+Filament tetap menjadi admin panel web. Android memakai UI mobile lokal di folder `mobile` yang menyimpan input ke IndexedDB, lalu sync ke API saat koneksi tersedia.
 
 ## Prinsip
 
@@ -9,6 +9,10 @@ Filament tetap menjadi admin panel web. Untuk Android offline, aplikasi perlu me
 - Data lokal tidak dihapus sebelum server membalas sukses.
 - Retry harus mengirim `client_uuid` yang sama.
 - Server menyimpan `synced_at` dan tidak membuat insert kedua untuk `client_uuid` yang sudah pernah diterima pada perusahaan yang sama.
+
+## Storage Lokal Android
+
+Implementasi awal memakai IndexedDB store `queue` dan `refs` di `mobile/app.js`. Jika nanti ingin lebih native, struktur ini bisa dipindahkan ke SQLite Capacitor tanpa mengubah kontrak API.
 
 ## Kolom Lokal Android
 
@@ -115,3 +119,4 @@ Android harus memperlakukan response ini sebagai sukses, lalu update row lokal m
 - Jangan mengandalkan `id` auto increment lokal untuk sync ke server.
 - File upload seperti `bukti_transfer` perlu disimpan lokal sebagai file path, lalu dikirim multipart saat online.
 - Untuk master data yang bisa dipilih offline, Android perlu cache data referensi seperti penjual, supir, kendaraan, pekerja, dan perusahaan.
+- Implementasi awal belum mengirim file upload offline; field bukti bisa ditambahkan dengan menyimpan Blob/file path lokal di queue.

@@ -4,17 +4,13 @@ Project Android Capacitor sudah dibuat di folder `android`.
 
 ## Cara kerja
 
-Aplikasi Filament ini adalah aplikasi Laravel server-rendered, jadi Capacitor dipakai sebagai Android WebView shell yang membuka URL panel Filament:
+Capacitor memuat aplikasi mobile lokal dari folder `mobile`. UI mobile ini bisa dibuka tanpa jaringan, menyimpan input ke IndexedDB, lalu melakukan sync ke API Laravel saat online.
 
-```text
-https://successmandiri.com/admin
-```
-
-URL tersebut diatur di `capacitor.config.json`.
+Filament tetap dipakai sebagai admin panel web. Android tidak membuka panel Filament langsung karena input offline membutuhkan storage lokal di perangkat.
 
 ## Development lokal
 
-Android emulator tidak bisa mengakses `127.0.0.1` komputer host secara langsung. Untuk testing lokal:
+Android emulator tidak bisa mengakses `127.0.0.1` komputer host secara langsung. Untuk testing API lokal:
 
 1. Jalankan Laravel:
 
@@ -22,15 +18,10 @@ Android emulator tidak bisa mengakses `127.0.0.1` komputer host secara langsung.
     php artisan serve --host=0.0.0.0 --port=8000
     ```
 
-2. Ubah sementara `capacitor.config.json`:
+2. Buka aplikasi Android, isi URL API:
 
-    ```json
-    {
-        "server": {
-            "url": "http://10.0.2.2:8000/admin",
-            "cleartext": true
-        }
-    }
+    ```text
+    http://10.0.2.2:8000
     ```
 
 3. Sync Android:
@@ -45,16 +36,18 @@ Android emulator tidak bisa mengakses `127.0.0.1` komputer host secara langsung.
     npx cap open android
     ```
 
-Untuk perangkat Android fisik, ganti `10.0.2.2` dengan IP LAN komputer, misalnya `http://192.168.1.10:8000/admin`.
+Untuk perangkat Android fisik, ganti `10.0.2.2` dengan IP LAN komputer, misalnya `http://192.168.1.10:8000`.
+
+Manifest Android saat ini mengizinkan cleartext traffic agar testing HTTP lokal bisa jalan. Untuk release publik, tetap gunakan HTTPS production.
 
 ## Production
 
 Sebelum build release, pastikan:
 
-- `capacitor.config.json` memakai URL HTTPS production.
 - `APP_URL` Laravel juga memakai domain HTTPS yang sama.
 - Session/cookie Laravel valid untuk domain tersebut.
-- Asset Filament sudah ter-publish dan bisa diakses dari domain production.
+- API Laravel bisa diakses dari Android.
+- Android user memakai URL API production, misalnya `https://successmandiri.com`.
 
 Lalu jalankan:
 

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Success Mandiri</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <header class="app-header">
+        <div>
+            <p class="eyebrow">Success Mandiri</p>
+            <h1>Input Offline</h1>
+        </div>
+        <span id="networkBadge" class="badge">Offline</span>
+    </header>
+
+    <main>
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Koneksi API</h2>
+                <button id="logoutButton" class="ghost" type="button">Logout</button>
+            </div>
+            <label>
+                URL API
+                <input id="apiBaseUrl" type="url" placeholder="http://192.168.100.16:8000">
+            </label>
+            <div class="grid two">
+                <label>
+                    Email
+                    <input id="email" type="email" autocomplete="username">
+                </label>
+                <label>
+                    Password
+                    <input id="password" type="password" autocomplete="current-password">
+                </label>
+            </div>
+            <div class="actions">
+                <button id="saveSettingsButton" type="button">Simpan URL</button>
+                <button id="loginButton" type="button">Login</button>
+                <button id="refreshRefsButton" type="button">Refresh Data</button>
+            </div>
+            <p id="authStatus" class="muted">Belum login.</p>
+        </section>
+
+        <section class="tabs" aria-label="Jenis input">
+            <button class="tab active" type="button" data-tab="transaksi-do">DO</button>
+            <button class="tab" type="button" data-tab="operasional">Operasional</button>
+            <button class="tab" type="button" data-tab="tambah-saldo">Tambah Saldo</button>
+        </section>
+
+        <section id="transaksi-do" class="panel tab-panel active">
+            <h2>Transaksi DO</h2>
+            <form id="doForm">
+                <div class="grid two">
+                    <label>Tanggal <input name="tanggal" type="datetime-local" required></label>
+                    <label>No Polisi <input name="no_polisi" type="text" placeholder="B1234CD"></label>
+                </div>
+                <div class="grid two">
+                    <label>Penjual <select name="penjual_id" data-ref="penjual" required></select></label>
+                    <label>Supir <select name="supir_id" data-ref="supir" required></select></label>
+                </div>
+                <div class="grid two">
+                    <label>Tonase <input name="tonase" type="number" min="0" step="0.01" required></label>
+                    <label>Harga Satuan <input name="harga_satuan" type="number" min="0" step="1" required></label>
+                </div>
+                <div class="grid two">
+                    <label>Upah Bongkar <input name="upah_bongkar" type="number" min="0" step="1" value="0"></label>
+                    <label>Biaya Lain <input name="biaya_lain" type="number" min="0" step="1" value="0"></label>
+                </div>
+                <div class="grid two">
+                    <label>Pembayaran Hutang <input name="pembayaran_hutang" type="number" min="0" step="1" value="0"></label>
+                    <label>Cara Bayar
+                        <select name="cara_bayar" required>
+                            <option value="tunai">Tunai</option>
+                            <option value="transfer">Transfer</option>
+                            <option value="cair di luar">Cair di luar</option>
+                            <option value="belum dibayar">Belum dibayar</option>
+                        </select>
+                    </label>
+                </div>
+                <label>Keterangan Biaya Lain <textarea name="keterangan_biaya_lain" rows="2"></textarea></label>
+                <label>Keterangan Pembayaran <textarea name="keterangan_pembayaran" rows="2"></textarea></label>
+                <button type="submit">Simpan Offline</button>
+            </form>
+        </section>
+
+        <section id="operasional" class="panel tab-panel">
+            <h2>Operasional</h2>
+            <form id="operasionalForm">
+                <div class="grid two">
+                    <label>Tanggal <input name="tanggal" type="datetime-local" required></label>
+                    <label>Kategori
+                        <select name="kategori" required>
+                            <option value="pinjaman">Pinjaman</option>
+                            <option value="bayar_hutang">Bayar Hutang</option>
+                            <option value="pijakan_gas">Pijakan Gas</option>
+                            <option value="uang_jalan">Uang Jalan</option>
+                            <option value="bahan_bakar">Bahan Bakar</option>
+                            <option value="perawatan">Perawatan</option>
+                            <option value="lain_lain">Lain-lain</option>
+                            <option value="tambah_saldo">Tambah Saldo</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="grid two">
+                    <label>Nominal <input name="nominal" type="number" min="0" step="1" required></label>
+                    <label>Pihak ID <input name="pihak_id" type="number" min="1"></label>
+                </div>
+                <label>Pihak Type
+                    <select name="pihak_type">
+                        <option value="">Tanpa pihak</option>
+                        <option value="App\Models\Penjual">Penjual</option>
+                        <option value="App\Models\Supir">Supir</option>
+                        <option value="App\Models\Pekerja">Pekerja</option>
+                    </select>
+                </label>
+                <label>Keterangan <textarea name="keterangan" rows="3"></textarea></label>
+                <button type="submit">Simpan Offline</button>
+            </form>
+        </section>
+
+        <section id="tambah-saldo" class="panel tab-panel">
+            <h2>Tambah Saldo</h2>
+            <form id="saldoForm">
+                <div class="grid two">
+                    <label>Tanggal <input name="tanggal" type="datetime-local" required></label>
+                    <label>Nominal <input name="nominal" type="number" min="0" step="1" required></label>
+                </div>
+                <label>Keterangan <textarea name="keterangan" rows="3" required></textarea></label>
+                <button type="submit">Simpan Offline</button>
+            </form>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Queue Sync</h2>
+                <button id="syncButton" type="button">Sync Sekarang</button>
+            </div>
+            <div class="stats">
+                <span><strong id="pendingCount">0</strong> pending</span>
+                <span><strong id="failedCount">0</strong> gagal</span>
+                <span><strong id="syncedCount">0</strong> synced</span>
+            </div>
+            <ul id="queueList" class="queue"></ul>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="./app.js" type="module"></script>
+</body>
+</html>
