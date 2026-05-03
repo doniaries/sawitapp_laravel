@@ -73,6 +73,9 @@ class TransaksiDoForm
                                 ]),
                             Select::make('penjual_id')
                                 ->label('Nama Penjual')
+                                ->helperText(fn(Get $get) => $get('penjual_id') 
+                                    ? 'Hutang saat ini: ' . money($get('hutang_awal') ?? 0, 'IDR') 
+                                    : null)
                                 ->relationship(
                                     'penjual',
                                     'nama',
@@ -108,7 +111,16 @@ class TransaksiDoForm
                                         ->tel()
                                         ->maxLength(255)
                                         ->debounce(500),
+                                    \App\Traits\HasCurrencyInput::currencyInput(
+                                        TextInput::make('hutang')
+                                            ->label('Sisa Hutang')
+                                            ->dehydrated()
+                                            ->dehydrateStateUsing(function ($state) {
+                                                return \App\Traits\HasCurrencyInput::sanitizeNumber($state);
+                                            })
+                                    ),
                                 ])
+                                ->createOptionAction(fn($action) => $action->slideOver())
                                 ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                     if ($state) {
                                         $penjual = \App\Models\Penjual::query()->find($state);
@@ -129,6 +141,10 @@ class TransaksiDoForm
                                 )
                                 ->searchable()
                                 ->preload()
+                                ->live()
+                                ->helperText(fn(Get $get) => $get('supir_id') 
+                                    ? 'Hutang saat ini: ' . money($get('hutang_awal_supir') ?? 0, 'IDR') 
+                                    : null)
                                 ->required()
                                 ->noOptionsMessage('Data supir belum ada')
                                 ->searchingMessage('Mencari supir...')
@@ -156,7 +172,24 @@ class TransaksiDoForm
                                         ->tel()
                                         ->maxLength(255)
                                         ->debounce(500),
-                                ]),
+                                    \App\Traits\HasCurrencyInput::currencyInput(
+                                        TextInput::make('hutang')
+                                            ->label('Sisa Hutang')
+                                            ->dehydrated()
+                                            ->dehydrateStateUsing(function ($state) {
+                                                return \App\Traits\HasCurrencyInput::sanitizeNumber($state);
+                                            })
+                                    ),
+                                ])
+                                ->createOptionAction(fn($action) => $action->slideOver())
+                                ->afterStateUpdated(function ($state, Set $set) {
+                                    if ($state) {
+                                        $supir = \App\Models\Supir::query()->find($state);
+                                        if ($supir) {
+                                            $set('hutang_awal_supir', (float) $supir->hutang);
+                                        }
+                                    }
+                                }),
 
                             TextInput::make('no_polisi')
                                 ->label('Nomor Polisi')
@@ -213,10 +246,9 @@ class TransaksiDoForm
 
                             self::currencyInput(TextInput::make('pembayaran_hutang'))
                                 ->label('Potong Hutang')
-                                ->hint(fn(Get $get) => $get('penjual_id') ? 'Sisa Hutang: ' . money($get('hutang_awal') ?? 0, 'IDR') : null)
-                                ->hintColor('danger')
+                                ->hint(fn(Get $get) => $get('penjual_id') ? 'Sisa Hutang: ' . money($get('sisa_hutang_penjual') ?? 0, 'IDR') : null)
+                                ->hintColor(fn(Get $get) => ($get('sisa_hutang_penjual') ?? 0) < 0 ? 'danger' : 'success')
                                 ->hintIcon('heroicon-m-exclamation-circle')
-                                ->helperText(fn(Get $get) => $get('penjual_id') ? 'Hutang penjual saat ini: ' . money($get('hutang_awal') ?? 0, 'IDR') : 'Pilih penjual untuk melihat hutang')
                                 ->placeholder('0')
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set))
@@ -329,6 +361,10 @@ class TransaksiDoForm
                             ->hidden()
                             ->dehydrated(),
                         TextInput::make('sisa_hutang_penjual')
+                            ->default(0)
+                            ->hidden()
+                            ->dehydrated(),
+                        TextInput::make('hutang_awal_supir')
                             ->default(0)
                             ->hidden()
                             ->dehydrated(),

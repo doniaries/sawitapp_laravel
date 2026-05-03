@@ -115,31 +115,19 @@ class CreateTransaksiDo extends CreateRecord
                 //     ->send();
             }
 
-            //Notifikasi transaksi berhasil
-            Notification::make()
-                ->title('Transaksi DO Berhasil')
-                ->body(
-                    "DO #{$record->nomor}\n" .
-                        "Total: Rp " . number_format($record->total, 0, ',', '.') . "\n" .
-                        "Sisa bayar: Rp " . number_format($record->sisa_bayar, 0, ',', '.')
-                )
-                ->success()
-                ->duration(3000) // Set durasi 3 detik
-                ->persistent(false) // Notifikasi akan otomatis hilang
-                ->send();
-
-            // Notifikasi ke Admin/Pimpinan (Terutama jika Cair di Luar)
-            $users = \App\Models\User::whereHas('roles', fn($q) => $q->whereIn('name', ['super_admin', 'pimpinan']))->get();
+            // Notifikasi ke semua user agar informatif
+            $users = \App\Models\User::all();
 
             $isCairLuar = $record->cara_bayar === 'cair di luar';
             $notif = Notification::make()
                 ->title($isCairLuar ? '⚠️ Transaksi Cair di Luar!' : 'Transaksi DO Baru')
-                ->body("DO #{$record->nomor} oleh " . ($record->penjual?->nama ?? 'N/A') . "\nTotal: Rp " . number_format($record->sub_total, 0, ',', '.'))
+                ->body(new \Illuminate\Support\HtmlString("DO #{$record->nomor} oleh " . ($record->penjual?->nama ?? 'N/A') . "<br>Total: " . money($record->total ?? 0, 'IDR')))
                 ->success()
                 ->icon($isCairLuar ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-document-text')
                 ->color($isCairLuar ? 'warning' : 'success')
                 ->actions([
                     NotificationAction::make('lihat')
+                        ->label('Lihat Detail')
                         ->button()
                         ->url(TransaksiDoResource::getUrl('edit', ['record' => $record, 'tenant' => $record->perusahaan->slug])),
                 ]);
@@ -168,5 +156,20 @@ class CreateTransaksiDo extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function getCreatedNotification(): ?Notification
+    {
+        $record = $this->record;
+
+        return Notification::make()
+            ->success()
+            ->title('Transaksi DO Berhasil')
+            ->body(new \Illuminate\Support\HtmlString(
+                "DO #{$record->nomor}<br>" .
+                "Total: " . money($record->total, 'IDR') . "<br>" .
+                "Sisa bayar: " . money($record->sisa_bayar, 'IDR')
+            ))
+            ->duration(3000);
     }
 }

@@ -2,9 +2,6 @@
 
 namespace App\Filament\Resources\TransaksiDos\Widgets;
 
-use App\Models\{TransaksiDo};
-use App\Filament\Resources\TransaksiDos\TransaksiDoResource;
-use App\Filament\Resources\JurnalKeuangans\JurnalKeuanganResource;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Illuminate\Support\Facades\{DB, Log, Cache};
@@ -12,10 +9,9 @@ use Livewire\Attributes\On;
 
 class TransaksiDoStatWidget extends BaseWidget
 {
-    // Widget configuration
     protected static ?int $sort = 1;
-    protected ?string $pollingInterval = '60s';
-    protected static bool $isLazy = true;
+    protected ?string $pollingInterval = '10s';
+    protected static bool $isLazy = false;
     protected int | string | array $columnSpan = 'full';
 
     protected function getStats(): array
@@ -24,121 +20,106 @@ class TransaksiDoStatWidget extends BaseWidget
             $tenant = \Filament\Facades\Filament::getTenant();
             if (!$tenant) return [];
 
-            $cacheKey = "transaksi-stats-tenant-{$tenant->id}";
+            $today = today()->toDateString();
+            $cacheKey = "transaksi-do-stats-{$tenant->id}-{$today}";
 
-            // Get stats from cache or calculate
-            return Cache::remember($cacheKey, 60, function () use ($tenant) {
+            return Cache::remember($cacheKey, 10, function () use ($tenant, $today) {
                 $tenantId = $tenant->id;
-                $today = now()->toDateString();
 
-                // 1. Combine DO stats into one query
+                // Query transaksi DO hari ini
                 $doStats = DB::table('transaksi_do')
                     ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->whereDate('tanggal', $today)
                     ->selectRaw('
                         COUNT(*) as count,
-                        SUM(sub_total) as total,
-                        SUM(pembayaran_hutang) as total_debt_payments,
-                        SUM(CASE WHEN cara_bayar IN ("transfer", "cair di luar", "belum dibayar") THEN sisa_bayar ELSE 0 END) as remaining_payments,
-                        SUM(CASE WHEN cara_bayar = "tunai" THEN 1 ELSE 0 END) as tunai_count,
-                        SUM(CASE WHEN cara_bayar = "transfer" THEN 1 ELSE 0 END) as transfer_count,
-                        SUM(CASE WHEN cara_bayar = "cair di luar" THEN 1 ELSE 0 END) as cair_count,
-                        SUM(CASE WHEN cara_bayar = "belum dibayar" THEN 1 ELSE 0 END) as belum_count
+                        COALESCE(SUM(sub_total), 0) as total,
+                        COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments,
+                        COALESCE(SUM(CASE WHEN cara_bayar IN ("transfer", "cair di luar", "belum dibayar") THEN sisa_bayar ELSE 0 END), 0) as remaining_payments,
+                        COALESCE(SUM(CASE WHEN cara_bayar = "tunai" THEN 1 ELSE 0 END), 0) as tunai_count,
+                        COALESCE(SUM(CASE WHEN cara_bayar = "transfer" THEN 1 ELSE 0 END), 0) as transfer_count,
+                        COALESCE(SUM(CASE WHEN cara_bayar = "cair di luar" THEN 1 ELSE 0 END), 0) as cair_count,
+                        COALESCE(SUM(CASE WHEN cara_bayar = "belum dibayar" THEN 1 ELSE 0 END), 0) as belum_count
                     ')->first();
 
-                // 2. Combine Operational stats into one query
+                // Query operasional hari ini
                 $opStats = DB::table('transaksi_operasional')
                     ->where('perusahaan_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->whereDate('tanggal', $today)
                     ->selectRaw('
-                        SUM(CASE WHEN operasional = "pemasukan" THEN nominal ELSE 0 END) as total_pemasukan,
-                        SUM(CASE WHEN operasional = "pengeluaran" THEN nominal ELSE 0 END) as total_pengeluaran
+                        COALESCE(SUM(CASE WHEN operasional = "pemasukan" THEN nominal ELSE 0 END), 0) as total_pemasukan,
+                        COALESCE(SUM(CASE WHEN operasional = "pengeluaran" THEN nominal ELSE 0 END), 0) as total_pengeluaran
                     ')->first();
 
-                $totalIncomingToday = (float)$doStats->total_debt_payments +
-                    (float)$doStats->remaining_payments +
-                    (float)$opStats->total_pemasukan;
+                $totalIncoming = (float)$doStats->total_debt_payments
+                    + (float)$doStats->remaining_payments
+                    + (float)$opStats->total_pemasukan;
 
-                $totalExpenditureToday = (float)$doStats->total + (float)$opStats->total_pengeluaran;
+                $totalExpenditure = (float)$doStats->total + (float)$opStats->total_pengeluaran;
 
                 return [
                     Stat::make('DO Hari Ini', (int)$doStats->count)
-                        ->description('Total: ' . money($doStats->total ?? 0, 'IDR'))
-                        ->descriptionIcon('heroicon-m-clock')
-                        ->color('info')
-                        ->url(TransaksiDoResource::getUrl('index', ['activeTab' => 'hari_ini'])),
+                        ->description('Total Bruto: ' . money($doStats->total, 'IDR'))
+                        ->descriptionIcon('heroicon-m-document-text')
+                        ->color('info'),
 
-                    // Total Income (Today)
                     Stat::make('Uang Masuk (Hari Ini)', new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-success-600 text-white font-bold text-base shadow-sm">
-                            ' . money($totalIncomingToday, 'IDR') . '
+                            ' . money($totalIncoming, 'IDR') . '
                         </div>
                     '))
                         ->description(sprintf(
-                            "Bayar Hutang: %s | Bayar Sisa: %s\nOperasional: %s",
-                            money($doStats->total_debt_payments ?? 0, 'IDR'),
-                            money($doStats->remaining_payments ?? 0, 'IDR'),
-                            money($opStats->total_pemasukan ?? 0, 'IDR')
+                            'Hutang: %s | Sisa: %s | Ops: %s',
+                            money($doStats->total_debt_payments, 'IDR'),
+                            money($doStats->remaining_payments, 'IDR'),
+                            money($opStats->total_pemasukan, 'IDR')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-up')
-                        ->color('success')
-                        ->url(JurnalKeuanganResource::getUrl('index', [
-                            'activeTab' => 'hari_ini',
-                            'tableFilters' => ['jenis_transaksi' => ['value' => 'Pemasukan']]
-                        ])),
+                        ->color('success'),
 
-                    // Total Expenditure (Today)
                     Stat::make('Pengeluaran (Hari Ini)', new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-danger-600 text-white font-bold text-base shadow-sm">
-                            ' . money($totalExpenditureToday, 'IDR') . '
+                            ' . money($totalExpenditure, 'IDR') . '
                         </div>
                     '))
                         ->description(sprintf(
-                            "DO: %s | Operasional: %s",
-                            money($doStats->total ?? 0, 'IDR'),
-                            money($opStats->total_pengeluaran ?? 0, 'IDR')
+                            'DO: %s | Operasional: %s',
+                            money($doStats->total, 'IDR'),
+                            money($opStats->total_pengeluaran, 'IDR')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-down')
-                        ->color('danger')
-                        ->url(JurnalKeuanganResource::getUrl('index', [
-                            'activeTab' => 'hari_ini',
-                            'tableFilters' => ['jenis_transaksi' => ['value' => 'Pengeluaran']]
-                        ])),
+                        ->color('danger'),
 
-                    Stat::make('Transaksi (Hari Ini)', (int)$doStats->count)
+                    Stat::make('Rekap Cara Bayar', (int)$doStats->count . ' DO')
                         ->description(sprintf(
-                            "tunai: %d | transfer: %d | cair: %d | belum: %d",
-                            $doStats->tunai_count ?? 0,
-                            $doStats->transfer_count ?? 0,
-                            $doStats->cair_count ?? 0,
-                            $doStats->belum_count ?? 0
+                            'Tunai: %d | Transfer: %d | Cair: %d | Belum: %d',
+                            $doStats->tunai_count,
+                            $doStats->transfer_count,
+                            $doStats->cair_count,
+                            $doStats->belum_count
                         ))
-                        ->descriptionIcon('heroicon-m-document-text')
-                        ->color('warning')
-                        ->url(TransaksiDoResource::getUrl('index', ['activeTab' => 'hari_ini'])),
+                        ->descriptionIcon('heroicon-m-credit-card')
+                        ->color('warning'),
                 ];
             });
         } catch (\Exception $e) {
-            Log::error('Error in TransaksiDoStatWidget:', ['message' => $e->getMessage()]);
+            Log::error('TransaksiDoStatWidget Error:', ['message' => $e->getMessage()]);
 
             return [
-                Stat::make('Error', 'Terjadi kesalahan memuat data')
+                Stat::make('Error', 'Gagal memuat data')
                     ->description($e->getMessage())
                     ->color('danger')
             ];
         }
     }
 
-    // Refresh widget on various events
-    #[On(['refresh-widget', 'transaksi-created', 'transaksi-updated', 'transaksi-deleted', 'saldo-updated'])]
+    #[On(['transaksi-created', 'transaksi-updated', 'transaksi-deleted', 'refresh-widget'])]
     public function refresh(): void
     {
         $tenantId = \Filament\Facades\Filament::getTenant()?->id;
         if ($tenantId) {
-            Cache::forget("transaksi-stats-tenant-{$tenantId}");
+            Cache::forget("transaksi-do-stats-{$tenantId}-" . today()->toDateString());
         }
     }
-
 }

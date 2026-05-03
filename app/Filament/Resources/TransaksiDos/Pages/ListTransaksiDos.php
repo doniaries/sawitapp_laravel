@@ -114,7 +114,7 @@ class ListTransaksiDos extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            \App\Filament\Resources\JurnalKeuangans\Widgets\JurnalKeuanganDoStatsWidget::class,
+            \App\Filament\Resources\TransaksiDos\Widgets\TransaksiDoStatWidget::class,
         ];
     }
 

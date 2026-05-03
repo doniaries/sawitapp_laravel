@@ -101,4 +101,19 @@ class EditTransaksiDo extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function getSavedNotification(): ?Notification
+    {
+        $record = $this->record;
+
+        return Notification::make()
+            ->success()
+            ->title('Perubahan DO Disimpan')
+            ->body(new \Illuminate\Support\HtmlString(
+                "DO #{$record->nomor}<br>" .
+                "Total: " . money($record->total, 'IDR') . "<br>" .
+                "Sisa bayar: " . money($record->sisa_bayar, 'IDR')
+            ))
+            ->duration(3000);
+    }
 }
