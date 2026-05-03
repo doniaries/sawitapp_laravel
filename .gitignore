@@ -15,3 +15,4 @@ yarn-error.log
 /.vscode
 /.gradle-home
 /.npm-cache
+/.android-home
