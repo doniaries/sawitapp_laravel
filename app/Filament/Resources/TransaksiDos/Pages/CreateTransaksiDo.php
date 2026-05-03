@@ -114,28 +114,6 @@ class CreateTransaksiDo extends CreateRecord
                 //     ->persistent(false)
                 //     ->send();
             }
-
-            // Notifikasi ke semua user agar informatif
-            $users = \App\Models\User::all();
-
-            $isCairLuar = $record->cara_bayar === 'cair di luar';
-            $notif = Notification::make()
-                ->title($isCairLuar ? '⚠️ Transaksi Cair di Luar!' : 'Transaksi DO Baru')
-                ->body(new \Illuminate\Support\HtmlString("DO #{$record->nomor} oleh " . ($record->penjual?->nama ?? 'N/A') . "<br>Total: " . money($record->total ?? 0, 'IDR')))
-                ->success()
-                ->icon($isCairLuar ? 'heroicon-o-exclamation-triangle' : 'heroicon-o-document-text')
-                ->color($isCairLuar ? 'warning' : 'success')
-                ->actions([
-                    NotificationAction::make('lihat')
-                        ->label('Lihat Detail')
-                        ->button()
-                        ->url(TransaksiDoResource::getUrl('edit', ['record' => $record, 'tenant' => $record->perusahaan->slug])),
-                ]);
-
-            foreach ($users as $user) {
-                $notif->sendToDatabase($user);
-            }
-
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -167,8 +145,8 @@ class CreateTransaksiDo extends CreateRecord
             ->title('Transaksi DO Berhasil')
             ->body(new \Illuminate\Support\HtmlString(
                 "DO #{$record->nomor}<br>" .
-                "Total: " . money($record->total, 'IDR') . "<br>" .
-                "Sisa bayar: " . money($record->sisa_bayar, 'IDR')
+                    "Total: " . money($record->total, 'IDR') . "<br>" .
+                    "Sisa bayar: " . money($record->sisa_bayar, 'IDR')
             ))
             ->duration(3000);
     }
