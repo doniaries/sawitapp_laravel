@@ -140,20 +140,28 @@ class JurnalKeuanganTable
                                     ->hiddenLabel()
                                     ->content(function (Get $get) {
                                         $rentang = $get('rentang');
-                                        $start = $get('start_date');
-                                        $end = $get('end_date');
+                                        $dari = $get('start_date') ?? date('Y-m-d');
+                                        $sampai = $get('end_date') ?? date('Y-m-d');
 
-                                        $params = ['tab' => $rentang];
-                                        if ($rentang === 'custom') {
-                                            if (!$start || !$end) return new HtmlString('<div class="p-4 text-center text-gray-500">Silakan pilih tanggal terlebih dahulu</div>');
-                                            $params = ['start_date' => $start, 'end_date' => $end];
+                                        if ($rentang === 'hari_ini') {
+                                            $dari = $sampai = date('Y-m-d');
+                                        } elseif ($rentang === 'bulan_ini') {
+                                            $dari = date('Y-m-01');
+                                            $sampai = date('Y-m-t');
                                         }
 
-                                        $url = route('jurnal-keuangan.rekap', array_merge($params, ['t' => time()]));
+                                        $url = route('jurnal-keuangan.rekap', [
+                                            'dari' => $dari,
+                                            'sampai' => $sampai,
+                                            't' => time()
+                                        ]);
 
                                         return new HtmlString("
-                                            <div style='background: #333; border-radius: 8px; padding: 10px;'>
-                                                <iframe src='{$url}' style='width: 100%; height: 65vh; border: none; border-radius: 4px;'></iframe>
+                                            <div class='w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-inner' style='height: 750px;'>
+                                                <embed src='{$url}#toolbar=1&navpanes=0&scrollbar=1' type='application/pdf' width='100%' height='100%' />
+                                            </div>
+                                            <div class='mt-2 text-center text-xs text-gray-500'>
+                                                Tips: Gunakan tombol print di pojok kanan atas pratinjau untuk mencetak langsung.
                                             </div>
                                         ");
                                     }),
