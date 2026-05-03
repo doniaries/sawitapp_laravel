@@ -72,14 +72,14 @@ jobs:
                       vite.config.js
                       README.md
                       *.md
-                      .antigravity/
-                      android/
-                      successmandiri-Update/
-                      capacitor_backup/
-                      .android-home/
-                      .gradle-home/
-                      .npm-cache/
-                      scratch/
+                      **/.antigravity/**
+                      **/android/**
+                      **/successmandiri-Update/**
+                      **/capacitor_backup/**
+                      **/.android-home/**
+                      **/.gradle-home/**
+                      **/.npm-cache/**
+                      **/scratch/**
                       load-test.js
                       phpunit.xml
                       .editorconfig
