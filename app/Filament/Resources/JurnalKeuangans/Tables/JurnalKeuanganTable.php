@@ -9,15 +9,17 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Get;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
-use Joaopaulolndev\FilamentPdfViewer\Forms\Components\PdfViewerField;
-use Filament\Forms\Components\Actions\Action as FormAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Components\Section as FormSection;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Grid as FormGrid;
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
+use Illuminate\Support\HtmlString;
 use Illuminate\Database\Eloquent\Builder;
 
 class JurnalKeuanganTable
@@ -90,59 +92,84 @@ class JurnalKeuanganTable
                     ->searchable(),
             ])
             ->headerActions([
-                Action::make('cetakRekap')
-                    ->label(fn($livewire) => 'Cetak Laporan ' . ($livewire->activeTab === 'hari_ini' ? 'Hari Ini' : ($livewire->activeTab === 'bulan_ini' ? 'Bulan Ini' : 'Terpilih')))
-                    ->icon('heroicon-o-eye')
-                    ->color('success')
-                    ->url(fn($livewire) => route('jurnal-keuangan.rekap', ['tab' => $livewire->activeTab]))
-                    ->openUrlInNewTab()
-                    ->hidden(fn($livewire) => $livewire->activeTab === 'semua'),
-
                 Action::make('cetakLaporan')
-                    ->label('Preview Laporan (Rentang)')
+                    ->label('Cetak Laporan')
                     ->icon('heroicon-o-printer')
-                    ->color('info')
+                    ->color('primary')
+                    ->modalHeading('Cetak Laporan Keuangan')
+                    ->modalDescription('Silakan pilih rentang tanggal laporan yang ingin dicetak.')
+                    ->modalSubmitActionLabel('Cetak / Download PDF')
                     ->modalWidth('6xl')
-                    ->modalSubmitActionLabel('Download PDF')
-                    ->schema([
-                        Grid::make()
+                    ->form([
+                        FormGrid::make(3)
                             ->schema([
+                                Select::make('rentang')
+                                    ->label('Pilih Rentang')
+                                    ->options([
+                                        'hari_ini' => 'Hari Ini',
+                                        'bulan_ini' => 'Bulan Ini',
+                                        'custom' => 'Rentang Custom',
+                                    ])
+                                    ->default('hari_ini')
+                                    ->live()
+                                    ->required(),
+                                
                                 DatePicker::make('start_date')
                                     ->label('Dari Tanggal')
-                                    ->required()
-                                    ->live()
                                     ->default(now()->startOfMonth())
                                     ->displayFormat('d/m/Y')
-                                    ->native(false),
+                                    ->native(false)
+                                    ->visible(fn (Get $get) => $get('rentang') === 'custom')
+                                    ->live()
+                                    ->required(),
+                                
                                 DatePicker::make('end_date')
                                     ->label('Sampai Tanggal')
-                                    ->required()
-                                    ->live()
                                     ->default(now())
                                     ->displayFormat('d/m/Y')
-                                    ->native(false),
+                                    ->native(false)
+                                    ->visible(fn (Get $get) => $get('rentang') === 'custom')
+                                    ->live()
+                                    ->required(),
+                            ]),
+
+                        FormSection::make('Pratinjau Laporan')
+                            ->description('Hasil cetak akan terlihat seperti di bawah ini')
+                            ->schema([
+                                Placeholder::make('pdf_preview')
+                                    ->hiddenLabel()
+                                    ->content(function (Get $get) {
+                                        $rentang = $get('rentang');
+                                        $start = $get('start_date');
+                                        $end = $get('end_date');
+
+                                        $params = ['tab' => $rentang];
+                                        if ($rentang === 'custom') {
+                                            if (!$start || !$end) return new HtmlString('<div class="p-4 text-center text-gray-500">Silakan pilih tanggal terlebih dahulu</div>');
+                                            $params = ['start_date' => $start, 'end_date' => $end];
+                                        }
+
+                                        $url = route('jurnal-keuangan.rekap', array_merge($params, ['t' => time()]));
+
+                                        return new HtmlString("
+                                            <div style='background: #333; border-radius: 8px; padding: 10px;'>
+                                                <iframe src='{$url}' style='width: 100%; height: 65vh; border: none; border-radius: 4px;'></iframe>
+                                            </div>
+                                        ");
+                                    }),
                             ])
-                            ->columns(2),
-                        
-                        PdfViewerField::make('pdf_preview')
-                            ->label('Pratinjau Laporan')
-                            ->minHeight('60svh')
-                            ->hidden(fn (Get $get) => !$get('start_date') || !$get('end_date'))
-                            ->file(function (Get $get) {
-                                if (!$get('start_date') || !$get('end_date')) return null;
-                                
-                                return route('jurnal-keuangan.rekap', [
-                                    'start_date' => $get('start_date'),
-                                    'end_date' => $get('end_date'),
-                                ]);
-                            }),
+                            ->collapsible(),
                     ])
                     ->action(function (array $data) {
-                        return redirect()->to(route('jurnal-keuangan.rekap', [
-                            'start_date' => $data['start_date'],
-                            'end_date' => $data['end_date'],
-                            'download' => 1
-                        ]));
+                        $params = ['tab' => $data['rentang'], 'download' => 1];
+                        if ($data['rentang'] === 'custom') {
+                            $params = [
+                                'start_date' => $data['start_date'],
+                                'end_date' => $data['end_date'],
+                                'download' => 1
+                            ];
+                        }
+                        return redirect()->to(route('jurnal-keuangan.rekap', $params));
                     }),
             ])
             ->defaultSort('created_at', 'desc')
@@ -206,10 +233,16 @@ class JurnalKeuanganTable
                     ->visible(fn ($record) => $record->kategori === 'DO' && $record->referensi_id)
                     ->modalSubmitActionLabel('Download PDF')
                     ->schema([
-                        PdfViewerField::make('pdf_kwitansi')
+                        Placeholder::make('pdf_kwitansi')
                             ->label('Kwitansi DO')
-                            ->minHeight('60svh')
-                            ->file(fn ($record) => route('transaksi-do.pdf', ['id' => $record->referensi_id])),
+                            ->content(function ($record) {
+                                $url = route('transaksi-do.pdf', ['id' => $record->referensi_id]);
+                                return new HtmlString("
+                                    <div style='width: 100%; border: 1px solid #444; border-radius: 8px; overflow: hidden;'>
+                                        <iframe src='{$url}' style='width: 100%; height: 60vh; border: none;'></iframe>
+                                    </div>
+                                ");
+                            }),
                     ])
                     ->action(function ($record) {
                         return redirect()->to(route('transaksi-do.pdf', ['id' => $record->referensi_id, 'download' => 1]));

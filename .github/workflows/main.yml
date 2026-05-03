@@ -73,6 +73,8 @@ jobs:
                       README.md
                       *.md
                       .antigravity/
+                      android/
+                      successmandiri-Update/
                       load-test.js
                       phpunit.xml
                       .editorconfig
