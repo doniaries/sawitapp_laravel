@@ -74,6 +74,7 @@ jobs:
                       *.md
                       **/.antigravity/**
                       **/android/**
+                      **/mobile/**
                       **/successmandiri-Update/**
                       **/capacitor_backup/**
                       **/.android-home/**
