@@ -17,6 +17,10 @@ class TransaksiOperasional extends Model
     protected $table = 'transaksi_operasional';
 
     protected $fillable = [
+        'client_uuid',
+        'client_created_at',
+        'client_updated_at',
+        'synced_at',
         'perusahaan_id',
         'user_id',
         'pihak_id',
@@ -32,6 +36,9 @@ class TransaksiOperasional extends Model
 
     protected $casts = [
         'tanggal' => 'datetime', // [EDIT] Ubah ke datetime untuk tampilan jam
+        'client_created_at' => 'datetime',
+        'client_updated_at' => 'datetime',
+        'synced_at' => 'datetime',
         'nominal' => 'decimal:0',
         'kategori' => KategoriOperasional::class, // [TAMBAH] Cast ke Enum
         'operasional' => 'string',

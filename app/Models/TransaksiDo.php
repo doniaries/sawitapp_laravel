@@ -48,6 +48,10 @@ class TransaksiDo extends Model
 
     protected $fillable = [
         'id',
+        'client_uuid',
+        'client_created_at',
+        'client_updated_at',
+        'synced_at',
         'perusahaan_id',
         'user_id',
         'nomor',
@@ -80,6 +84,9 @@ class TransaksiDo extends Model
     // MASIH DIPAKAI - Update casting untuk kolom baru
     protected $casts = [
         'tanggal' => 'datetime',
+        'client_created_at' => 'datetime',
+        'client_updated_at' => 'datetime',
+        'synced_at' => 'datetime',
         'tonase' => 'decimal:0',
         'harga_satuan' => 'decimal:0',
         'sub_total' => 'decimal:0',

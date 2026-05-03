@@ -1,0 +1,12 @@
+{
+    "appId": "com.successmandiri.app",
+    "appName": "Success Mandiri",
+    "webDir": "public",
+    "server": {
+        "url": "https://successmandiri.com/admin",
+        "cleartext": false
+    },
+    "android": {
+        "allowMixedContent": true
+    }
+}

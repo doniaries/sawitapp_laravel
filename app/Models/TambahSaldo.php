@@ -13,15 +13,23 @@ class TambahSaldo extends Model
 
     protected $table = 'tambah_saldo';
     protected $fillable = [
+        'client_uuid',
+        'client_created_at',
+        'client_updated_at',
+        'synced_at',
         'perusahaan_id',
         'user_id',
         'tanggal',
         'nominal',
         'keterangan',
+        'bukti_transfer',
     ];
 
     protected $casts = [
         'tanggal' => 'datetime',
+        'client_created_at' => 'datetime',
+        'client_updated_at' => 'datetime',
+        'synced_at' => 'datetime',
         'nominal' => 'decimal:0',
     ];
 

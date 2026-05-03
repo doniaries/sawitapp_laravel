@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\HandlesOfflineSync;
 use App\Http\Controllers\Controller;
 use App\Models\TransaksiOperasional;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 class OperasionalController extends Controller
 {
+    use HandlesOfflineSync;
+
     public function index(Request $request)
     {
         $perusahaanId = $request->user()->perusahaan_id;
@@ -32,6 +36,7 @@ class OperasionalController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            ...$this->offlineSyncValidationRules(),
             'tanggal' => 'required|date',
             'kategori' => 'required',
             'nominal' => 'required|numeric',
@@ -45,18 +50,31 @@ class OperasionalController extends Controller
             return response()->json(['message' => 'Kategori tidak valid'], 422);
         }
 
-        $operasional = TransaksiOperasional::create([
-            'perusahaan_id' => $request->user()->perusahaan_id,
-            'user_id' => $request->user()->id,
-            'tanggal' => $request->tanggal,
-            'operasional' => $kategori->getJenisOperasional(),
-            'kategori' => $kategori,
-            'nominal' => $request->nominal,
-            'keterangan' => $request->keterangan,
-            'pihak_id' => $request->pihak_id,
-            'pihak_type' => $request->pihak_type,
-            'is_from_transaksi' => false,
-        ]);
+        if ($existing = $this->findExistingOfflineRecord(TransaksiOperasional::class, $request)) {
+            return $this->idempotentResponse($existing, ['pihak']);
+        }
+
+        try {
+            $operasional = TransaksiOperasional::create([
+                ...$this->offlineSyncAttributes($request),
+                'perusahaan_id' => $request->user()->perusahaan_id,
+                'user_id' => $request->user()->id,
+                'tanggal' => $request->tanggal,
+                'operasional' => $kategori->getJenisOperasional(),
+                'kategori' => $kategori,
+                'nominal' => $request->nominal,
+                'keterangan' => $request->keterangan,
+                'pihak_id' => $request->pihak_id,
+                'pihak_type' => $request->pihak_type,
+                'is_from_transaksi' => false,
+            ]);
+        } catch (QueryException $exception) {
+            if ($this->isDuplicateOfflineSyncKey($exception) && $existing = $this->findExistingOfflineRecord(TransaksiOperasional::class, $request)) {
+                return $this->idempotentResponse($existing, ['pihak']);
+            }
+
+            throw $exception;
+        }
 
         return response()->json($operasional->load('pihak'), 201);
     }
