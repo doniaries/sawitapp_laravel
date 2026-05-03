@@ -65,7 +65,6 @@ jobs:
                       **/storage/framework/sessions/**
                       **/storage/framework/views/**
                       **/database/*.sqlite
-                      **/capasitor_backup/**
                       composer.json
                       composer.lock
                       package.json
@@ -76,6 +75,7 @@ jobs:
                       .antigravity/
                       android/
                       successmandiri-Update/
+                      capacitor_backup/
                       load-test.js
                       phpunit.xml
                       .editorconfig
