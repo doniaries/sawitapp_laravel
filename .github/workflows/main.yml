@@ -65,6 +65,7 @@ jobs:
                       **/storage/framework/sessions/**
                       **/storage/framework/views/**
                       **/database/*.sqlite
+                      **/capasitor_backup/**
                       composer.json
                       composer.lock
                       package.json
