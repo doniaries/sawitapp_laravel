@@ -89,27 +89,36 @@ class JurnalKeuanganService
 
 
 
-    public function generatePdfReport($startDate, $endDate)
+    public function generatePdfReport($startDate, $endDate, $reportType = 'semua')
     {
         try {
             $perusahaan = Perusahaan::firstOrFail();
+            $perusahaanId = $perusahaan->id;
 
-            $transaksiDo = TransaksiDo::with(['penjual', 'supir'])
-                ->whereBetween('tanggal', [
-                    Carbon::parse($startDate)->startOfDay(),
-                    Carbon::parse($endDate)->endOfDay()
-                ])
-                ->orderBy('tanggal', 'asc')
-                ->get();
+            $transaksiDo = collect();
+            if ($reportType === 'semua' || $reportType === 'do') {
+                $transaksiDo = TransaksiDo::with(['penjual', 'supir'])
+                    ->where('perusahaan_id', '=', $perusahaanId, 'and')
+                    ->whereBetween('tanggal', [
+                        Carbon::parse($startDate)->startOfDay(),
+                        Carbon::parse($endDate)->endOfDay()
+                    ])
+                    ->orderBy('tanggal', 'asc')
+                    ->get(['*']);
+            }
 
             // Ambil semua data dari Jurnal Keuangan untuk rincian bawah
-            $operasional = \App\Models\JurnalKeuangan::with(['supir', 'penjual', 'pekerja'])
-                ->whereBetween('tanggal', [
-                    Carbon::parse($startDate)->startOfDay(),
-                    Carbon::parse($endDate)->endOfDay()
-                ])
-                ->orderBy('tanggal', 'asc')
-                ->get();
+            $operasional = collect();
+            if ($reportType === 'semua' || $reportType === 'operasional') {
+                $operasional = \App\Models\JurnalKeuangan::with(['supir', 'penjual', 'pekerja'])
+                    ->where('perusahaan_id', '=', $perusahaanId, 'and')
+                    ->whereBetween('tanggal', [
+                        Carbon::parse($startDate)->startOfDay(),
+                        Carbon::parse($endDate)->endOfDay()
+                    ])
+                    ->orderBy('tanggal', 'asc')
+                    ->get(['*']);
+            }
 
             // Pembayaran per metode DO (diambil dari koleksi transaksiDo)
             $pembayaranTunai = $transaksiDo->where('cara_bayar', 'tunai')->sum('sisa_bayar');
@@ -182,7 +191,9 @@ class JurnalKeuanganService
                 'totalBayarHutang' => $totalBayarHutang,
                 'pemasukanOperasional' => $pemasukanOperasional,
                 'pengeluaranOperasional' => $pengeluaranOperasional,
-                'tanggal' => $startDate
+                'tanggal' => $startDate,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
             ];
         } catch (\Exception $e) {
             Log::error('Error generating report:', [

@@ -91,23 +91,22 @@ class JurnalKeuanganTable
                     ->form([
                         FormGrid::make(3)
                             ->schema([
-                                Select::make('rentang')
-                                    ->label('Pilih Rentang')
+                                Select::make('report_type')
+                                    ->label('Jenis Laporan')
                                     ->options([
-                                        'hari_ini' => 'Hari Ini',
-                                        'bulan_ini' => 'Bulan Ini',
-                                        'custom' => 'Rentang Custom',
+                                        'semua' => 'Semua (DO & Operasional)',
+                                        'do' => 'Hanya Transaksi DO',
+                                        'operasional' => 'Hanya Operasional',
                                     ])
-                                    ->default('hari_ini')
+                                    ->default('semua')
                                     ->live()
                                     ->required(),
 
                                 DatePicker::make('start_date')
                                     ->label('Dari Tanggal')
-                                    ->default(now()->startOfMonth())
+                                    ->default(now())
                                     ->displayFormat('d/m/Y')
                                     ->native(false)
-                                    ->visible(fn(Get $get) => $get('rentang') === 'custom')
                                     ->live()
                                     ->required(),
 
@@ -116,7 +115,6 @@ class JurnalKeuanganTable
                                     ->default(now())
                                     ->displayFormat('d/m/Y')
                                     ->native(false)
-                                    ->visible(fn(Get $get) => $get('rentang') === 'custom')
                                     ->live()
                                     ->required(),
                             ]),
@@ -127,20 +125,15 @@ class JurnalKeuanganTable
                                 Placeholder::make('pdf_preview')
                                     ->hiddenLabel()
                                     ->content(function (Get $get) {
-                                        $rentang = $get('rentang');
+                                        $reportType = $get('report_type') ?? 'semua';
                                         $dari = $get('start_date') ?? date('Y-m-d');
                                         $sampai = $get('end_date') ?? date('Y-m-d');
-
-                                        if ($rentang === 'hari_ini') {
-                                            $dari = $sampai = date('Y-m-d');
-                                        } elseif ($rentang === 'bulan_ini') {
-                                            $dari = date('Y-m-01');
-                                            $sampai = date('Y-m-t');
-                                        }
 
                                         $url = route('jurnal-keuangan.rekap', [
                                             'start_date' => $dari,
                                             'end_date' => $sampai,
+                                            'rentang' => 'custom',
+                                            'report_type' => $reportType,
                                             't' => time()
                                         ]);
 

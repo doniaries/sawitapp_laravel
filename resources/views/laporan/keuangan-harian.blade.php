@@ -150,8 +150,14 @@
                 </td>
                 <td style="width: 70%; border: none; text-align: center;">
                     <h2>{{ $perusahaan->name }}</h2>
-                    <h3>LAPORAN KEUANGAN HARIAN</h3>
-                    <p>{{ Carbon\Carbon::parse($tanggal)->isoFormat('dddd, D MMMM Y') }}</p>
+                    <h3>{{ $judul }}</h3>
+                    <p>
+                        @if(Carbon\Carbon::parse($startDate)->isSameDay(Carbon\Carbon::parse($endDate)))
+                            {{ Carbon\Carbon::parse($startDate)->isoFormat('dddd, D MMMM Y') }}
+                        @else
+                            {{ Carbon\Carbon::parse($startDate)->isoFormat('D MMMM Y') }} - {{ Carbon\Carbon::parse($endDate)->isoFormat('D MMMM Y') }}
+                        @endif
+                    </p>
                 </td>
                 <td style="width: 15%; border: none;"></td>
             </tr>
@@ -198,6 +204,7 @@
         </tr>
     </table>
 
+    @if($reportType === 'semua' || $reportType === 'do')
     <!-- Main Transactions Table -->
     <table class="main-table">
         <thead>
@@ -264,9 +271,13 @@
     <div style="font-size: 8px; color: red; margin-bottom: 10px;">
         * (!) : Menandakan data pembukuan dengan sistem tidak cocok (Input Manual Kasir)
     </div>
+    @endif
 
+    @if($reportType === 'semua')
+        <div style="page-break-before: always;"></div>
+    @endif
 
-
+    @if($reportType === 'semua' || $reportType === 'operasional')
     <div class="operational-title">OPERASIONAL</div>
     <table class="operational-table">
         <tr>
@@ -343,6 +354,7 @@
         </tr>
         @endif
     </table>
+    @endif
 </body>
 
 </html>

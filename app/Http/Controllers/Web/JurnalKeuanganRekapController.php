@@ -28,24 +28,32 @@ class JurnalKeuanganRekapController extends Controller
 
         $startDate = $request->query('start_date', now()->format('Y-m-d'));
         $endDate = $request->query('end_date', now()->format('Y-m-d'));
-        $tab = $request->query('tab', 'hari_ini');
+        $reportType = $request->query('report_type', 'semua');
+        $rentang = $request->query('rentang', 'hari_ini');
 
-        // Logic based on tab if dates are not specific
-        if ($request->has('tab') && !$request->has('start_date')) {
-            if ($tab === 'bulan_ini') {
-                $startDate = now()->startOfMonth();
-                $endDate = now()->endOfMonth();
-            } elseif ($tab === 'tahun_ini') {
-                $startDate = now()->startOfYear();
-                $endDate = now()->endOfYear();
-            }
-        }
+        // Determine Title
+        $judulSuffix = match($rentang) {
+            'hari_ini' => "HARIAN",
+            'bulan_ini' => "BULANAN",
+            default => "PERIODE",
+        };
 
-        $viewData = $service->generatePdfReport($startDate, $endDate);
+        $judulBase = match($reportType) {
+            'do' => "LAPORAN TRANSAKSI DO",
+            'operasional' => "LAPORAN OPERASIONAL",
+            default => "LAPORAN KEUANGAN",
+        };
+
+        $judul = "$judulBase $judulSuffix";
+
+        $viewData = $service->generatePdfReport($startDate, $endDate, $reportType);
+        $viewData['judul'] = $judul;
+        $viewData['reportType'] = $reportType;
+
         $pdf = Pdf::loadView('laporan.keuangan-harian', $viewData);
         $pdf->setPaper('a4', 'landscape');
 
-        $filename = "laporan-keuangan-$startDate-ke-$endDate.pdf";
+        $filename = \Illuminate\Support\Str::slug($judul) . "-$startDate-ke-$endDate.pdf";
         $disposition = $request->has('download') ? 'attachment' : 'inline';
 
         return response()->stream(
