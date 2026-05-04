@@ -41,8 +41,6 @@ class TutupHariResource extends Resource
     {
         return [
             'index' => Pages\ListTutupHaris::route('/'),
-            'create' => Pages\CreateTutupHari::route('/create'),
-            'edit' => Pages\EditTutupHari::route('/{record}/edit'),
         ];
     }
 }

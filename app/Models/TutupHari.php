@@ -100,7 +100,7 @@ class TutupHari extends Model
         $saldoSistem = $totalMasuk - $totalKeluar;
         $saldoFisik = (float) ($data['saldo_akhir_fisik'] ?? 0);
 
-        return self::create([
+        $closing = self::create([
             'perusahaan_id' => $perusahaanId,
             'tanggal' => $tanggal,
             'total_do_tonase' => $totalTonase,
@@ -114,5 +114,10 @@ class TutupHari extends Model
             'user_id' => \Illuminate\Support\Facades\Auth::id(),
             'status' => 'closed',
         ]);
+
+        // Update Saldo Perusahaan sesuai uang fisik yang ada
+        $closing->perusahaan->update(['saldo' => $saldoFisik]);
+
+        return $closing;
     }
 }
