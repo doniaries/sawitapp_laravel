@@ -146,11 +146,12 @@ class SimulasiDataSeeder extends Seeder
             $penjual = $penjuals->random();
             $tonase = $faker->numberBetween(1000, 2000);
             $harga = $faker->numberBetween(3500, 3600);
+            $indexUrut = $totalData + $j;
             
             TransaksiDo::create([
                 'perusahaan_id' => $perusahaanId,
                 'user_id' => 1,
-                'nomor' => 'DO-' . $tanggalToday->format('Ym') . '-TODAY-' . str_pad($j, 3, '0', STR_PAD_LEFT),
+                'nomor' => 'DO-' . $tanggalToday->format('Ym') . '-' . str_pad($indexUrut, 4, '0', STR_PAD_LEFT),
                 'tanggal' => $tanggalToday,
                 'penjual_id' => $penjual->id,
                 'supir_id' => $faker->randomElement($supirIds),
