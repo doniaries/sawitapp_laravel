@@ -17,10 +17,10 @@ class TransaksiOperasionalResource extends Resource
     protected static ?string $model = TransaksiOperasional::class;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-banknotes';
     protected static string | \UnitEnum | null $navigationGroup = 'Transaksi';
-    protected static ?string $navigationLabel = 'Transaksi Operasional';
-    protected static ?int $navigationSort = 2;
-    protected static ?string $modelLabel = 'Transaksi Operasional';
-    protected static ?string $pluralModelLabel = 'Transaksi Operasional';
+    protected static ?string $navigationLabel = 'Operasional';
+    protected static ?int $navigationSort = 3;
+    protected static ?string $modelLabel = 'Operasional';
+    protected static ?string $pluralModelLabel = 'Operasional';
 
 
 

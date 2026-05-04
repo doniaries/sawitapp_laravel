@@ -170,7 +170,7 @@
         @if($transaksi->is_mismatch)
         <tr>
             <td style="color: red;">Catatan Penting</td>
-            <td style="color: red;"><strong>SISTEM TIDAK COCOK</strong></td>
+            <td style="color: red;"><strong>Rekap manual dengan inputan tidak Cocok</strong></td>
         </tr>
         @endif
 

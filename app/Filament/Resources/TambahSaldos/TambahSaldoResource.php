@@ -27,7 +27,7 @@ class TambahSaldoResource extends Resource
     protected static ?string $slug = 'tambah-saldo';
 
     protected static string | \UnitEnum | null $navigationGroup = 'Transaksi';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {

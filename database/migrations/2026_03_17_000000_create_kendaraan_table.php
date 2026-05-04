@@ -19,7 +19,6 @@ return new class extends Migration
             $table->boolean('is_maintenance')->default(false);
             $table->timestamps();
             $table->softDeletes();
-
             $table->index('perusahaan_id');
             $table->index('no_polisi');
         });

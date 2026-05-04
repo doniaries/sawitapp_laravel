@@ -25,7 +25,7 @@ class TutupHariResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Tutup Hari';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $form): Schema
     {

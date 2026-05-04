@@ -6,9 +6,17 @@ use App\Filament\Resources\TambahSaldos\TambahSaldoResource;
 
 use Filament\Resources\Pages\CreateRecord;
 
+use Illuminate\Support\Facades\Auth;
+
 class CreateTambahSaldo extends CreateRecord
 {
     protected static string $resource = TambahSaldoResource::class;
+    
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['user_id'] = Auth::id();
+        return $data;
+    }
 
     protected function afterCreate(): void
     {

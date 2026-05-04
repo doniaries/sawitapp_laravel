@@ -50,9 +50,9 @@ class DashboardController extends Controller
         $totalOperasional = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->count();
         $totalUser = User::where('perusahaan_id', $perusahaanId)->count();
         
-        $pendingSaldoQuery = TambahSaldo::where('perusahaan_id', $perusahaanId)->where('status', 'pending');
-        $totalPengajuanDana = (float) $pendingSaldoQuery->sum('nominal');
-        $totalPengajuanCount = $pendingSaldoQuery->count();
+        $saldoQuery = TambahSaldo::where('perusahaan_id', $perusahaanId);
+        $totalPengajuanDana = (float) $saldoQuery->sum('nominal');
+        $totalPengajuanCount = $saldoQuery->count();
 
         // Stats Keuangan via Jurnal Keuangan (Single Source of Truth)
         $jurnalQuery = JurnalKeuangan::where('perusahaan_id', $perusahaanId);

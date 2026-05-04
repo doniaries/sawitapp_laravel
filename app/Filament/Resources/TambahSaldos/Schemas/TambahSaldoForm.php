@@ -4,6 +4,7 @@ namespace App\Filament\Resources\TambahSaldos\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -23,11 +24,12 @@ class TambahSaldoForm
                 DateTimePicker::make('tanggal')
                     ->default(now())
                     ->required()
-                    ->label('Tanggal Entry')
+                    ->readOnly()
+                    ->label('Tanggal')
                     ->native(false)
                     ->displayFormat('d/m/Y H:i')
                     ->rules([
-                        fn ($get) => function (string $attribute, $value, $fail) use ($get) {
+                        fn($get) => function (string $attribute, $value, $fail) use ($get) {
                             $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
                             if (!\App\Models\TutupHari::canModify($value, $perusahaanId)) {
                                 $fail("Data tidak dapat ditambah/diubah karena hari tersebut sudah ditutup.");
@@ -41,9 +43,13 @@ class TambahSaldoForm
                     ->default(null)
                     ->debounce(500),
                 Textarea::make('keterangan')
-                    ->columnSpanFull()
                     ->maxLength(100)
                     ->debounce(500),
+                FileUpload::make('bukti_transfer')
+                    ->image()
+                    ->directory('bukti-transfer')
+                    ->label('Bukti Transfer'),
+
             ]);
     }
 }

@@ -123,7 +123,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentDeveloperLoginsPlugin::make()
                     ->enabled(app()->environment('local'))
                     ->users([
-                        'Admin' => 'superadmin@gmail.com',
+                        'SuperAdmin' => 'superadmin@gmail.com',
                         'Pimpinan' => 'yondra@gmail.com',
                         'Kasir' => 'kasir1@gmail.com',
                     ]),

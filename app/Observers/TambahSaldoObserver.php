@@ -20,12 +20,41 @@ class TambahSaldoObserver
     }
 
     /**
+     * Handle the TambahSaldo "deleted" event.
+     */
+    public function deleted(TambahSaldo $tambahSaldo): void
+    {
+        DB::transaction(function () use ($tambahSaldo) {
+            $perusahaan = Perusahaan::lockForUpdate()->find($tambahSaldo->perusahaan_id);
+            if ($perusahaan) {
+                $perusahaan->decrement('saldo', $tambahSaldo->nominal);
+                
+                // Hapus jurnal terkait
+                JurnalKeuangan::where('referensi_id', $tambahSaldo->id)
+                    ->where('sumber_transaksi', 'Tambah Saldo')
+                    ->delete();
+                
+                Log::info("TambahSaldoObserver: Saldo dikurangi karena data dihapus (ID: {$tambahSaldo->id})");
+            }
+        });
+    }
+
+    /**
+     * Handle the TambahSaldo "restored" event.
+     */
+    public function restored(TambahSaldo $tambahSaldo): void
+    {
+        $this->prosesSaldoDanJurnal($tambahSaldo);
+        Log::info("TambahSaldoObserver: Saldo dikembalikan karena data direstore (ID: {$tambahSaldo->id})");
+    }
+
+    /**
      * Proses update saldo perusahaan dan pencatatan jurnal keuangan.
      */
     protected function prosesSaldoDanJurnal(TambahSaldo $tambahSaldo): void
     {
         DB::transaction(function () use ($tambahSaldo) {
-            $perusahaan = Perusahaan::find($tambahSaldo->perusahaan_id);
+            $perusahaan = Perusahaan::lockForUpdate()->find($tambahSaldo->perusahaan_id);
             if (!$perusahaan) {
                 Log::error("TambahSaldoObserver: Perusahaan ID {$tambahSaldo->perusahaan_id} tidak ditemukan.");
                 return;
