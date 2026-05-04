@@ -102,15 +102,14 @@ class ListJurnalKeuangans extends ListRecords
     public function getTabs(): array
     {
         return [
+            'semua' => Tab::make('Semua')
+                ->icon('heroicon-o-list-bullet')
+                ->badge($this->getTabCount('all')),
+
             'hari_ini' => Tab::make('Hari Ini')
                 ->icon('heroicon-o-calendar')
                 ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', '=', today(), 'and'))
                 ->badge($this->getTabCount('hari_ini')),
-
-            'kemarin' => Tab::make('Kemarin')
-                ->icon('heroicon-o-calendar')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', '=', today()->subDay(), 'and'))
-                ->badge($this->getTabCount('kemarin')),
 
             'pemasukan' => Tab::make('Pemasukan')
                 ->icon('heroicon-o-arrow-down-circle')
@@ -129,22 +128,21 @@ class ListJurnalKeuangans extends ListRecords
         ];
     }
 
-    public function updatedActiveTab(): void
-    {
-        $this->dispatch('tab-changed', tab: $this->activeTab)->to(JurnalKeuanganDoStatsWidget::class);
-    }
-
     protected function getTabCount(string $tab): int
     {
         $query = JurnalKeuangan::query();
 
         return match ($tab) {
-            'hari_ini' => $query->whereDate('tanggal', '=', today(), 'and')->count('*'),
-            'kemarin' => $query->whereDate('tanggal', '=', today()->subDay(), 'and')->count('*'),
-            'pemasukan' => $query->where('jenis_transaksi', '=', 'Pemasukan', 'and')->count('*'),
-            'pengeluaran' => $query->where('jenis_transaksi', '=', 'Pengeluaran', 'and')->count('*'),
-            'bulan_ini' => $query->whereMonth('tanggal', '=', now()->month, 'and')->whereYear('tanggal', '=', now()->year, 'and')->count('*'),
-            default => $query->count('*'),
+            'hari_ini' => (clone $query)->whereDate('tanggal', '=', today(), 'and')->count('*'),
+            'pemasukan' => (clone $query)->where('jenis_transaksi', '=', 'Pemasukan', 'and')->count('*'),
+            'pengeluaran' => (clone $query)->where('jenis_transaksi', '=', 'Pengeluaran', 'and')->count('*'),
+            'bulan_ini' => (clone $query)->whereMonth('tanggal', '=', now()->month, 'and')->whereYear('tanggal', '=', now()->year, 'and')->count('*'),
+            default => (clone $query)->count('*'),
         };
+    }
+
+    public function updatedActiveTab(): void
+    {
+        $this->dispatch('tab-changed', tab: $this->activeTab)->to(JurnalKeuanganDoStatsWidget::class);
     }
 }

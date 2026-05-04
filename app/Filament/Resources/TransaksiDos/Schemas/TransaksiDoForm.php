@@ -8,11 +8,9 @@ use App\Models\TransaksiDo;
 use App\Traits\HasCurrencyInput;
 use Carbon\Carbon;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -58,7 +56,7 @@ class TransaksiDoForm
                                 ->default(Carbon::now())
                                 ->required()
                                 ->live()
-                                ->readOnly(fn($record) => $record && !Auth::user()->is_superadmin) // Kunci tanggal saat edit
+                                ->readOnly(fn($record) => $record && !\Illuminate\Support\Facades\Auth::user()->isSuperAdmin()) // Kunci tanggal saat edit
                                 ->afterStateUpdated(function ($state, Set $set) {
                                     if ($state) {
                                         $set('nomor', TransaksiDo::generateMonthlyNumber($state));
@@ -67,16 +65,16 @@ class TransaksiDoForm
                                 ->rules([
                                     fn() => function (string $attribute, $value, \Closure $fail) {
                                         // Jika Superadmin, boleh lewat
-                                        if (auth()->user()->isSuperAdmin()) return;
-                                        
+                                        if (\Illuminate\Support\Facades\Auth::user()->isSuperAdmin()) return;
+
                                         $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
                                         $tanggal = \Carbon\Carbon::parse($value)->toDateString();
-                                        
-                                        $isClosed = \App\Models\TutupHari::where('perusahaan_id', $perusahaanId)
-                                            ->where('tanggal', $tanggal)
-                                            ->where('status', 'closed')
+
+                                        $isClosed = \App\Models\TutupHari::where('perusahaan_id', '=', $perusahaanId, 'and')
+                                            ->where('tanggal', '=', $tanggal, 'and')
+                                            ->where('status', '=', 'closed', 'and')
                                             ->exists();
-                                            
+
                                         if ($isClosed) {
                                             $fail('Tanggal ini sudah ditutup. Hanya Superadmin yang dapat menambah atau mengubah data pada tanggal ini.');
                                         }
@@ -264,23 +262,23 @@ class TransaksiDoForm
 
                             self::currencyInput(TextInput::make('pembayaran_hutang'))
                                 ->label('Potong Hutang')
-                                ->hint(function(Get $get) {
+                                ->hint(function (Get $get) {
                                     $penjual = $get('penjual_id');
                                     if (!$penjual) return null;
-                                    
+
                                     $subTotal = \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
                                     $biaya = \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0) + \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                     $maxDariTransaksi = max(0, $subTotal - $biaya);
-                                    
+
                                     return "Maks. dari hasil: " . money($maxDariTransaksi, 'IDR');
                                 })
                                 ->helperText(fn(Get $get) => $get('penjual_id') ? 'Hutang Penjual: ' . money($get('sisa_hutang_penjual') ?? 0, 'IDR') : null)
-                                ->hintColor(function(Get $get) {
+                                ->hintColor(function (Get $get) {
                                     $val = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('pembayaran_hutang') ?? 0);
                                     $subTotal = \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
                                     $biaya = \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0) + \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                     $max = $subTotal - $biaya;
-                                    
+
                                     return $val > $max ? 'danger' : 'info';
                                 })
                                 ->hintIcon('heroicon-m-information-circle')
@@ -337,7 +335,7 @@ class TransaksiDoForm
                                     },
                                 ]),
 
-                             self::currencyInput(TextInput::make('sisa_bayar'))
+                            self::currencyInput(TextInput::make('sisa_bayar'))
                                 ->label('Total Bayar ke Penjual')
                                 ->readOnly()
                                 ->live()
@@ -353,7 +351,7 @@ class TransaksiDoForm
                                 ->extraInputAttributes(function (Get $get) {
                                     $sisa = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
                                     $color = $sisa < 0 ? '#dc2626' : '#17b035'; // Merah jika minus, Hijau jika positif
-                                    
+
                                     return [
                                         'style' => "font-size: 1.5rem !important; font-weight: 900; color: {$color} !important; -webkit-text-fill-color: {$color} !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;",
                                         'class' => 'text-center'

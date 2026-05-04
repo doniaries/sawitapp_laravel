@@ -27,7 +27,7 @@ class JurnalKeuanganTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->deferLoading()
+            // ->deferLoading()
             ->columns([
                 TextColumn::make('tanggal')
                     ->dateTime('d F Y H:i')
@@ -42,8 +42,6 @@ class JurnalKeuanganTable
                     })
                     ->searchable(),
 
-                // TextColumn::make('kategori')
-                //     ->searchable(),
                 TextColumn::make('sub_kategori')
                     ->searchable(),
                 TextColumn::make('nominal')
@@ -212,14 +210,18 @@ class JurnalKeuanganTable
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
-                            ->when($data['dari_tanggal'], fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date))
-                            ->when($data['sampai_tanggal'], fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date));
+                            ->when($data['dari_tanggal'], function (Builder $query, $date) {
+                                $date = \Carbon\Carbon::parse($date)->toDateString();
+                                return $query->whereDate('tanggal', '>=', $date);
+                            })
+                            ->when($data['sampai_tanggal'], function (Builder $query, $date) {
+                                $date = \Carbon\Carbon::parse($date)->toDateString();
+                                return $query->whereDate('tanggal', '<=', $date);
+                            });
                     }),
                 TrashedFilter::make()
-            ], layout: FiltersLayout::Modal)
-            ->filtersTriggerAction(fn(Action $action) => $action->button()->label('Filter Tanggal'))
-            ->defaultSort('created_at', 'desc')
-            ->filtersFormColumns(2)
+            ])
+            ->filtersFormColumns(1) // Merapikan form filter dalam popover
             ->recordActions([
                 ViewAction::make(),
                 Action::make('previewKwitansi')

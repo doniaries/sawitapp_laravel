@@ -3,153 +3,31 @@
 namespace Database\Seeders;
 
 use App\Models\Penjual;
+use App\Models\Perusahaan;
 use Illuminate\Database\Seeder;
+use Faker\Factory as Faker;
 
 class PenjualSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * Seeds initial penjual data with default null values for non-essential fields
-     */
     public function run(): void
     {
-        // Define array of penjual data
-        $penjuals = [
-            [
-                'id' => 1,
-                'nama' => 'FURQON',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 2,
-                'nama' => 'EPI',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 3,
-                'nama' => 'ANDES',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 4,
-                'nama' => 'LOPON',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 5,
-                'nama' => 'HERMAN',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 6,
-                'nama' => 'SIIT',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 7,
-                'nama' => 'ETI SUSANA',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 1500000
-            ],
-            [
-                'id' => 8,
-                'nama' => 'SEBON',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 9,
-                'nama' => 'SISKA',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 10,
-                'nama' => 'JEKI',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 11,
-                'nama' => 'AGUS',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 12,
-                'nama' => 'JOKO',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 13,
-                'nama' => 'SUKARMIN',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 1500000
-            ],
-            [
-                'id' => 14,
-                'nama' => 'DITEG',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 15,
-                'nama' => 'KELOMPOK',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 16,
-                'nama' => 'UCOK',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-            [
-                'id' => 17,
-                'nama' => 'ARI WAHYU',
-                'alamat' => null,
-                'telepon' => null,
-                'hutang' => 0
-            ],
-        ];
+        $faker = Faker::create('id_ID');
+        $perusahaans = Perusahaan::all();
 
-        $perusahaan1 = \App\Models\Perusahaan::where('name', 'CV SUCCESS MANDIRI')->first();
-        $perusahaan2 = \App\Models\Perusahaan::where('name', 'PT Andalas Integrasi Global')->first();
+        if ($perusahaans->isEmpty()) {
+            return;
+        }
 
-        foreach ($penjuals as $index => $penjualData) {
-            unset($penjualData['id']); // Let database handle ID
-            
-            // Alternate between companies
-            $targetPerusahaan = ($index % 2 === 0) ? $perusahaan1 : $perusahaan2;
-            
-            if ($targetPerusahaan) {
-                $penjualData['perusahaan_id'] = $targetPerusahaan->id;
-                $penjualData['nama'] .= ' (' . ($index % 2 === 0 ? 'CV' : 'PT') . ')';
-                Penjual::create($penjualData);
+        foreach ($perusahaans as $perusahaan) {
+            // Tambahkan 100 data per perusahaan (total bisa banyak)
+            for ($i = 1; $i <= 100; $i++) {
+                Penjual::create([
+                    'perusahaan_id' => $perusahaan->id,
+                    'nama' => strtoupper($faker->name),
+                    'alamat' => $faker->address,
+                    'telepon' => $faker->phoneNumber,
+                    'hutang' => 0,
+                ]);
             }
         }
     }

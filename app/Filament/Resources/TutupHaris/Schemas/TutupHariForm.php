@@ -103,16 +103,16 @@ class TutupHariForm
         $opTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('nominal');
 
         // Saldo Awal: Ambil dari saldo_akhir_fisik TutupHari sebelumnya
-        $lastClosing = TutupHari::where('perusahaan_id', $perusahaanId)
-            ->where('tanggal', '<', $tanggal)
+        $lastClosing = TutupHari::where('perusahaan_id', '=', $perusahaanId, 'and')
+            ->where('tanggal', '<', $tanggal, 'and')
             ->latest('tanggal')
-            ->first();
+            ->first(['*']);
 
         if ($lastClosing) {
             $saldoAwal = $lastClosing->saldo_akhir_fisik;
         } else {
             // Jika belum pernah tutup hari, ambil saldo perusahaan saat ini - net hari ini
-            $perusahaan = Perusahaan::find($perusahaanId);
+            $perusahaan = Perusahaan::find($perusahaanId, ['*']);
             $saldoAwal = ($perusahaan?->saldo ?? 0) - ($masuk - $keluar);
         }
 
@@ -147,7 +147,7 @@ class TutupHariForm
                         </tr>
 
                         <!-- Operasional -->
-                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-300 dark:border-gray-600 border-b border-gray-300'>
+                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-300 dark:border-gray-600 border-b'>
                             <td class='pl-4 pr-8 py-4 text-gray-900 dark:text-white font-black uppercase text-sm border border-gray-300 dark:border-gray-600' colspan='2'>
                                 <div class='flex items-center gap-3'>
                                     <div class='w-3 h-3 rounded-full bg-warning-500 shadow-sm'></div>
@@ -165,7 +165,7 @@ class TutupHariForm
                         </tr>
 
                         <!-- Arus Kas -->
-                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-300 dark:border-gray-600 border-b border-gray-300'>
+                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-300 dark:border-gray-600 border-b'>
                             <td class='pl-4 pr-8 py-4 text-gray-900 dark:text-white font-black uppercase text-sm border border-gray-300 dark:border-gray-600' colspan='2'>
                                 <div class='flex items-center gap-3'>
                                     <div class='w-3 h-3 rounded-full bg-success-500 shadow-sm'></div>

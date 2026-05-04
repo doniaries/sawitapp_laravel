@@ -39,9 +39,8 @@ class DatabaseSeeder extends Seeder
         // Hanya jalankan seeder transaksi jika TIDAK di produksi
         if (!app()->environment('production')) {
             $this->call([
-                BenchmarkTransactionSeeder::class,
+                SimulasiDataSeeder::class,
                 // OperasionalSeeder::class,
-                // SimulasiDataSeeder::class,
             ]);
         }
 

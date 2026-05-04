@@ -29,7 +29,7 @@ class ListTransaksiDos extends ListRecords
             Actions\CreateAction::make()
                 ->label('Tambah Transaksi')
                 ->visible(fn() => 
-                    auth()->user()->isSuperAdmin() || 
+                    \Illuminate\Support\Facades\Auth::user()->isSuperAdmin() || 
                     !\App\Models\TutupHari::isClosed(today(), \Filament\Facades\Filament::getTenant()->id)
                 ),
             Actions\Action::make('tutup_hari')
@@ -60,14 +60,14 @@ class ListTransaksiDos extends ListRecords
                                         ->displayFormat('d/m/Y')
                                         ->disabledDates(function () {
                                             $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
-                                            return \App\Models\TutupHari::where('perusahaan_id', $perusahaanId)
+                                            return \App\Models\TutupHari::where('perusahaan_id', '=', $perusahaanId, 'and')
                                                 ->pluck('tanggal')
                                                 ->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())
                                                 ->toArray();
                                         })
                                         ->rules([
                                             fn() => function (string $attribute, $value, \Closure $fail) {
-                                                if (auth()->user()->isSuperAdmin()) return;
+                                                if (\Illuminate\Support\Facades\Auth::user()->isSuperAdmin()) return;
                                                 $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
                                                 if (\App\Models\TutupHari::isClosed($value, $perusahaanId)) {
                                                     $fail('Tanggal ini sudah ditutup sebelumnya.');
@@ -257,16 +257,16 @@ class ListTransaksiDos extends ListRecords
         $opTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('nominal');
 
         // Saldo Awal: Ambil dari saldo_akhir_fisik TutupHari sebelumnya
-        $lastClosing = TutupHari::where('perusahaan_id', $perusahaanId)
-            ->where('tanggal', '<', $tanggal)
+        $lastClosing = TutupHari::where('perusahaan_id', '=', $perusahaanId, 'and')
+            ->where('tanggal', '<', $tanggal, 'and')
             ->latest('tanggal')
-            ->first();
+            ->first(['*']);
 
         if ($lastClosing) {
             $saldoAwal = $lastClosing->saldo_akhir_fisik;
         } else {
             // Jika belum pernah tutup hari, ambil saldo perusahaan saat ini - net hari ini
-            $perusahaan = Perusahaan::find($perusahaanId);
+            $perusahaan = Perusahaan::find($perusahaanId, ['*']);
             $saldoAwal = ($perusahaan?->saldo ?? 0) - ($masuk - $keluar);
         }
 
@@ -301,7 +301,7 @@ class ListTransaksiDos extends ListRecords
                         </tr>
 
                         <!-- Operasional -->
-                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-300 dark:border-gray-600 border-b border-gray-300'>
+                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-300 dark:border-gray-600 border-b'>
                             <td class='pl-4 pr-8 py-4 text-gray-900 dark:text-white font-black uppercase text-sm border border-gray-300 dark:border-gray-600' colspan='2'>
                                 <div class='flex items-center gap-3'>
                                     <div class='w-3 h-3 rounded-full bg-warning-500 shadow-sm'></div>
@@ -319,7 +319,7 @@ class ListTransaksiDos extends ListRecords
                         </tr>
 
                         <!-- Arus Kas -->
-                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-300 dark:border-gray-600 border-b border-gray-300'>
+                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-300 dark:border-gray-600 border-b'>
                             <td class='pl-4 pr-8 py-4 text-gray-900 dark:text-white font-black uppercase text-sm border border-gray-300 dark:border-gray-600' colspan='2'>
                                 <div class='flex items-center gap-3'>
                                     <div class='w-3 h-3 rounded-full bg-success-500 shadow-sm'></div>
