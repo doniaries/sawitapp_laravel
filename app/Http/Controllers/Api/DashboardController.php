@@ -26,7 +26,7 @@ class DashboardController extends Controller
 
         // Fail-safe untuk Admin/Superadmin tanpa perusahaan_id default
         if (is_null($perusahaanId) && $user->isAdminOrSuperAdmin()) {
-            $firstPerusahaan = Perusahaan::first();
+            $firstPerusahaan = Perusahaan::query()->first();
             $perusahaanId = $firstPerusahaan?->id;
             
             // Opsional: Update user agar permanen
@@ -39,23 +39,23 @@ class DashboardController extends Controller
         $year = Carbon::now()->year;
         $today = Carbon::today();
 
-        $perusahaan = Perusahaan::find($perusahaanId);
+        $perusahaan = Perusahaan::query()->find($perusahaanId);
 
         // Eloquent Counts
-        $totalPenjual = Penjual::where('perusahaan_id', $perusahaanId)->count();
-        $totalSupir = Supir::where('perusahaan_id', $perusahaanId)->count();
-        $totalPekerja = Pekerja::where('perusahaan_id', $perusahaanId)->count();
-        $totalKendaraan = Kendaraan::where('perusahaan_id', $perusahaanId)->count();
-        $totalJurnal = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->count();
-        $totalOperasional = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->count();
-        $totalUser = User::where('perusahaan_id', $perusahaanId)->count();
+        $totalPenjual = Penjual::query()->where('perusahaan_id', $perusahaanId)->count();
+        $totalSupir = Supir::query()->where('perusahaan_id', $perusahaanId)->count();
+        $totalPekerja = Pekerja::query()->where('perusahaan_id', $perusahaanId)->count();
+        $totalKendaraan = Kendaraan::query()->where('perusahaan_id', $perusahaanId)->count();
+        $totalJurnal = JurnalKeuangan::query()->where('perusahaan_id', $perusahaanId)->count();
+        $totalOperasional = TransaksiOperasional::query()->where('perusahaan_id', $perusahaanId)->count();
+        $totalUser = User::query()->where('perusahaan_id', $perusahaanId)->count();
         
-        $saldoQuery = TambahSaldo::where('perusahaan_id', $perusahaanId);
+        $saldoQuery = TambahSaldo::query()->where('perusahaan_id', $perusahaanId);
         $totalPengajuanDana = (float) $saldoQuery->sum('nominal');
         $totalPengajuanCount = $saldoQuery->count();
 
         // Stats Keuangan via Jurnal Keuangan (Single Source of Truth)
-        $jurnalQuery = JurnalKeuangan::where('perusahaan_id', $perusahaanId);
+        $jurnalQuery = JurnalKeuangan::query()->where('perusahaan_id', $perusahaanId);
         
         // Pemasukan Today & Month
         $pemasukanTodayTotal = (float) $jurnalQuery->clone()
@@ -100,7 +100,7 @@ class DashboardController extends Controller
             ->count();
 
         // Stats DO Counts & Amounts
-        $doQuery = TransaksiDo::where('perusahaan_id', $perusahaanId);
+        $doQuery = TransaksiDo::query()->where('perusahaan_id', $perusahaanId);
         $doTodayCount = $doQuery->clone()->whereDate('tanggal', $today)->count();
         $doTodayAmount = (float) $doQuery->clone()->whereDate('tanggal', $today)->sum('sub_total');
         
@@ -111,7 +111,7 @@ class DashboardController extends Controller
         $doMonthAmount = (float) $doQuery->clone()->whereMonth('tanggal', $month)->whereYear('tanggal', $year)->sum('sub_total');
 
         // Latest transactions
-        $transactions = TransaksiDo::where('perusahaan_id', $perusahaanId)
+        $transactions = TransaksiDo::query()->where('perusahaan_id', $perusahaanId)
             ->with(['penjual:id,nama', 'supir:id,nama'])
             ->latest()->limit(5)->get()->map(fn($tx) => [
                 'id' => $tx->id,
@@ -133,7 +133,7 @@ class DashboardController extends Controller
                 'no_polisi' => $tx->no_polisi,
             ]);
 
-        $latestOperasional = TransaksiOperasional::where('perusahaan_id', $perusahaanId)
+        $latestOperasional = TransaksiOperasional::query()->where('perusahaan_id', $perusahaanId)
             ->latest()->limit(5)->get();
 
         return response()->json([
