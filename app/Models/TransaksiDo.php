@@ -257,7 +257,7 @@ class TransaksiDo extends Model
     public static function calculateSisaBayar(float $subTotal, float $upahBongkar, float $biayaLain, float $bayarHutang): float
     {
         $sisa = $subTotal - ($upahBongkar + $biayaLain + $bayarHutang);
-        return (float) max(0, round($sisa));
+        return (float) round($sisa);
     }
 
     public static function calculateSisaHutang(float $hutangAwal, float $bayarHutang): float
