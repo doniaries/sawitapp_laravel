@@ -14,7 +14,9 @@ use App\Models\TransaksiDo;
 use App\Models\JurnalKeuangan;
 use App\Models\TransaksiOperasional;
 use App\Models\Perusahaan;
+use App\Models\TutupHari;
 use Illuminate\Support\HtmlString;
+use Carbon\Carbon;
 
 class TutupHariForm
 {
@@ -41,7 +43,8 @@ class TutupHariForm
                                         DatePicker::make('tanggal')
                                             ->label('Tanggal Tutup Buku')
                                             ->required()
-                                            ->default(now())
+                                            ->default(fn() => self::getNextClosingDate())
+                                            ->readOnly() // Mencegah kasir mengubah tanggal secara manual
                                             ->live()
                                             ->unique(ignorable: fn($record) => $record, modifyRuleUsing: function ($rule) {
                                                 return $rule->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id);
@@ -94,64 +97,100 @@ class TutupHariForm
         $saldoSistem = $saldoAwal + $masuk - $keluar;
 
         return new HtmlString("
-            <div class='overflow-hidden border rounded-lg bg-gray-50 dark:bg-gray-900/50 shadow-sm'>
-                <table class='w-full text-base text-left border-collapse table-fixed tracking-wide'>
+            <div class='overflow-hidden border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-lg bg-white dark:bg-gray-800' style='width: 100%;'>
+                <table class='w-full text-base border-collapse tracking-wide' style='table-layout: fixed; width: 100%;'>
                     <thead>
-                        <tr class='bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700'>
-                            <th class='w-3/4 px-6 py-4 font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-widest'>Keterangan Ringkasan</th>
-                            <th class='w-1/4 px-6 py-4 font-bold text-right text-gray-700 dark:text-gray-200 uppercase text-xs tracking-widest'>Jumlah / Nilai</th>
+                        <tr class='bg-gray-100 dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700'>
+                            <th class='w-1/2 px-8 py-6 font-bold text-gray-700 dark:text-gray-200 uppercase text-sm tracking-widest text-left'>Keterangan Ringkasan</th>
+                            <th class='w-1/2 px-8 py-6 font-bold text-gray-700 dark:text-gray-200 uppercase text-sm tracking-widest' style='text-align: right;'>Jumlah / Nilai</th>
                         </tr>
                     </thead>
-                    <tbody class='divide-y dark:divide-gray-700'>
+                    <tbody class='divide-y divide-gray-200 dark:divide-gray-700'>
                         <!-- Transaksi DO -->
-                        <tr>
-                            <td class='px-6 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50' colspan='2'>TRANSAKSI PENJUALAN (DO)</td>
+                        <tr class='bg-gray-50/80 dark:bg-gray-900/40'>
+                            <td class='px-8 py-4 text-gray-900 dark:text-white font-black uppercase text-sm border-r border-gray-200 dark:border-gray-700' colspan='2'>
+                                <div class='flex items-center gap-3'>
+                                    <div class='w-3 h-3 rounded-full bg-primary-500 shadow-sm'></div>
+                                    TRANSAKSI PENJUALAN (DO)
+                                </div>
+                            </td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
-                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400'>Banyak Transaksi</td>
-                            <td class='px-6 py-3 text-right font-semibold text-primary-600'>{$doCount} Transaksi</td>
+                        <tr class='hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition duration-150'>
+                            <td class='px-8 py-5 text-gray-600 dark:text-gray-400 font-medium text-left border-r border-gray-200 dark:border-gray-700'>Banyak Transaksi Teratat</td>
+                            <td class='px-8 py-5 font-bold text-primary-600 text-lg' style='text-align: right;'>{$doCount} Transaksi</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
-                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400'>Total Rupiah DO</td>
-                            <td class='px-6 py-3 text-right font-bold text-primary-600 font-mono'>Rp " . number_format($doTotal, 0, ',', '.') . "</td>
+                        <tr class='hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition duration-150'>
+                            <td class='px-8 py-5 text-gray-600 dark:text-gray-400 font-medium text-left border-r border-gray-200 dark:border-gray-700'>Total Nilai Penjualan DO</td>
+                            <td class='px-8 py-5 font-bold text-primary-600 font-mono text-xl' style='text-align: right;'>Rp " . number_format($doTotal, 0, ',', '.') . "</td>
                         </tr>
 
                         <!-- Operasional -->
-                        <tr>
-                            <td class='px-6 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50 border-t dark:border-gray-700' colspan='2'>BIAYA OPERASIONAL</td>
+                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-200 dark:border-gray-700'>
+                            <td class='px-8 py-4 text-gray-900 dark:text-white font-black uppercase text-sm border-r border-gray-200 dark:border-gray-700' colspan='2'>
+                                <div class='flex items-center gap-3'>
+                                    <div class='w-3 h-3 rounded-full bg-warning-500 shadow-sm'></div>
+                                    BIAYA OPERASIONAL
+                                </div>
+                            </td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
-                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400'>Jumlah Item Biaya</td>
-                            <td class='px-6 py-3 text-right font-semibold text-primary-600'>{$opCount} Item</td>
+                        <tr class='hover:bg-warning-50/50 dark:hover:bg-warning-900/10 transition duration-150'>
+                            <td class='px-8 py-5 text-gray-600 dark:text-gray-400 font-medium text-left border-r border-gray-200 dark:border-gray-700'>Jumlah Item Pengeluaran</td>
+                            <td class='px-8 py-5 font-bold text-primary-600 text-lg' style='text-align: right;'>{$opCount} Item</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
-                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400'>Total Biaya</td>
-                            <td class='px-6 py-3 text-right font-bold text-primary-600 font-mono'>Rp " . number_format($opTotal, 0, ',', '.') . "</td>
+                        <tr class='hover:bg-warning-50/50 dark:hover:bg-warning-900/10 transition duration-150'>
+                            <td class='px-8 py-5 text-gray-600 dark:text-gray-400 font-medium text-left border-r border-gray-200 dark:border-gray-700'>Total Biaya Operasional</td>
+                            <td class='px-8 py-5 font-bold text-primary-600 font-mono text-xl' style='text-align: right;'>Rp " . number_format($opTotal, 0, ',', '.') . "</td>
                         </tr>
 
                         <!-- Arus Kas -->
-                        <tr>
-                            <td class='px-6 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50 border-t dark:border-gray-700' colspan='2'>REKONSILIASI KAS (SISTEM)</td>
+                        <tr class='bg-gray-50/80 dark:bg-gray-900/40 border-t-2 border-gray-200 dark:border-gray-700'>
+                            <td class='px-8 py-4 text-gray-900 dark:text-white font-black uppercase text-sm border-r border-gray-200 dark:border-gray-700' colspan='2'>
+                                <div class='flex items-center gap-3'>
+                                    <div class='w-3 h-3 rounded-full bg-success-500 shadow-sm'></div>
+                                    REKONSILIASI KAS (SISTEM)
+                                </div>
+                            </td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
-                            <td class='px-8 py-3 text-gray-500 dark:text-gray-500 text-lg'>Saldo Awal</td>
-                            <td class='px-6 py-3 text-right font-bold font-mono text-primary-600 text-xl'>Rp " . number_format($saldoAwal, 0, ',', '.') . "</td>
+                        <tr class='hover:bg-success-50/50 dark:hover:bg-success-900/10 transition duration-150'>
+                            <td class='px-8 py-5 text-gray-700 dark:text-gray-200 font-semibold text-xl text-left border-r border-gray-200 dark:border-gray-700'>Saldo Awal Perusahaan</td>
+                            <td class='px-8 py-5 font-bold font-mono text-primary-700 dark:text-primary-400 text-3xl' style='text-align: right;'>Rp " . number_format($saldoAwal, 0, ',', '.') . "</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
-                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400 text-lg'>Total Pemasukan</td>
-                            <td class='px-6 py-3 text-right font-bold text-primary-600 font-mono text-xl'>Rp " . number_format($masuk, 0, ',', '.') . "</td>
+                        <tr class='hover:bg-success-50/50 dark:hover:bg-success-900/10 transition duration-150'>
+                            <td class='px-8 py-5 text-success-700 dark:text-success-400 font-semibold text-xl text-left border-r border-gray-200 dark:border-gray-700'>Total Pemasukan Hari Ini</td>
+                            <td class='px-8 py-5 font-bold text-primary-700 dark:text-primary-400 font-mono text-3xl' style='text-align: right;'>Rp " . number_format($masuk, 0, ',', '.') . "</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
-                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400 text-lg'>Total Pengeluaran</td>
-                            <td class='px-6 py-3 text-right font-bold text-primary-600 font-mono text-xl'>Rp " . number_format($keluar, 0, ',', '.') . "</td>
+                        <tr class='hover:bg-danger-50/50 dark:hover:bg-danger-900/10 transition duration-150'>
+                            <td class='px-8 py-5 text-danger-700 dark:text-danger-400 font-semibold text-xl text-left border-r border-gray-200 dark:border-gray-700'>Total Pengeluaran Hari Ini</td>
+                            <td class='px-8 py-5 font-bold text-primary-700 dark:text-primary-400 font-mono text-3xl' style='text-align: right;'>Rp " . number_format($keluar, 0, ',', '.') . "</td>
                         </tr>
-                        <tr class='bg-primary-50 dark:bg-primary-900/20 border-t-2 border-primary-200 dark:border-primary-800 transition'>
-                            <td class='px-6 py-5 font-black text-primary-800 dark:text-primary-400 uppercase text-xl italic'>SALDO AKHIR SISTEM</td>
-                            <td class='px-6 py-5 text-right font-black text-primary-800 dark:text-primary-400 text-3xl font-mono underline decoration-double decoration-primary-300 underline-offset-8'>Rp " . number_format($saldoSistem, 0, ',', '.') . "</td>
+                        <tr class='bg-primary-600 dark:bg-primary-700 border-t-4 border-primary-200 dark:border-primary-500 shadow-inner'>
+                            <td class='px-8 py-8 font-black text-white uppercase text-3xl tracking-widest text-left border-r border-primary-500'>SALDO AKHIR SISTEM</td>
+                            <td class='px-8 py-8 font-black text-white text-5xl font-mono underline decoration-wavy decoration-white/30 underline-offset-8' style='text-align: right;'>Rp " . number_format($saldoSistem, 0, ',', '.') . "</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         ");
+    }
+
+    public static function getNextClosingDate(): string
+    {
+        $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
+
+        $lastClosing = TutupHari::where('perusahaan_id', $perusahaanId)
+            ->latest('tanggal')
+            ->first();
+
+        if ($lastClosing) {
+            return Carbon::parse($lastClosing->tanggal)->addDay()->format('Y-m-d');
+        }
+
+        $oldestDo = TransaksiDo::where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
+        $oldestOp = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
+        $oldestJurnal = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
+
+        $dates = array_filter([$oldestDo, $oldestOp, $oldestJurnal]);
+
+        return !empty($dates) ? Carbon::parse(min($dates))->format('Y-m-d') : now()->format('Y-m-d');
     }
 }
