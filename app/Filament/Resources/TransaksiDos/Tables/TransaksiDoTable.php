@@ -116,6 +116,7 @@ class TransaksiDoTable
                 TextColumn::make('biaya_lain')
                     ->label('Biaya Lain/Pengambilan')
                     ->sortable()
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->summarize(
                         Sum::make()
                             ->label('Total')
@@ -131,6 +132,7 @@ class TransaksiDoTable
                 TextColumn::make('pembayaran_hutang')
                     ->label('Bayar Hutang')
                     ->sortable()
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->summarize(
                         Sum::make()
                             ->label('Total')
