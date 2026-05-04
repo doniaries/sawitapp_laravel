@@ -42,8 +42,8 @@ class JurnalKeuanganTable
                     })
                     ->searchable(),
 
-                TextColumn::make('kategori')
-                    ->searchable(),
+                // TextColumn::make('kategori')
+                //     ->searchable(),
                 TextColumn::make('sub_kategori')
                     ->searchable(),
                 TextColumn::make('nominal')
@@ -53,16 +53,6 @@ class JurnalKeuanganTable
                             ->currency('IDR')
                     ])
                     ->sortable(),
-                TextColumn::make('sumber_transaksi')
-                    ->label('Kategori')
-                    ->searchable(),
-                TextColumn::make('nomor_referensi')
-                    ->label('Nomor')
-                    ->badge()
-                    ->sortable()
-                    ->copyable()
-                    ->copyMessage('Nomor DO berhasil disalin')
-                    ->searchable(),
                 TextColumn::make('pihak_terkait')
                     ->label('Nama')
                     ->formatStateUsing(function ($record) {
@@ -113,22 +103,22 @@ class JurnalKeuanganTable
                                     ->default('hari_ini')
                                     ->live()
                                     ->required(),
-                                
+
                                 DatePicker::make('start_date')
                                     ->label('Dari Tanggal')
                                     ->default(now()->startOfMonth())
                                     ->displayFormat('d/m/Y')
                                     ->native(false)
-                                    ->visible(fn (Get $get) => $get('rentang') === 'custom')
+                                    ->visible(fn(Get $get) => $get('rentang') === 'custom')
                                     ->live()
                                     ->required(),
-                                
+
                                 DatePicker::make('end_date')
                                     ->label('Sampai Tanggal')
                                     ->default(now())
                                     ->displayFormat('d/m/Y')
                                     ->native(false)
-                                    ->visible(fn (Get $get) => $get('rentang') === 'custom')
+                                    ->visible(fn(Get $get) => $get('rentang') === 'custom')
                                     ->live()
                                     ->required(),
                             ]),
@@ -238,7 +228,7 @@ class JurnalKeuanganTable
                     ->color('warning')
                     ->modalHeading('Pratinjau Kwitansi DO')
                     ->modalWidth('5xl')
-                    ->visible(fn ($record) => $record->kategori === 'DO' && $record->referensi_id)
+                    ->visible(fn($record) => $record->kategori === 'DO' && $record->referensi_id)
                     ->modalSubmitActionLabel('Download PDF')
                     ->schema([
                         Placeholder::make('pdf_kwitansi')
