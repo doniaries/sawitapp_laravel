@@ -62,7 +62,7 @@ class TutupHariForm
                                             ->extraAttributes(['class' => 'text-2xl font-bold text-success-600']),
                                         Textarea::make('catatan')
                                             ->label('Catatan')
-                                            ->placeholder('Keterangan selisih...')
+                                            ->placeholder('Keterangan...')
                                             ->maxLength(255),
                                     ]),
                             ])
@@ -95,59 +95,59 @@ class TutupHariForm
 
         return new HtmlString("
             <div class='overflow-hidden border rounded-lg bg-gray-50 dark:bg-gray-900/50 shadow-sm'>
-                <table class='w-full text-base text-left border-collapse table-fixed'>
+                <table class='w-full text-base text-left border-collapse table-fixed tracking-wide'>
                     <thead>
                         <tr class='bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700'>
-                            <th class='w-3/4 px-6 py-3 font-bold text-gray-700 dark:text-gray-200'>Keterangan Ringkasan</th>
-                            <th class='w-1/4 px-6 py-3 font-bold text-right text-gray-700 dark:text-gray-200'>Jumlah / Nilai</th>
+                            <th class='w-3/4 px-6 py-4 font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-widest'>Keterangan Ringkasan</th>
+                            <th class='w-1/4 px-6 py-4 font-bold text-right text-gray-700 dark:text-gray-200 uppercase text-xs tracking-widest'>Jumlah / Nilai</th>
                         </tr>
                     </thead>
                     <tbody class='divide-y dark:divide-gray-700'>
                         <!-- Transaksi DO -->
                         <tr>
-                            <td class='px-4 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50' colspan='2'>TRANSAKSI PENJUALAN (DO)</td>
+                            <td class='px-6 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50' colspan='2'>TRANSAKSI PENJUALAN (DO)</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800'>
-                            <td class='px-6 py-2 text-gray-600 dark:text-gray-400'>Banyak Transaksi</td>
-                            <td class='px-6 py-2 text-right font-semibold text-gray-900 dark:text-white'>{$doCount} Transaksi</td>
+                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
+                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400'>Banyak Transaksi</td>
+                            <td class='px-6 py-3 text-right font-semibold text-primary-600'>{$doCount} Transaksi</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800'>
-                            <td class='px-6 py-2 text-gray-600 dark:text-gray-400'>Total Rupiah DO</td>
-                            <td class='px-6 py-2 text-right font-bold text-primary-600 font-mono text-base'>Rp " . number_format($doTotal, 0, ',', '.') . "</td>
+                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
+                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400'>Total Rupiah DO</td>
+                            <td class='px-6 py-3 text-right font-bold text-primary-600 font-mono'>Rp " . number_format($doTotal, 0, ',', '.') . "</td>
                         </tr>
 
                         <!-- Operasional -->
                         <tr>
-                            <td class='px-4 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50 border-t dark:border-gray-700' colspan='2'>BIAYA OPERASIONAL</td>
+                            <td class='px-6 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50 border-t dark:border-gray-700' colspan='2'>BIAYA OPERASIONAL</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800'>
-                            <td class='px-6 py-2 text-gray-600 dark:text-gray-400'>Jumlah Item Biaya</td>
-                            <td class='px-6 py-2 text-right font-semibold text-gray-900 dark:text-white'>{$opCount} Item</td>
+                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
+                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400'>Jumlah Item Biaya</td>
+                            <td class='px-6 py-3 text-right font-semibold text-primary-600'>{$opCount} Item</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800'>
-                            <td class='px-6 py-2 text-gray-600 dark:text-gray-400'>Total Biaya</td>
-                            <td class='px-6 py-2 text-right font-bold text-warning-600 font-mono text-base'>Rp " . number_format($opTotal, 0, ',', '.') . "</td>
+                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
+                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400'>Total Biaya</td>
+                            <td class='px-6 py-3 text-right font-bold text-primary-600 font-mono'>Rp " . number_format($opTotal, 0, ',', '.') . "</td>
                         </tr>
 
                         <!-- Arus Kas -->
                         <tr>
-                            <td class='px-4 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50 border-t dark:border-gray-700' colspan='2'>REKONSILIASI KAS (SISTEM)</td>
+                            <td class='px-6 py-3 text-gray-800 dark:text-gray-200 font-bold bg-gray-50/50 dark:bg-gray-800/50 border-t dark:border-gray-700' colspan='2'>REKONSILIASI KAS (SISTEM)</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800'>
-                            <td class='px-6 py-2 text-gray-500 dark:text-gray-500'>[+] Saldo Awal</td>
-                            <td class='px-6 py-2 text-right font-medium font-mono text-gray-900 dark:text-white'>Rp " . number_format($saldoAwal, 0, ',', '.') . "</td>
+                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
+                            <td class='px-8 py-3 text-gray-500 dark:text-gray-500 text-lg'>Saldo Awal</td>
+                            <td class='px-6 py-3 text-right font-bold font-mono text-primary-600 text-xl'>Rp " . number_format($saldoAwal, 0, ',', '.') . "</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800'>
-                            <td class='px-6 py-2 text-success-600 font-medium'>[+] Total Pemasukan</td>
-                            <td class='px-6 py-2 text-right font-bold text-success-600 font-mono'>Rp " . number_format($masuk, 0, ',', '.') . "</td>
+                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
+                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400 text-lg'>Total Pemasukan</td>
+                            <td class='px-6 py-3 text-right font-bold text-primary-600 font-mono text-xl'>Rp " . number_format($masuk, 0, ',', '.') . "</td>
                         </tr>
-                        <tr class='bg-white dark:bg-gray-800'>
-                            <td class='px-6 py-2 text-danger-600 font-medium'>[-] Total Pengeluaran</td>
-                            <td class='px-6 py-2 text-right font-bold text-danger-600 font-mono'>Rp " . number_format($keluar, 0, ',', '.') . "</td>
+                        <tr class='bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition'>
+                            <td class='px-8 py-3 text-gray-600 dark:text-gray-400 text-lg'>Total Pengeluaran</td>
+                            <td class='px-6 py-3 text-right font-bold text-primary-600 font-mono text-xl'>Rp " . number_format($keluar, 0, ',', '.') . "</td>
                         </tr>
-                        <tr class='bg-blue-50 dark:bg-blue-900/20 border-t-2 border-blue-200 dark:border-blue-800'>
-                            <td class='px-4 py-4 font-black text-blue-800 dark:text-blue-400 uppercase text-lg italic'>SALDO AKHIR SISTEM</td>
-                            <td class='px-6 py-4 text-right font-black text-blue-800 dark:text-blue-400 text-2xl font-mono underline decoration-double decoration-blue-300 underline-offset-4 tracking-tighter'>Rp " . number_format($saldoSistem, 0, ',', '.') . "</td>
+                        <tr class='bg-primary-50 dark:bg-primary-900/20 border-t-2 border-primary-200 dark:border-primary-800 transition'>
+                            <td class='px-6 py-5 font-black text-primary-800 dark:text-primary-400 uppercase text-xl italic'>SALDO AKHIR SISTEM</td>
+                            <td class='px-6 py-5 text-right font-black text-primary-800 dark:text-primary-400 text-3xl font-mono underline decoration-double decoration-primary-300 underline-offset-8'>Rp " . number_format($saldoSistem, 0, ',', '.') . "</td>
                         </tr>
                     </tbody>
                 </table>
