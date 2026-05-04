@@ -134,7 +134,7 @@ class TutupHariTable
                     ->icon('heroicon-o-lock-closed')
                     ->color('success')
                     ->visible(fn ($record) => $record->status === 'open')
-                    ->modalWidth('4xl')
+                    ->modalWidth('7xl')
                     ->modalHeading(fn ($record) => 'Tutup Hari Tanggal: ' . Carbon::parse($record->tanggal)->format('d F Y'))
                     ->form(\App\Filament\Resources\TutupHaris\Schemas\TutupHariForm::configure(new Schema())->getComponents())
                     ->action(function ($record, array $data) {

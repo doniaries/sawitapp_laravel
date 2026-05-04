@@ -15,7 +15,7 @@ class ListTutupHaris extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Tutup Hari Baru')
-                ->modalWidth('4xl')
+                ->modalWidth('7xl')
                 ->createAnother(false)
                 ->modalHeading('Proses Tutup Hari'),
         ];
