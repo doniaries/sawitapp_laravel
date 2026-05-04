@@ -52,9 +52,14 @@ class SimulasiDataSeeder extends Seeder
             $p->update(['hutang' => rand(0, 1) ? rand(2000000, 8000000) : 0]);
         }
 
+        $now = now();
+        $totalData = 400;
+        $startMonth = $now->copy()->startOfMonth();
+        $endMonth = $now->copy();
+
         $this->command->info('Menyuntikkan modal 500 Juta (4x)...');
         for ($k = 1; $k <= 4; $k++) {
-            $tglInjeksi = Carbon::now()->subDays(rand(0, 28));
+            $tglInjeksi = Carbon::createFromTimestamp(rand($startMonth->timestamp, $endMonth->timestamp));
             JurnalKeuangan::create([
                 'perusahaan_id' => $perusahaanId,
                 'tanggal' => $tglInjeksi,
@@ -72,13 +77,16 @@ class SimulasiDataSeeder extends Seeder
         }
 
         $this->command->info('Memulai simulasi 400 transaksi (Harga: 3500-3600, Berat: 1000-2000)...');
-        $progressBar = $this->command->getOutput()->createProgressBar(400);
+        $progressBar = $this->command->getOutput()->createProgressBar($totalData);
         $progressBar->start();
+
+        $this->command->info("\nMenghasilkan $totalData data simulasi untuk periode " . $startMonth->format('d/m/Y') . " - " . $endMonth->format('d/m/Y'));
 
         $kategoriOps = KategoriOperasional::cases();
 
-        for ($i = 1; $i <= 400; $i++) {
-            $tanggal = Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23));
+        for ($i = 0; $i < $totalData; $i++) {
+            // Random tanggal di bulan ini (dari tgl 1 sampai hari ini)
+            $tanggal = Carbon::createFromTimestamp(rand($startMonth->timestamp, $endMonth->timestamp))->subHours(rand(0, 23));
             $roll = rand(1, 100);
 
             if ($roll <= 70) { 
@@ -131,7 +139,38 @@ class SimulasiDataSeeder extends Seeder
             $progressBar->advance();
         }
 
+        // TAMBAHAN: Pastikan hari ini (tanggal 5) ada data yang padat
+        $this->command->info("\nMenambahkan 50 transaksi khusus untuk hari ini (" . $now->format('d/m/Y') . ")...");
+        for ($j = 0; $j < 50; $j++) {
+            $tanggalToday = $now->copy()->subMinutes(rand(0, 480)); // Random jam kerja hari ini
+            $penjual = $penjuals->random();
+            $tonase = $faker->numberBetween(1000, 2000);
+            $harga = $faker->numberBetween(3500, 3600);
+            
+            TransaksiDo::create([
+                'perusahaan_id' => $perusahaanId,
+                'user_id' => 1,
+                'nomor' => 'DO-' . $tanggalToday->format('Ym') . '-TODAY-' . str_pad($j, 3, '0', STR_PAD_LEFT),
+                'tanggal' => $tanggalToday,
+                'penjual_id' => $penjual->id,
+                'supir_id' => $faker->randomElement($supirIds),
+                'no_polisi' => 'BA ' . $faker->numberBetween(1000, 9999) . ' ' . $faker->lexify('??'),
+                'tonase' => $tonase,
+                'harga_satuan' => $harga,
+                'sub_total' => $tonase * $harga,
+                'upah_bongkar' => 0,
+                'biaya_lain' => 0,
+                'hutang_awal' => $penjual->hutang,
+                'pembayaran_hutang' => 0,
+                'sisa_hutang_penjual' => $penjual->hutang,
+                'sisa_bayar' => $tonase * $harga,
+                'cara_bayar' => 'transfer',
+                'nominal_tunai' => 0,
+                'keterangan_pembayaran' => 'DO HARI INI (' . $now->format('d/m') . ')',
+            ]);
+        }
+
         $progressBar->finish();
-        $this->command->info("\n[BERHASIL] 400 data simulasi baru (Harga 3.5k - 3.6k) telah dimasukkan.");
+        $this->command->info("\n[BERHASIL] 400 data simulasi (Bulan ini) + 50 data khusus hari ini telah dimasukkan.");
     }
 }
