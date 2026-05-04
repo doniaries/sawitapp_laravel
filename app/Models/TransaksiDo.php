@@ -297,18 +297,21 @@ class TransaksiDo extends Model
      */
     public static function validatePotonganHutang($value, $hutangAwal, $subTotal, $upahBongkar, $biayaLain): ?string
     {
-        $val = \App\Traits\HasCurrencyInput::sanitizeNumber($value);
-        $hutang = \App\Traits\HasCurrencyInput::sanitizeNumber($hutangAwal);
+        $val = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($value);
+        $hutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($hutangAwal);
         
+        // 1. Cek terhadap sisa hutang penjual
         if ($val > $hutang) {
-            return "Potongan tidak boleh melebihi sisa hutang (" . money($hutang, 'IDR') . ")";
+            return "Potongan tidak boleh melebihi sisa hutang penjual (" . number_format($hutang, 0, ',', '.') . ")";
         }
 
-        $pengurangan = \App\Traits\HasCurrencyInput::sanitizeNumber($upahBongkar) + \App\Traits\HasCurrencyInput::sanitizeNumber($biayaLain);
-        $maxBayar = max(0, \App\Traits\HasCurrencyInput::sanitizeNumber($subTotal) - $pengurangan);
+        // 2. Cek terhadap sisa hasil transaksi (Sub Total - Potongan Biaya)
+        $totalBiaya = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($upahBongkar) + (float) \App\Traits\HasCurrencyInput::sanitizeNumber($biayaLain);
+        $maxPotongHutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($subTotal) - $totalBiaya;
 
-        if ($val > $maxBayar) {
-            return "Potongan tidak boleh melebihi sisa hasil transaksi (" . money($maxBayar, 'IDR') . ")";
+        if ($val > $maxPotongHutang) {
+            $limit = max(0, $maxPotongHutang);
+            return "Potongan tidak boleh melebihi sisa hasil transaksi (" . number_format($limit, 0, ',', '.') . ")";
         }
 
         return null;

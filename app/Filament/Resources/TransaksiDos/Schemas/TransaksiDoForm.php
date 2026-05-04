@@ -82,7 +82,7 @@ class TransaksiDoForm
                                     fn($query) => $query->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id)
                                 )
                                 ->searchable()
-                                ->preload()
+                                ->preload(false)
                                 ->live()
                                 ->required()
                                 ->noOptionsMessage('Data penjual belum ada')
@@ -140,7 +140,7 @@ class TransaksiDoForm
                                     fn($query) => $query->where('perusahaan_id', \Filament\Facades\Filament::getTenant()->id)
                                 )
                                 ->searchable()
-                                ->preload()
+                                ->preload(false)
                                 ->live()
                                 ->helperText(fn(Get $get) => $get('supir_id') 
                                     ? 'Hutang saat ini: ' . money($get('hutang_awal_supir') ?? 0, 'IDR') 
@@ -254,13 +254,19 @@ class TransaksiDoForm
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set))
                                 ->rules([
                                     fn(Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                        $subTotal = \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
+                                        $upahBongkar = \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0);
+                                        $biayaLain = \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
+                                        $hutangAwal = \App\Traits\HasCurrencyInput::sanitizeNumber($get('hutang_awal') ?? 0);
+                                        
                                         $error = TransaksiDo::validatePotonganHutang(
                                             $value,
-                                            $get('hutang_awal'),
-                                            $get('sub_total'),
-                                            $get('upah_bongkar'),
-                                            $get('biaya_lain')
+                                            $hutangAwal,
+                                            $subTotal,
+                                            $upahBongkar,
+                                            $biayaLain
                                         );
+                                        
                                         if ($error) $fail($error);
                                     },
                                 ]),

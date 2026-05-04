@@ -23,7 +23,6 @@ class TransaksiDoTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->poll('30s')
             ->deferLoading()
             ->columns([
                 TextColumn::make('tanggal')
