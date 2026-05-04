@@ -97,7 +97,10 @@ class TutupHari extends Model
             ->where('jenis_transaksi', 'Pengeluaran')
             ->sum('nominal');
         
-        $saldoSistem = $totalMasuk - $totalKeluar;
+        $perusahaan = Perusahaan::query()->find($perusahaanId);
+        $saldoAwal = $perusahaan?->saldo ?? 0;
+        
+        $saldoSistem = $saldoAwal + $totalMasuk - $totalKeluar;
         $saldoFisik = (float) ($data['saldo_akhir_fisik'] ?? 0);
 
         $closing = self::create([

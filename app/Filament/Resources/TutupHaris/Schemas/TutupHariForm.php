@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use App\Models\TransaksiDo;
 use App\Models\JurnalKeuangan;
 use App\Models\TransaksiOperasional;
+use App\Models\Perusahaan;
 use Illuminate\Support\HtmlString;
 
 class TutupHariForm
@@ -36,20 +37,11 @@ class TutupHariForm
                     ]),
 
                 Section::make('Ringkasan Transaksi (Sistem)')
-                    ->description('Data di bawah ini adalah kalkulasi otomatis dari sistem untuk tanggal yang dipilih.')
+                    ->description('Kalkulasi otomatis sistem berdasarkan transaksi yang tercatat.')
                     ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                Placeholder::make('summary_do')
-                                    ->label('Transaksi DO')
-                                    ->content(fn (Get $get) => self::getSummaryHtml($get('tanggal'), 'do')),
-                                Placeholder::make('summary_operasional')
-                                    ->label('Operasional')
-                                    ->content(fn (Get $get) => self::getSummaryHtml($get('tanggal'), 'operasional')),
-                                Placeholder::make('summary_keuangan')
-                                    ->label('Arus Kas')
-                                    ->content(fn (Get $get) => self::getSummaryHtml($get('tanggal'), 'keuangan')),
-                            ]),
+                        Placeholder::make('full_summary')
+                            ->label('')
+                            ->content(fn (Get $get) => self::getSummaryTableHtml($get('tanggal'))),
                     ])
                     ->collapsible(),
 
@@ -72,47 +64,86 @@ class TutupHariForm
             ]);
     }
 
-    protected static function getSummaryHtml($tanggal, $type): HtmlString
+    protected static function getSummaryTableHtml(string|null $tanggal): HtmlString
     {
-        if (!$tanggal) return new HtmlString('<span class="text-gray-400 italic">Pilih tanggal...</span>');
+        if (!$tanggal) return new HtmlString('<div class="p-4 border border-dashed rounded-lg text-gray-400 text-center italic">Pilih tanggal untuk melihat ringkasan</div>');
 
         $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
 
-        switch ($type) {
-            case 'do':
-                $count = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->count();
-                $total = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('sub_total');
-                return new HtmlString("
-                    <div class='text-sm'>
-                        <p class='font-bold text-lg'>{$count} <span class='text-xs font-normal text-gray-500'>Transaksi</span></p>
-                        <p class='text-primary-600 font-medium'>Rp " . number_format($total, 0, ',', '.') . "</p>
-                    </div>
-                ");
+        // Data DO
+        $doCount = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->count();
+        $doTotal = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('sub_total');
 
-            case 'operasional':
-                $count = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->count();
-                $total = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('nominal');
-                return new HtmlString("
-                    <div class='text-sm'>
-                        <p class='font-bold text-lg'>{$count} <span class='text-xs font-normal text-gray-500'>Item</span></p>
-                        <p class='text-warning-600 font-medium'>Rp " . number_format($total, 0, ',', '.') . "</p>
-                    </div>
-                ");
+        // Data Operasional
+        $opCount = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->count();
+        $opTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('nominal');
 
-            case 'keuangan':
-                $masuk = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->where('jenis_transaksi', 'Pemasukan')->sum('nominal');
-                $keluar = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->where('jenis_transaksi', 'Pengeluaran')->sum('nominal');
-                $saldoSistem = $masuk - $keluar;
-                return new HtmlString("
-                    <div class='text-xs space-y-1'>
-                        <p class='text-success-600'>Masuk: Rp " . number_format($masuk, 0, ',', '.') . "</p>
-                        <p class='text-danger-600'>Keluar: Rp " . number_format($keluar, 0, ',', '.') . "</p>
-                        <hr class='my-1'>
-                        <p class='font-bold text-blue-600'>Sistem: Rp " . number_format($saldoSistem, 0, ',', '.') . "</p>
-                    </div>
-                ");
-        }
+        // Data Keuangan
+        $perusahaan = Perusahaan::query()->find($perusahaanId);
+        $saldoAwal = $perusahaan?->saldo ?? 0;
+        $masuk = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->where('jenis_transaksi', 'Pemasukan')->sum('nominal');
+        $keluar = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->where('jenis_transaksi', 'Pengeluaran')->sum('nominal');
+        $saldoSistem = $saldoAwal + $masuk - $keluar;
 
-        return new HtmlString('');
+        return new HtmlString("
+            <div class='overflow-hidden border rounded-lg bg-gray-50 dark:bg-gray-900/50'>
+                <table class='w-full text-sm text-left border-collapse'>
+                    <thead>
+                        <tr class='bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700'>
+                            <th class='px-4 py-2 font-bold text-gray-700 dark:text-gray-200'>Keterangan Ringkasan</th>
+                            <th class='px-4 py-2 font-bold text-right text-gray-700 dark:text-gray-200'>Jumlah / Nilai</th>
+                        </tr>
+                    </thead>
+                    <tbody class='divide-y dark:divide-gray-700'>
+                        <!-- Transaksi DO -->
+                        <tr>
+                            <td class='px-4 py-2 text-gray-600 dark:text-gray-400 italic font-medium bg-white dark:bg-gray-800' colspan='2'>Transaksi Penjualan (DO)</td>
+                        </tr>
+                        <tr class='bg-white dark:bg-gray-800'>
+                            <td class='px-8 py-1 text-gray-600 dark:text-gray-400'>- Banyak Transaksi</td>
+                            <td class='px-4 py-1 text-right font-semibold'>{$doCount} TRX</td>
+                        </tr>
+                        <tr class='bg-white dark:bg-gray-800'>
+                            <td class='px-8 py-1 text-gray-600 dark:text-gray-400'>- Total Rupiah DO</td>
+                            <td class='px-4 py-1 text-right font-semibold text-primary-600 font-mono'>Rp " . number_format($doTotal, 0, ',', '.') . "</td>
+                        </tr>
+
+                        <!-- Operasional -->
+                        <tr>
+                            <td class='px-4 py-2 text-gray-600 dark:text-gray-400 italic font-medium bg-white dark:bg-gray-800 border-t dark:border-gray-700' colspan='2'>Biaya Operasional</td>
+                        </tr>
+                        <tr class='bg-white dark:bg-gray-800'>
+                            <td class='px-8 py-1 text-gray-600 dark:text-gray-400'>- Jumlah Item Biaya</td>
+                            <td class='px-4 py-1 text-right font-semibold'>{$opCount} Item</td>
+                        </tr>
+                        <tr class='bg-white dark:bg-gray-800'>
+                            <td class='px-8 py-1 text-gray-600 dark:text-gray-400'>- Total Biaya</td>
+                            <td class='px-4 py-1 text-right font-semibold text-warning-600 font-mono'>Rp " . number_format($opTotal, 0, ',', '.') . "</td>
+                        </tr>
+
+                        <!-- Arus Kas -->
+                        <tr>
+                            <td class='px-4 py-2 text-gray-600 dark:text-gray-400 italic font-medium bg-white dark:bg-gray-800 border-t dark:border-gray-700' colspan='2'>Rekonsiliasi Kas (Sistem)</td>
+                        </tr>
+                        <tr class='bg-white dark:bg-gray-800'>
+                            <td class='px-8 py-1 text-gray-500 dark:text-gray-500'>[+] Saldo Awal</td>
+                            <td class='px-4 py-1 text-right font-medium font-mono'>Rp " . number_format($saldoAwal, 0, ',', '.') . "</td>
+                        </tr>
+                        <tr class='bg-white dark:bg-gray-800'>
+                            <td class='px-8 py-1 text-success-600'>[+] Total Pemasukan</td>
+                            <td class='px-4 py-1 text-right font-medium text-success-600 font-mono'>Rp " . number_format($masuk, 0, ',', '.') . "</td>
+                        </tr>
+                        <tr class='bg-white dark:bg-gray-800'>
+                            <td class='px-8 py-1 text-danger-600'>[-] Total Pengeluaran</td>
+                            <td class='px-4 py-1 text-right font-medium text-danger-600 font-mono'>Rp " . number_format($keluar, 0, ',', '.') . "</td>
+                        </tr>
+                        <tr class='bg-blue-50/50 dark:bg-blue-900/10'>
+                            <td class='px-4 py-2 font-black text-blue-700 dark:text-blue-400 uppercase'>Saldo Akhir Sistem</td>
+                            <td class='px-4 py-2 text-right font-black text-blue-700 dark:text-blue-400 text-base font-mono underline decoration-double decoration-blue-200 underline-offset-4'>Rp " . number_format($saldoSistem, 0, ',', '.') . "</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        ");
     }
 }
