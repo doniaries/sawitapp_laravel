@@ -143,11 +143,21 @@ class TransaksiOperasionalForm
 
                                         DateTimePicker::make('tanggal')
                                             ->label('Waktu')
-                                            ->readOnly()
                                             ->native(false)
                                             ->displayFormat('d/m/Y H:i')
                                             ->default(now())
-                                            ->required(),
+                                            ->required()
+                                            ->readOnly(fn($record) => $record && !Auth::user()->isSuperAdmin())
+                                            ->rules([
+                                                fn() => function (string $attribute, $value, \Closure $fail) {
+                                                    if (auth()->user()->isSuperAdmin()) return;
+                                                    
+                                                    $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
+                                                    if (\App\Models\TutupHari::isClosed(\Carbon\Carbon::parse($value)->toDateString(), $perusahaanId)) {
+                                                        $fail('Tanggal ini sudah ditutup. Hanya Superadmin yang dapat menambah atau mengubah data pada tanggal ini.');
+                                                    }
+                                                },
+                                            ]),
                                     ])->columns(2),
                             ]),
                     ]),

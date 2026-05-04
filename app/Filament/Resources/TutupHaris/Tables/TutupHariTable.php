@@ -41,6 +41,11 @@ class TutupHariTable
                         DB::table('transaksi_operasional')
                             ->selectRaw('DATE(tanggal) as tanggal')
                             ->where('perusahaan_id', $perusahaanId)
+                    )
+                    ->union(
+                        DB::table('tutup_hari')
+                            ->selectRaw('DATE(tanggal) as tanggal')
+                            ->where('perusahaan_id', $perusahaanId)
                     );
 
                 // Main query: Ambil dari subquery tanggal, LEFT JOIN ke tutup_hari
@@ -143,8 +148,21 @@ class TutupHariTable
                             Filament::getTenant()->id
                         );
                     }),
+                Action::make('buka_hari')
+                    ->label('Buka Hari')
+                    ->icon('heroicon-o-lock-open')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Buka Kembali Hari?')
+                    ->modalDescription('Tindakan ini akan membatalkan penutupan hari dan mengizinkan kasir untuk menambah/mengubah data kembali.')
+                    ->visible(fn ($record) => $record->status === 'closed' && auth()->user()->isSuperAdmin())
+                    ->action(function ($record) {
+                        TutupHari::where('tanggal', $record->tanggal)
+                            ->where('perusahaan_id', Filament::getTenant()->id)
+                            ->delete();
+                    }),
                 EditAction::make()
-                    ->visible(fn ($record) => $record->status === 'closed'),
+                    ->visible(fn ($record) => $record->status === 'closed' && auth()->user()->isSuperAdmin()),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

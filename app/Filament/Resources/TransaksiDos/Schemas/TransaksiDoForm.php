@@ -58,16 +58,27 @@ class TransaksiDoForm
                                 ->default(Carbon::now())
                                 ->required()
                                 ->live()
+                                ->readOnly(fn($record) => $record && !Auth::user()->is_superadmin) // Kunci tanggal saat edit
                                 ->afterStateUpdated(function ($state, Set $set) {
                                     if ($state) {
                                         $set('nomor', TransaksiDo::generateMonthlyNumber($state));
                                     }
                                 })
                                 ->rules([
-                                    fn($get) => function (string $attribute, $value, $fail) use ($get) {
+                                    fn() => function (string $attribute, $value, \Closure $fail) {
+                                        // Jika Superadmin, boleh lewat
+                                        if (auth()->user()->isSuperAdmin()) return;
+                                        
                                         $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
-                                        if (!\App\Models\TutupHari::canModify($value, $perusahaanId)) {
-                                            $fail("Data tidak dapat ditambah/diubah karena hari tersebut sudah ditutup.");
+                                        $tanggal = \Carbon\Carbon::parse($value)->toDateString();
+                                        
+                                        $isClosed = \App\Models\TutupHari::where('perusahaan_id', $perusahaanId)
+                                            ->where('tanggal', $tanggal)
+                                            ->where('status', 'closed')
+                                            ->exists();
+                                            
+                                        if ($isClosed) {
+                                            $fail('Tanggal ini sudah ditutup. Hanya Superadmin yang dapat menambah atau mengubah data pada tanggal ini.');
                                         }
                                     },
                                 ]),

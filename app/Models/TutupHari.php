@@ -71,9 +71,8 @@ class TutupHari extends Model
             return false;
         }
 
-        // Jika user adalah admin atau superadmin, selalu bisa modifikasi
-        // Pastikan method isAdminOrSuperAdmin() ada di model User
-        if (method_exists($user, 'isAdminOrSuperAdmin') && $user->isAdminOrSuperAdmin()) {
+        // Jika user adalah superadmin, selalu bisa modifikasi
+        if (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
             return true;
         }
 
