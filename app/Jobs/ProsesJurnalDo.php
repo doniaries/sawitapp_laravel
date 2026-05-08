@@ -99,11 +99,11 @@ class ProsesJurnalDo
                         'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                         'cara_pembayaran' => 'transfer',
                         'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Bagian Transfer)",
-                        'mempengaruhi_kas' => false
+                        'mempengaruhi_kas' => true
                     ]);
                 }
             } else {
-                $mempengaruhiKasUtama = $this->transaksiDo->cara_bayar === 'tunai';
+                $mempengaruhiKasUtama = in_array($this->transaksiDo->cara_bayar, ['tunai', 'transfer']);
                 
                 if ($this->transaksiDo->sisa_bayar > 0) {
                     $this->createLaporan($financeAction, [

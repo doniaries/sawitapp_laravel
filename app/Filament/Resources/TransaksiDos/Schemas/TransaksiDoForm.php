@@ -251,13 +251,13 @@ class TransaksiDoForm
                             self::currencyInput(TextInput::make('upah_bongkar'))
                                 ->label('Upah Bongkar')
                                 ->placeholder('0')
-                                ->live()
+                                ->live(debounce: 500)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
 
                             self::currencyInput(TextInput::make('biaya_lain'))
                                 ->label('Biaya Lain/Pengambilan')
                                 ->placeholder('0')
-                                ->live()
+                                ->live(debounce: 500)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
 
                             self::currencyInput(TextInput::make('pembayaran_hutang'))
@@ -283,7 +283,7 @@ class TransaksiDoForm
                                 })
                                 ->hintIcon('heroicon-m-information-circle')
                                 ->placeholder('0')
-                                ->live() // Hapus onBlur agar instan
+                                ->live(debounce: 500)
                                 ->afterStateUpdated(function (Get $get, Set $set, $component) {
                                     self::applyCalculations($get, $set);
                                 })
@@ -359,12 +359,12 @@ class TransaksiDoForm
                                 }),
 
                             Text::make(function () {
-                                $saldo = \App\Models\Perusahaan::find(\Filament\Facades\Filament::getTenant()->id)->saldo ?? 0;
+                                $saldo = \Filament\Facades\Filament::getTenant()->saldo ?? 0;
                                 return 'Saldo Kas Saat Ini: ' . money($saldo, 'IDR');
                             })
                                 ->weight('bold')
                                 ->extraAttributes(function () {
-                                    $saldo = \App\Models\Perusahaan::find(\Filament\Facades\Filament::getTenant()->id)->saldo ?? 0;
+                                    $saldo = \Filament\Facades\Filament::getTenant()->saldo ?? 0;
                                     $bgColor = $saldo < 0 ? '#dc2626' : '#e6ca28';
                                     $textColor = $saldo < 0 ? '#ffffff' : '#010d10';
                                     
