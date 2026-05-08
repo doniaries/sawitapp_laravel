@@ -17,6 +17,9 @@ class TransaksiDoStatWidget extends BaseWidget
     protected function getStats(): array
     {
         try {
+            $panel = \Filament\Facades\Filament::getCurrentPanel();
+            if (!$panel) return [];
+
             $tenant = \Filament\Facades\Filament::getTenant();
             if (!$tenant) return [];
 
@@ -61,14 +64,13 @@ class TransaksiDoStatWidget extends BaseWidget
                 ->selectRaw('COALESCE(SUM(nominal), 0) as total_tambah_saldo')
                 ->first();
 
-            // Uang Masuk: Topup + Ops Pemasukan (Transfer sudah tidak masuk sini)
+            // Uang Masuk: Topup + Ops Pemasukan (Potong Hutang tidak masuk laci secara fisik)
             $totalIncoming = (float)$opStats->total_pemasukan
                 + (float)$saldoStats->total_tambah_saldo;
 
-            // Uang Keluar: Tunai + Potong Hutang + Bongkar + Lain + Ops Pengeluaran
+            // Uang Keluar: Sisa Bayar Tunai + Bongkar + Lain + Ops Pengeluaran
             $totalExpenditure = (float)$doStats->total_bayar_tunai
                 + (float)$doStats->total_bayar_mixed 
-                + (float)$doStats->total_potong_hutang // Sekarang memotong kas
                 + (float)$doStats->total_bongkar
                 + (float)$doStats->total_lain
                 + (float)$opStats->total_pengeluaran;
@@ -105,9 +107,8 @@ class TransaksiDoStatWidget extends BaseWidget
                         </div>
                     '))
                         ->description(sprintf(
-                            'Tunai: %s | Pt. Hutang: %s | Operasional: %s',
+                            'Bayar Tunai: %s | Ops/Biaya: %s',
                             money($doStats->total_bayar_tunai + $doStats->total_bayar_mixed, 'IDR'),
-                            money($doStats->total_potong_hutang, 'IDR'),
                             money($opStats->total_pengeluaran + $doStats->total_bongkar + $doStats->total_lain, 'IDR')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-down')

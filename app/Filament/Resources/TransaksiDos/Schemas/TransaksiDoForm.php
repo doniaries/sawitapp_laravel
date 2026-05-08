@@ -36,7 +36,6 @@ class TransaksiDoForm
                     ->components([
                         // 1. Tanggal & Nama Penjual
                         \Filament\Schemas\Components\Group::make([
-
                             TextInput::make('nomor')
                                 ->label('Nomor DO')
                                 ->default(fn() => TransaksiDo::generateMonthlyNumber())
@@ -56,7 +55,7 @@ class TransaksiDoForm
                                 ->default(Carbon::now())
                                 ->required()
                                 ->live()
-                                ->readOnly(fn($record) => $record && !\Illuminate\Support\Facades\Auth::user()->isSuperAdmin()) // Kunci tanggal saat edit
+                                ->readOnly(fn($record) => $record && !\Illuminate\Support\Facades\Auth::user()->isSuperAdmin())
                                 ->afterStateUpdated(function ($state, Set $set) {
                                     if ($state) {
                                         $set('nomor', TransaksiDo::generateMonthlyNumber($state));
@@ -64,17 +63,13 @@ class TransaksiDoForm
                                 })
                                 ->rules([
                                     fn() => function (string $attribute, $value, \Closure $fail) {
-                                        // Jika Superadmin, boleh lewat
                                         if (\Illuminate\Support\Facades\Auth::user()->isSuperAdmin()) return;
-
                                         $perusahaanId = \Filament\Facades\Filament::getTenant()->id;
                                         $tanggal = \Carbon\Carbon::parse($value)->toDateString();
-
-                                        $isClosed = \App\Models\TutupHari::where('perusahaan_id', '=', $perusahaanId, 'and')
-                                            ->where('tanggal', '=', $tanggal, 'and')
-                                            ->where('status', '=', 'closed', 'and')
+                                        $isClosed = \App\Models\TutupHari::where('perusahaan_id', $perusahaanId)
+                                            ->where('tanggal', $tanggal)
+                                            ->where('status', 'closed')
                                             ->exists();
-
                                         if ($isClosed) {
                                             $fail('Tanggal ini sudah ditutup. Hanya Superadmin yang dapat menambah atau mengubah data pada tanggal ini.');
                                         }
@@ -92,8 +87,8 @@ class TransaksiDoForm
                                 )
                                 ->searchable()
                                 ->searchDebounce(500)
-                                ->preload() // Aktifkan kembali agar nama muncul saat diklik
-                                ->optionsLimit(50) // Batasi 50 data awal agar browser tidak berat
+                                ->preload()
+                                ->optionsLimit(50)
                                 ->live()
                                 ->suffixIcon('heroicon-m-magnifying-glass')
                                 ->required()
@@ -127,9 +122,7 @@ class TransaksiDoForm
                                         TextInput::make('hutang')
                                             ->label('Sisa Hutang')
                                             ->dehydrated()
-                                            ->dehydrateStateUsing(function ($state) {
-                                                return \App\Traits\HasCurrencyInput::sanitizeNumber($state);
-                                            })
+                                            ->dehydrateStateUsing(fn($state) => \App\Traits\HasCurrencyInput::sanitizeNumber($state))
                                     ),
                                 ])
                                 ->createOptionAction(fn($action) => $action->slideOver())
@@ -153,8 +146,8 @@ class TransaksiDoForm
                                 )
                                 ->searchable()
                                 ->searchDebounce(500)
-                                ->preload() // Aktifkan kembali agar nama muncul saat diklik
-                                ->optionsLimit(50) // Batasi 50 data awal agar browser tidak berat
+                                ->preload()
+                                ->optionsLimit(50)
                                 ->live()
                                 ->suffixIcon('heroicon-m-magnifying-glass')
                                 ->helperText(fn(Get $get) => $get('supir_id')
@@ -191,9 +184,7 @@ class TransaksiDoForm
                                         TextInput::make('hutang')
                                             ->label('Sisa Hutang')
                                             ->dehydrated()
-                                            ->dehydrateStateUsing(function ($state) {
-                                                return \App\Traits\HasCurrencyInput::sanitizeNumber($state);
-                                            })
+                                            ->dehydrateStateUsing(fn($state) => \App\Traits\HasCurrencyInput::sanitizeNumber($state))
                                     ),
                                 ])
                                 ->createOptionAction(fn($action) => $action->slideOver())
@@ -211,9 +202,7 @@ class TransaksiDoForm
                                 ->placeholder('B 1234 ABC')
                                 ->extraInputAttributes(['style' => 'text-transform: uppercase;'])
                                 ->dehydrateStateUsing(fn($state) => strtoupper($state)),
-
                         ])->columns(4),
-
 
                         // 4. Tonase & Harga -> Sub Total
                         \Filament\Schemas\Components\Group::make([
@@ -229,25 +218,23 @@ class TransaksiDoForm
                                 ->required()
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set)),
+
                             self::currencyInput(TextInput::make('sub_total'))
                                 ->label('Sub Total')
                                 ->disabled()
                                 ->dehydrated()
-                                ->extraInputAttributes(['class' => 'bg-gray-50 font-bold text-xl'])
+                                ->extraInputAttributes([
+                                    'style' => 'font-size: 1.25rem !important; font-weight: 800; color: #de8209 !important; -webkit-text-fill-color: #de8209 !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
+                                    'class' => 'bg-gray-50 font-bold text-xl'
+                                ])
                                 ->extraAttributes([
                                     'class' => 'bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-2',
                                     'style' => 'width: 100%;'
-                                ])
-                                ->extraInputAttributes([
-                                    'style' => 'font-size: 1.25rem !important; font-weight: 800; color: #de8209 !important; -webkit-text-fill-color: #de8209 !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;',
-                                    'class' => 'text-blue-600 dark:text-blue-400'
-                                ])
-
+                                ]),
                         ])->columns(3),
 
                         // 5. Pengurangan (Biaya & Hutang)
                         \Filament\Schemas\Components\Group::make([
-
                             self::currencyInput(TextInput::make('upah_bongkar'))
                                 ->label('Upah Bongkar')
                                 ->placeholder('0')
@@ -265,11 +252,9 @@ class TransaksiDoForm
                                 ->hint(function (Get $get) {
                                     $penjual = $get('penjual_id');
                                     if (!$penjual) return null;
-
                                     $subTotal = \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
                                     $biaya = \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0) + \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                     $maxDariTransaksi = max(0, $subTotal - $biaya);
-
                                     return "Maks. dari hasil: " . money($maxDariTransaksi, 'IDR');
                                 })
                                 ->helperText(fn(Get $get) => $get('penjual_id') ? 'Hutang Penjual: ' . money($get('sisa_hutang_penjual') ?? 0, 'IDR') : null)
@@ -278,30 +263,19 @@ class TransaksiDoForm
                                     $subTotal = \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
                                     $biaya = \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0) + \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                     $max = $subTotal - $biaya;
-
                                     return $val > $max ? 'danger' : 'info';
                                 })
                                 ->hintIcon('heroicon-m-information-circle')
                                 ->placeholder('0')
                                 ->live(debounce: 500)
-                                ->afterStateUpdated(function (Get $get, Set $set, $component) {
-                                    self::applyCalculations($get, $set);
-                                })
+                                ->afterStateUpdated(fn(Get $get, Set $set) => self::applyCalculations($get, $set))
                                 ->rules([
                                     fn(Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                                         $subTotal = \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
                                         $upahBongkar = \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0);
                                         $biayaLain = \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                         $hutangAwal = \App\Traits\HasCurrencyInput::sanitizeNumber($get('hutang_awal') ?? 0);
-
-                                        $error = TransaksiDo::validatePotonganHutang(
-                                            $value,
-                                            $hutangAwal,
-                                            $subTotal,
-                                            $upahBongkar,
-                                            $biayaLain
-                                        );
-
+                                        $error = TransaksiDo::validatePotonganHutang($value, $hutangAwal, $subTotal, $upahBongkar, $biayaLain);
                                         if ($error) $fail($error);
                                     },
                                 ]),
@@ -340,82 +314,101 @@ class TransaksiDoForm
                                 ->readOnly()
                                 ->live()
                                 ->dehydrated()
-                                ->validationMessages([
-                                    'min' => 'Total bayar tidak boleh minus. Silakan kurangi nominal Potong Hutang atau biaya lainnya.',
-                                ])
-                                ->rules(['numeric', 'min:0'])
-                                ->extraAttributes([
-                                    'class' => 'bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-2',
-                                    'style' => 'width: 100%;'
-                                ])
                                 ->extraInputAttributes(function (Get $get) {
                                     $sisa = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
-                                    $color = $sisa < 0 ? '#dc2626' : '#17b035'; // Merah jika minus, Hijau jika positif
-
+                                    $color = $sisa < 0 ? '#dc2626' : '#17b035'; 
                                     return [
                                         'style' => "font-size: 1.5rem !important; font-weight: 900; color: {$color} !important; -webkit-text-fill-color: {$color} !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;",
                                         'class' => 'text-center'
                                     ];
-                                }),
+                                })
+                                ->extraAttributes([
+                                    'class' => 'bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700 shadow-sm mb-2',
+                                    'style' => 'width: 100%;'
+                                ]),
 
-                            Text::make(function (Get $get, $record) {
-                                $currentSaldo = (float) (\Filament\Facades\Filament::getTenant()->saldo ?? 0);
-                                $bruto = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
-                                $sisaBayar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
-                                $potongHutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('pembayaran_hutang') ?? 0);
-                                $caraBayar = $get('cara_bayar');
-
-                                // Jika sedang EDIT data lama, kita "kembalikan" dulu saldo yang sudah terpakai
-                                if ($record) {
-                                    $oldBruto = (float) $record->sub_total;
-                                    $oldHutang = (float) $record->pembayaran_hutang;
-                                    $oldTransfer = $record->cara_bayar === 'transfer' ? (float)$record->sisa_bayar : 0;
-                                    
-                                    // Balikkan saldo ke kondisi sebelum transaksi ini
-                                    $currentSaldo = $currentSaldo + $oldBruto - $oldHutang - $oldTransfer;
-                                }
-
-                                // Hitung Estimasi Baru
-                                $netChange = -$bruto + $potongHutang;
-                                if ($caraBayar === 'transfer') {
-                                    $netChange += $sisaBayar;
-                                }
-
-                                $estimated = $currentSaldo + $netChange;
-                                return 'Estimasi Saldo Setelah Simpan (Sesuai Jurnal): ' . money($estimated, 'IDR');
-                            })
-                                ->weight('bold')
-                                ->extraAttributes(function (Get $get, $record) {
+                            \Filament\Forms\Components\Placeholder::make('estimasi_saldo')
+                                ->content(function (Get $get, $record) {
                                     $currentSaldo = (float) (\Filament\Facades\Filament::getTenant()->saldo ?? 0);
-                                    $bruto = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
                                     $sisaBayar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
                                     $potongHutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('pembayaran_hutang') ?? 0);
+                                    $upahBongkar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0);
+                                    $biayaLain = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                     $caraBayar = $get('cara_bayar');
+                                    $nominalTunai = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('nominal_tunai') ?? 0);
                                     
                                     if ($record) {
-                                        $oldBruto = (float) $record->sub_total;
+                                        $oldSisa = (float) $record->sisa_bayar;
                                         $oldHutang = (float) $record->pembayaran_hutang;
-                                        $oldTransfer = $record->cara_bayar === 'transfer' ? (float)$record->sisa_bayar : 0;
-                                        $currentSaldo = $currentSaldo + $oldBruto - $oldHutang - $oldTransfer;
+                                        $oldBongkar = (float) $record->upah_bongkar;
+                                        $oldLain = (float) $record->biaya_lain;
+                                        $oldCara = $record->cara_bayar;
+                                        $oldNominalTunai = (float) ($record->nominal_tunai ?? 0);
+
+                                        $oldCashPaid = match($oldCara) {
+                                            'tunai' => $oldSisa,
+                                            'tunai & transfer' => $oldNominalTunai,
+                                            default => 0,
+                                        };
+
+                                        $oldNetEffect = - $oldBongkar - $oldLain - $oldCashPaid;
+                                        $currentSaldo = $currentSaldo - $oldNetEffect;
                                     }
 
-                                    $netChange = -$bruto + $potongHutang;
-                                    if ($caraBayar === 'transfer') {
-                                        $netChange += $sisaBayar;
-                                    }
+                                    $cashPaid = match($caraBayar) {
+                                        'tunai' => $sisaBayar,
+                                        'tunai & transfer' => $nominalTunai,
+                                        default => 0,
+                                    };
+
+                                    $newNetEffect = - $upahBongkar - $biayaLain - $cashPaid;
+                                    $estimated = $currentSaldo + $newNetEffect;
+
+                                    return 'Estimasi Saldo Setelah Simpan (Sesuai Jurnal): ' . money($estimated, 'IDR');
+                                })
+                                ->extraAttributes(function (Get $get, $record) {
+                                    $currentSaldo = (float) (\Filament\Facades\Filament::getTenant()->saldo ?? 0);
+                                    $sisaBayar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
+                                    $potongHutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('pembayaran_hutang') ?? 0);
+                                    $upahBongkar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0);
+                                    $biayaLain = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
+                                    $caraBayar = $get('cara_bayar');
+                                    $nominalTunai = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('nominal_tunai') ?? 0);
                                     
-                                    $displaySaldo = $currentSaldo + $netChange;
+                                    if ($record) {
+                                        $oldSisa = (float) $record->sisa_bayar;
+                                        $oldHutang = (float) $record->pembayaran_hutang;
+                                        $oldBongkar = (float) $record->upah_bongkar;
+                                        $oldLain = (float) $record->biaya_lain;
+                                        $oldCara = $record->cara_bayar;
+                                        $oldNominalTunai = (float) ($record->nominal_tunai ?? 0);
 
+                                        $oldCashPaid = match($oldCara) {
+                                            'tunai' => $oldSisa,
+                                            'tunai & transfer' => $oldNominalTunai,
+                                            default => 0,
+                                        };
+
+                                        $oldNetEffect = - $oldBongkar - $oldLain - $oldCashPaid;
+                                        $currentSaldo = $currentSaldo - $oldNetEffect;
+                                    }
+
+                                    $cashPaid = match($caraBayar) {
+                                        'tunai' => $sisaBayar,
+                                        'tunai & transfer' => $nominalTunai,
+                                        default => 0,
+                                    };
+
+                                    $newNetEffect = - $upahBongkar - $biayaLain - $cashPaid;
+                                    $displaySaldo = $currentSaldo + $newNetEffect;
+                                    
                                     $bgColor = $displaySaldo < 0 ? '#dc2626' : '#e6ca28';
                                     $textColor = $displaySaldo < 0 ? '#ffffff' : '#010d10';
-                                    
                                     return [
-                                        'style' => "font-weight: 700; font-size: 1rem; color: {$textColor} !important; background-color: {$bgColor} !important; display: inline-block; padding: 6px 16px; border-radius: 8px; box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1); transition: all 0.3s ease;",
+                                        'style' => "font-weight: 700; font-size: 1rem; color: {$textColor} !important; background-color: {$bgColor} !important; display: inline-block; padding: 6px 16px; border-radius: 8px; box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1);",
                                         'class' => 'mt-1 mb-4'
                                     ];
                                 }),
-
-
 
                             self::currencyInput(TextInput::make('nominal_tunai'))
                                 ->label('Nominal Tunai')
@@ -435,9 +428,7 @@ class TransaksiDoForm
                                 ]),
                         ])->columns(2),
 
-
-
-                        // Hidden field untuk referensi hitung
+                        // Hidden fields
                         TextInput::make('hutang_awal')
                             ->default(0)
                             ->hidden()

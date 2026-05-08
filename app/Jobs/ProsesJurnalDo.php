@@ -60,52 +60,70 @@ class ProsesJurnalDo
                 return;
             }
 
-            // 1. Jurnal Utama: Nilai Pembelian Buah (Netto Biaya) sebagai Pengeluaran
-            // Kita kurangi dengan biaya agar tidak double counting saat biaya dicatat terpisah
+            $perusahaan = Perusahaan::query()->find($this->transaksiDo->perusahaan_id);
+            if (!$perusahaan) {
+                throw new \Exception("Perusahaan tidak ditemukan.");
+            }
+
+            // 1. Jurnal Utama: Nilai Pembelian Buah (BRUTO)
+            // Hanya untuk record laporan, TIDAK mempengaruhi saldo kas langsung
+            // karena rincian pembayarannya (tunai/transfer/hutang) dicatat terpisah di bawah.
+            $subtotalBruto = (float)$this->transaksiDo->sub_total;
             $upahBongkar = (float)$this->transaksiDo->upah_bongkar;
             $biayaLain = (float)$this->transaksiDo->biaya_lain;
-            $subtotalBuahMurni = (float)$this->transaksiDo->sub_total - $upahBongkar - $biayaLain;
-
-            JurnalKeuangan::create([
-                'perusahaan_id' => $this->transaksiDo->perusahaan_id,
-                'tanggal' => $this->transaksiDo->tanggal,
-                'jenis_transaksi' => 'Pengeluaran',
-                'kategori' => 'DO',
-                'sub_kategori' => 'Pembelian Buah',
-                'nominal' => $subtotalBuahMurni,
-                'mempengaruhi_kas' => true,
-                'cara_pembayaran' => $this->transaksiDo->cara_bayar,
-                'nomor_referensi' => $this->transaksiDo->nomor,
-                'sumber_transaksi' => 'DO',
-                'referensi_id' => $this->transaksiDo->id,
-                'pihak_terkait' => $this->transaksiDo->penjual?->nama ?? '-',
-                'tipe_pihak' => 'penjual',
-                'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Nilai Buah)",
-            ]);
-
-            // 2. Jurnal Transfer (Pemasukan): Jika dibayar transfer, admin mengganti uang kas
+            $pembayaranHutang = (float)$this->transaksiDo->pembayaran_hutang;
+            $caraBayar = $this->transaksiDo->cara_bayar;
             $sisaBayar = (float)$this->transaksiDo->sisa_bayar;
-            if ($this->transaksiDo->cara_bayar === 'transfer' && $sisaBayar > 0) {
+            $nominalTunai = (float)($this->transaksiDo->nominal_tunai ?? 0);
+
+            if ($subtotalBruto > 0) {
                 JurnalKeuangan::create([
                     'perusahaan_id' => $this->transaksiDo->perusahaan_id,
                     'tanggal' => $this->transaksiDo->tanggal,
-                    'jenis_transaksi' => 'Pemasukan',
+                    'jenis_transaksi' => 'Pengeluaran',
                     'kategori' => 'DO',
-                    'sub_kategori' => 'Reimbursement Admin',
-                    'nominal' => $sisaBayar,
-                    'mempengaruhi_kas' => true,
-                    'cara_pembayaran' => 'transfer',
+                    'sub_kategori' => 'Pembelian Buah',
+                    'nominal' => $subtotalBruto,
+                    'mempengaruhi_kas' => false, // Record saja
+                    'cara_pembayaran' => $caraBayar,
                     'nomor_referensi' => $this->transaksiDo->nomor,
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $this->transaksiDo->id,
-                    'pihak_terkait' => 'Admin',
-                    'tipe_pihak' => 'lainnya',
-                    'keterangan' => "Masuk Saldo dari Admin (Transfer DO #{$this->transaksiDo->nomor})",
+                    'pihak_terkait' => $this->transaksiDo->penjual?->nama ?? '-',
+                    'tipe_pihak' => 'penjual',
+                    'keterangan' => "Total Pembelian DO #{$this->transaksiDo->nomor} (Bruto)",
                 ]);
             }
 
-            // 3. Jurnal Potongan Hutang (Pemasukan): Hutang penjual yang dipotong masuk ke kas
-            $pembayaranHutang = (float)$this->transaksiDo->pembayaran_hutang;
+            // 2. Jurnal Pembayaran Tunai ke Penjual (Jika ada uang keluar dari laci untuk bayar buah)
+            $cashToSeller = 0;
+            if ($caraBayar === 'tunai') {
+                $cashToSeller = $sisaBayar;
+            } elseif ($caraBayar === 'tunai & transfer') {
+                $cashToSeller = $nominalTunai;
+            }
+
+            if ($cashToSeller > 0) {
+                JurnalKeuangan::create([
+                    'perusahaan_id' => $this->transaksiDo->perusahaan_id,
+                    'tanggal' => $this->transaksiDo->tanggal,
+                    'jenis_transaksi' => 'Pengeluaran',
+                    'kategori' => 'DO',
+                    'sub_kategori' => 'Bayar Tunai ke Penjual',
+                    'nominal' => $cashToSeller,
+                    'mempengaruhi_kas' => true,
+                    'cara_pembayaran' => 'tunai',
+                    'nomor_referensi' => $this->transaksiDo->nomor,
+                    'sumber_transaksi' => 'DO',
+                    'referensi_id' => $this->transaksiDo->id,
+                    'pihak_terkait' => $this->transaksiDo->penjual?->nama ?? '-',
+                    'tipe_pihak' => 'penjual',
+                    'keterangan' => "Pembayaran Tunai DO #{$this->transaksiDo->nomor}",
+                ]);
+                $perusahaan->decrement('saldo', $cashToSeller);
+            }
+
+            // 3. Jurnal Potongan Hutang (Record saja, TIDAK menambah saldo kas laci secara fisik)
             if ($pembayaranHutang > 0) {
                 JurnalKeuangan::create([
                     'perusahaan_id' => $this->transaksiDo->perusahaan_id,
@@ -114,7 +132,7 @@ class ProsesJurnalDo
                     'kategori' => 'DO',
                     'sub_kategori' => 'Potongan Hutang',
                     'nominal' => $pembayaranHutang,
-                    'mempengaruhi_kas' => true,
+                    'mempengaruhi_kas' => false, // Record piutang saja, bukan uang masuk laci
                     'cara_pembayaran' => 'tunai',
                     'nomor_referensi' => $this->transaksiDo->nomor,
                     'sumber_transaksi' => 'DO',
@@ -123,9 +141,10 @@ class ProsesJurnalDo
                     'tipe_pihak' => 'penjual',
                     'keterangan' => "Pemasukan dari Potongan Hutang DO #{$this->transaksiDo->nomor}",
                 ]);
+                // Tidak ada increment saldo di sini
             }
 
-            // 4. Jurnal Biaya Operasional (Pengeluaran)
+            // 4. Jurnal Biaya Operasional (Pengeluaran): Memotong saldo kas laci
             if ($upahBongkar > 0) {
                 JurnalKeuangan::create([
                     'perusahaan_id' => $this->transaksiDo->perusahaan_id,
@@ -143,6 +162,7 @@ class ProsesJurnalDo
                     'tipe_pihak' => 'penjual',
                     'keterangan' => "Biaya Bongkar DO #{$this->transaksiDo->nomor}",
                 ]);
+                $perusahaan->decrement('saldo', $upahBongkar);
             }
 
             if ($biayaLain > 0) {
@@ -162,6 +182,7 @@ class ProsesJurnalDo
                     'tipe_pihak' => 'penjual',
                     'keterangan' => "Biaya Lain DO #{$this->transaksiDo->nomor}",
                 ]);
+                $perusahaan->decrement('saldo', $biayaLain);
             }
 
             DB::commit();
