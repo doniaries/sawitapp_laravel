@@ -22,6 +22,18 @@ use Illuminate\Support\HtmlString;
 class ListTransaksiDos extends ListRecords
 {
     protected static string $resource = TransaksiDoResource::class;
+    
+    public function mount(): void
+    {
+        parent::mount();
+        
+        if ($this->activeTab === 'hari_ini') {
+            $this->tableFilters['tanggal_range'] = [
+                'dari_tanggal' => today()->toDateString(),
+                'sampai_tanggal' => today()->toDateString(),
+            ];
+        }
+    }
 
     protected function getHeaderActions(): array
     {
@@ -130,16 +142,20 @@ class ListTransaksiDos extends ListRecords
                 'dari_tanggal' => today()->toDateString(),
                 'sampai_tanggal' => today()->toDateString(),
             ];
+        } elseif ($this->activeTab === 'semua') {
+            $this->tableFilters['tanggal_range'] = [
+                'dari_tanggal' => null,
+                'sampai_tanggal' => null,
+            ];
         }
 
         // Dispatch filter event to sync widgets
         $filter = $this->tableFilters['tanggal_range'] ?? null;
-        if ($filter && isset($filter['dari_tanggal'], $filter['sampai_tanggal'])) {
-            $this->dispatch('filter-transaksi', [
-                'startDate' => $filter['dari_tanggal'],
-                'endDate' => $filter['sampai_tanggal'],
-            ]);
-        }
+        
+        $this->dispatch('filter-transaksi', [
+            'startDate' => $filter['dari_tanggal'] ?? null,
+            'endDate' => $filter['sampai_tanggal'] ?? null,
+        ]);
 
         $this->dispatch('tab-changed', [
             'tab' => $this->activeTab
@@ -162,7 +178,7 @@ class ListTransaksiDos extends ListRecords
 
     public function getDefaultActiveTab(): string | int | null
     {
-        return 'semua';
+        return 'hari_ini';
     }
 
     public function getTabs(): array
