@@ -358,24 +358,25 @@ class TransaksiDoForm
                                     ];
                                 }),
 
-                            Text::make(function (Get $get) {
+                            Text::make(function (Get $get, $record) {
                                 $currentSaldo = (float) (\Filament\Facades\Filament::getTenant()->saldo ?? 0);
                                 $bruto = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
                                 $sisaBayar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
                                 $potongHutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('pembayaran_hutang') ?? 0);
-                                $upahBongkar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0);
-                                $biayaLain = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                 $caraBayar = $get('cara_bayar');
 
-                                // Logika Akuntansi Baru yang Akurat:
-                                // 1. Bruto sudah mencakup (Sisa Bayar + Hutang + Bongkar + Lain)
-                                // 2. Kita kurangi Saldo dengan Bruto (Pengeluaran)
-                                // 3. Kita tambah balik Hutang (karena Hutang masuk ke Kas kita)
-                                // 4. Jika Transfer, kita tambah balik Sisa Bayar (karena Admin yang bayar)
-                                // Hasil akhirnya otomatis hanya memotong Biaya Bongkar & Lain saja.
-                                
+                                // Jika sedang EDIT data lama, kita "kembalikan" dulu saldo yang sudah terpakai
+                                if ($record) {
+                                    $oldBruto = (float) $record->sub_total;
+                                    $oldHutang = (float) $record->pembayaran_hutang;
+                                    $oldTransfer = $record->cara_bayar === 'transfer' ? (float)$record->sisa_bayar : 0;
+                                    
+                                    // Balikkan saldo ke kondisi sebelum transaksi ini
+                                    $currentSaldo = $currentSaldo + $oldBruto - $oldHutang - $oldTransfer;
+                                }
+
+                                // Hitung Estimasi Baru
                                 $netChange = -$bruto + $potongHutang;
-                                
                                 if ($caraBayar === 'transfer') {
                                     $netChange += $sisaBayar;
                                 }
@@ -384,15 +385,20 @@ class TransaksiDoForm
                                 return 'Estimasi Saldo Setelah Simpan (Sesuai Jurnal): ' . money($estimated, 'IDR');
                             })
                                 ->weight('bold')
-                                ->extraAttributes(function (Get $get) {
+                                ->extraAttributes(function (Get $get, $record) {
                                     $currentSaldo = (float) (\Filament\Facades\Filament::getTenant()->saldo ?? 0);
                                     $bruto = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
                                     $sisaBayar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
                                     $potongHutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('pembayaran_hutang') ?? 0);
-                                    $upahBongkar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0);
-                                    $biayaLain = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                     $caraBayar = $get('cara_bayar');
                                     
+                                    if ($record) {
+                                        $oldBruto = (float) $record->sub_total;
+                                        $oldHutang = (float) $record->pembayaran_hutang;
+                                        $oldTransfer = $record->cara_bayar === 'transfer' ? (float)$record->sisa_bayar : 0;
+                                        $currentSaldo = $currentSaldo + $oldBruto - $oldHutang - $oldTransfer;
+                                    }
+
                                     $netChange = -$bruto + $potongHutang;
                                     if ($caraBayar === 'transfer') {
                                         $netChange += $sisaBayar;
