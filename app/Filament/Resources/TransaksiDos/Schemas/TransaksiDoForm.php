@@ -358,15 +358,50 @@ class TransaksiDoForm
                                     ];
                                 }),
 
-                            Text::make(function () {
-                                $saldo = \Filament\Facades\Filament::getTenant()->saldo ?? 0;
-                                return 'Saldo Kas Saat Ini: ' . money($saldo, 'IDR');
+                            Text::make(function (Get $get) {
+                                $currentSaldo = (float) (\Filament\Facades\Filament::getTenant()->saldo ?? 0);
+                                $bruto = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
+                                $sisaBayar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
+                                $potongHutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('pembayaran_hutang') ?? 0);
+                                $upahBongkar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0);
+                                $biayaLain = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
+                                $caraBayar = $get('cara_bayar');
+
+                                // Logika Akuntansi Baru yang Akurat:
+                                // 1. Bruto sudah mencakup (Sisa Bayar + Hutang + Bongkar + Lain)
+                                // 2. Kita kurangi Saldo dengan Bruto (Pengeluaran)
+                                // 3. Kita tambah balik Hutang (karena Hutang masuk ke Kas kita)
+                                // 4. Jika Transfer, kita tambah balik Sisa Bayar (karena Admin yang bayar)
+                                // Hasil akhirnya otomatis hanya memotong Biaya Bongkar & Lain saja.
+                                
+                                $netChange = -$bruto + $potongHutang;
+                                
+                                if ($caraBayar === 'transfer') {
+                                    $netChange += $sisaBayar;
+                                }
+
+                                $estimated = $currentSaldo + $netChange;
+                                return 'Estimasi Saldo Setelah Simpan (Sesuai Jurnal): ' . money($estimated, 'IDR');
                             })
                                 ->weight('bold')
-                                ->extraAttributes(function () {
-                                    $saldo = \Filament\Facades\Filament::getTenant()->saldo ?? 0;
-                                    $bgColor = $saldo < 0 ? '#dc2626' : '#e6ca28';
-                                    $textColor = $saldo < 0 ? '#ffffff' : '#010d10';
+                                ->extraAttributes(function (Get $get) {
+                                    $currentSaldo = (float) (\Filament\Facades\Filament::getTenant()->saldo ?? 0);
+                                    $bruto = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sub_total') ?? 0);
+                                    $sisaBayar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
+                                    $potongHutang = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('pembayaran_hutang') ?? 0);
+                                    $upahBongkar = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('upah_bongkar') ?? 0);
+                                    $biayaLain = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
+                                    $caraBayar = $get('cara_bayar');
+                                    
+                                    $netChange = -$bruto + $potongHutang;
+                                    if ($caraBayar === 'transfer') {
+                                        $netChange += $sisaBayar;
+                                    }
+                                    
+                                    $displaySaldo = $currentSaldo + $netChange;
+
+                                    $bgColor = $displaySaldo < 0 ? '#dc2626' : '#e6ca28';
+                                    $textColor = $displaySaldo < 0 ? '#ffffff' : '#010d10';
                                     
                                     return [
                                         'style' => "font-weight: 700; font-size: 1rem; color: {$textColor} !important; background-color: {$bgColor} !important; display: inline-block; padding: 6px 16px; border-radius: 8px; box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1); transition: all 0.3s ease;",

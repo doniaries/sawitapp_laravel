@@ -60,129 +60,107 @@ class ProsesJurnalDo
                 return;
             }
 
-            // 2. Record PURCHASE EXPENDITURE (Pembelian Buah - Net of deductions)
-            if ($this->transaksiDo->cara_bayar === 'tunai & transfer') {
-                $nominalTunai = (float) $this->transaksiDo->nominal_tunai;
-                $nominalTransfer = max(0, (float) $this->transaksiDo->sisa_bayar - $nominalTunai);
+            // 1. Jurnal Utama: Nilai Pembelian Buah (Netto Biaya) sebagai Pengeluaran
+            // Kita kurangi dengan biaya agar tidak double counting saat biaya dicatat terpisah
+            $upahBongkar = (float)$this->transaksiDo->upah_bongkar;
+            $biayaLain = (float)$this->transaksiDo->biaya_lain;
+            $subtotalBuahMurni = (float)$this->transaksiDo->sub_total - $upahBongkar - $biayaLain;
 
-                if ($nominalTunai > 0) {
-                    $this->createLaporan($financeAction, [
-                        'perusahaan_id' => $this->transaksiDo->perusahaan_id,
-                        'tanggal' => $this->transaksiDo->tanggal,
-                        'jenis_transaksi' => 'Pengeluaran',
-                        'kategori' => 'DO',
-                        'sub_kategori' => 'Pembelian Buah',
-                        'nominal' => $nominalTunai,
-                        'sumber_transaksi' => 'DO',
-                        'referensi_id' => $this->transaksiDo->id,
-                        'nomor_referensi' => $this->transaksiDo->nomor,
-                        'pihak_terkait' => $this->transaksiDo->penjual?->nama,
-                        'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
-                        'cara_pembayaran' => 'tunai',
-                        'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Bagian Tunai)",
-                        'mempengaruhi_kas' => true
-                    ]);
-                }
+            JurnalKeuangan::create([
+                'perusahaan_id' => $this->transaksiDo->perusahaan_id,
+                'tanggal' => $this->transaksiDo->tanggal,
+                'jenis_transaksi' => 'Pengeluaran',
+                'kategori' => 'DO',
+                'sub_kategori' => 'Pembelian Buah',
+                'nominal' => $subtotalBuahMurni,
+                'mempengaruhi_kas' => true,
+                'cara_pembayaran' => $this->transaksiDo->cara_bayar,
+                'nomor_referensi' => $this->transaksiDo->nomor,
+                'sumber_transaksi' => 'DO',
+                'referensi_id' => $this->transaksiDo->id,
+                'pihak_terkait' => $this->transaksiDo->penjual?->nama ?? '-',
+                'tipe_pihak' => 'penjual',
+                'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Nilai Buah)",
+            ]);
 
-                if ($nominalTransfer > 0) {
-                    $this->createLaporan($financeAction, [
-                        'perusahaan_id' => $this->transaksiDo->perusahaan_id,
-                        'tanggal' => $this->transaksiDo->tanggal,
-                        'jenis_transaksi' => 'Pengeluaran',
-                        'kategori' => 'DO',
-                        'sub_kategori' => 'Pembelian Buah',
-                        'nominal' => $nominalTransfer,
-                        'sumber_transaksi' => 'DO',
-                        'referensi_id' => $this->transaksiDo->id,
-                        'nomor_referensi' => $this->transaksiDo->nomor,
-                        'pihak_terkait' => $this->transaksiDo->penjual?->nama,
-                        'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
-                        'cara_pembayaran' => 'transfer',
-                        'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Bagian Transfer)",
-                        'mempengaruhi_kas' => true
-                    ]);
-                }
-            } else {
-                $mempengaruhiKasUtama = in_array($this->transaksiDo->cara_bayar, ['tunai', 'transfer']);
-                
-                if ($this->transaksiDo->sisa_bayar > 0) {
-                    $this->createLaporan($financeAction, [
-                        'perusahaan_id' => $this->transaksiDo->perusahaan_id,
-                        'tanggal' => $this->transaksiDo->tanggal,
-                        'jenis_transaksi' => 'Pengeluaran',
-                        'kategori' => 'DO',
-                        'sub_kategori' => 'Pembelian Buah',
-                        'nominal' => $this->transaksiDo->sisa_bayar,
-                        'sumber_transaksi' => 'DO',
-                        'referensi_id' => $this->transaksiDo->id,
-                        'nomor_referensi' => $this->transaksiDo->nomor,
-                        'pihak_terkait' => $this->transaksiDo->penjual?->nama,
-                        'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
-                        'cara_pembayaran' => $this->transaksiDo->cara_bayar,
-                        'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor}",
-                        'mempengaruhi_kas' => $mempengaruhiKasUtama
-                    ]);
-                }
+            // 2. Jurnal Transfer (Pemasukan): Jika dibayar transfer, admin mengganti uang kas
+            $sisaBayar = (float)$this->transaksiDo->sisa_bayar;
+            if ($this->transaksiDo->cara_bayar === 'transfer' && $sisaBayar > 0) {
+                JurnalKeuangan::create([
+                    'perusahaan_id' => $this->transaksiDo->perusahaan_id,
+                    'tanggal' => $this->transaksiDo->tanggal,
+                    'jenis_transaksi' => 'Pemasukan',
+                    'kategori' => 'DO',
+                    'sub_kategori' => 'Reimbursement Admin',
+                    'nominal' => $sisaBayar,
+                    'mempengaruhi_kas' => true,
+                    'cara_pembayaran' => 'transfer',
+                    'nomor_referensi' => $this->transaksiDo->nomor,
+                    'sumber_transaksi' => 'DO',
+                    'referensi_id' => $this->transaksiDo->id,
+                    'pihak_terkait' => 'Admin',
+                    'tipe_pihak' => 'lainnya',
+                    'keterangan' => "Masuk Saldo dari Admin (Transfer DO #{$this->transaksiDo->nomor})",
+                ]);
             }
 
-            // 3. Record EXPENSE COMPONENTS (Upah & Biaya)
-            $mempengaruhiKasBiaya = in_array($this->transaksiDo->cara_bayar, ['tunai', 'tunai & transfer']);
+            // 3. Jurnal Potongan Hutang (Pemasukan): Hutang penjual yang dipotong masuk ke kas
+            $pembayaranHutang = (float)$this->transaksiDo->pembayaran_hutang;
+            if ($pembayaranHutang > 0) {
+                JurnalKeuangan::create([
+                    'perusahaan_id' => $this->transaksiDo->perusahaan_id,
+                    'tanggal' => $this->transaksiDo->tanggal,
+                    'jenis_transaksi' => 'Pemasukan',
+                    'kategori' => 'DO',
+                    'sub_kategori' => 'Potongan Hutang',
+                    'nominal' => $pembayaranHutang,
+                    'mempengaruhi_kas' => true,
+                    'cara_pembayaran' => 'tunai',
+                    'nomor_referensi' => $this->transaksiDo->nomor,
+                    'sumber_transaksi' => 'DO',
+                    'referensi_id' => $this->transaksiDo->id,
+                    'pihak_terkait' => $this->transaksiDo->penjual?->nama ?? '-',
+                    'tipe_pihak' => 'penjual',
+                    'keterangan' => "Pemasukan dari Potongan Hutang DO #{$this->transaksiDo->nomor}",
+                ]);
+            }
 
-            if ($this->transaksiDo->upah_bongkar > 0) {
-                $this->createLaporan($financeAction, [
+            // 4. Jurnal Biaya Operasional (Pengeluaran)
+            if ($upahBongkar > 0) {
+                JurnalKeuangan::create([
                     'perusahaan_id' => $this->transaksiDo->perusahaan_id,
                     'tanggal' => $this->transaksiDo->tanggal,
                     'jenis_transaksi' => 'Pengeluaran',
                     'kategori' => 'DO',
                     'sub_kategori' => 'Upah Bongkar',
-                    'nominal' => $this->transaksiDo->upah_bongkar,
+                    'nominal' => $upahBongkar,
+                    'mempengaruhi_kas' => true,
+                    'cara_pembayaran' => 'tunai',
+                    'nomor_referensi' => $this->transaksiDo->nomor,
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $this->transaksiDo->id,
-                    'nomor_referensi' => $this->transaksiDo->nomor,
-                    'pihak_terkait' => 'Pekerja Bongkar',
-                    'tipe_pihak' => \App\Enums\TipeNama::PEKERJA,
-                    'cara_pembayaran' => 'tunai',
-                    'keterangan' => "Biaya Upah Bongkar DO #{$this->transaksiDo->nomor}",
-                    'mempengaruhi_kas' => $mempengaruhiKasBiaya
+                    'pihak_terkait' => $this->transaksiDo->penjual?->nama ?? '-',
+                    'tipe_pihak' => 'penjual',
+                    'keterangan' => "Biaya Bongkar DO #{$this->transaksiDo->nomor}",
                 ]);
             }
 
-            if ($this->transaksiDo->biaya_lain > 0) {
-                $this->createLaporan($financeAction, [
+            if ($biayaLain > 0) {
+                JurnalKeuangan::create([
                     'perusahaan_id' => $this->transaksiDo->perusahaan_id,
                     'tanggal' => $this->transaksiDo->tanggal,
                     'jenis_transaksi' => 'Pengeluaran',
                     'kategori' => 'DO',
                     'sub_kategori' => 'Biaya Lain',
-                    'nominal' => $this->transaksiDo->biaya_lain,
-                    'sumber_transaksi' => 'DO',
-                    'referensi_id' => $this->transaksiDo->id,
-                    'nomor_referensi' => $this->transaksiDo->nomor,
-                    'pihak_terkait' => 'Lain-lain',
-                    'tipe_pihak' => \App\Enums\TipeNama::LAINNYA,
+                    'nominal' => $biayaLain,
+                    'mempengaruhi_kas' => true,
                     'cara_pembayaran' => 'tunai',
-                    'keterangan' => "Biaya Lain-lain DO #{$this->transaksiDo->nomor}",
-                    'mempengaruhi_kas' => $mempengaruhiKasBiaya
-                ]);
-            }
-
-            // 4. Record INCOME COMPONENTS (Potong Hutang - Non Cash Offset)
-            if ($this->transaksiDo->pembayaran_hutang > 0) {
-                $this->createLaporan($financeAction, [
-                    'perusahaan_id' => $this->transaksiDo->perusahaan_id,
-                    'tanggal' => $this->transaksiDo->tanggal,
-                    'jenis_transaksi' => 'Pemasukan',
-                    'kategori' => 'DO',
-                    'sub_kategori' => 'Potong Hutang',
-                    'nominal' => $this->transaksiDo->pembayaran_hutang,
+                    'nomor_referensi' => $this->transaksiDo->nomor,
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $this->transaksiDo->id,
-                    'nomor_referensi' => $this->transaksiDo->nomor,
-                    'pihak_terkait' => $this->transaksiDo->penjual?->nama,
-                    'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
-                    'cara_pembayaran' => $this->transaksiDo->cara_bayar,
-                    'keterangan' => "Potongan Hutang via DO #{$this->transaksiDo->nomor}",
-                    'mempengaruhi_kas' => false
+                    'pihak_terkait' => $this->transaksiDo->penjual?->nama ?? '-',
+                    'tipe_pihak' => 'penjual',
+                    'keterangan' => "Biaya Lain DO #{$this->transaksiDo->nomor}",
                 ]);
             }
 

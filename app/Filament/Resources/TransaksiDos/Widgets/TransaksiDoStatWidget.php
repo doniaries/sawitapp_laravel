@@ -21,62 +21,68 @@ class TransaksiDoStatWidget extends BaseWidget
             if (!$tenant) return [];
 
             $today = today()->toDateString();
-            $cacheKey = "transaksi-do-stats-{$tenant->id}-{$today}";
+            $tenantId = $tenant->id;
 
-            return Cache::remember($cacheKey, 10, function () use ($tenant, $today) {
-                $tenantId = $tenant->id;
+            // Query transaksi DO hari ini
+            $doStats = DB::table('transaksi_do')
+                ->where('perusahaan_id', $tenantId)
+                ->whereNull('deleted_at')
+                ->whereDate('tanggal', $today)
+                ->selectRaw('
+                    COUNT(*) as count,
+                    COALESCE(SUM(sub_total), 0) as total_bruto,
+                    COALESCE(SUM(pembayaran_hutang), 0) as total_potong_hutang,
+                    COALESCE(SUM(upah_bongkar), 0) as total_bongkar,
+                    COALESCE(SUM(biaya_lain), 0) as total_lain,
+                    COALESCE(SUM(CASE WHEN cara_bayar = "tunai" THEN sisa_bayar ELSE 0 END), 0) as total_bayar_tunai,
+                    COALESCE(SUM(CASE WHEN cara_bayar = "transfer" THEN sisa_bayar ELSE 0 END), 0) as total_bayar_transfer,
+                    COALESCE(SUM(CASE WHEN cara_bayar = "tunai & transfer" THEN sisa_bayar ELSE 0 END), 0) as total_bayar_mixed,
+                    COALESCE(SUM(CASE WHEN cara_bayar = "tunai" THEN 1 ELSE 0 END), 0) as tunai_count,
+                    COALESCE(SUM(CASE WHEN cara_bayar = "transfer" THEN 1 ELSE 0 END), 0) as transfer_count,
+                    COALESCE(SUM(CASE WHEN cara_bayar = "cair di luar" THEN 1 ELSE 0 END), 0) as cair_count,
+                    COALESCE(SUM(CASE WHEN cara_bayar = "belum dibayar" THEN 1 ELSE 0 END), 0) as belum_count
+                ')->first();
 
-                // Query transaksi DO hari ini
-                $doStats = DB::table('transaksi_do')
-                    ->where('perusahaan_id', $tenantId)
-                    ->whereNull('deleted_at')
-                    ->whereDate('tanggal', $today)
-                    ->selectRaw('
-                        COUNT(*) as count,
-                        COALESCE(SUM(sub_total), 0) as total,
-                        COALESCE(SUM(pembayaran_hutang), 0) as total_debt_payments,
-                        COALESCE(SUM(CASE WHEN cara_bayar IN ("transfer", "cair di luar", "belum dibayar") THEN sisa_bayar ELSE 0 END), 0) as remaining_payments,
-                        COALESCE(SUM(CASE WHEN cara_bayar = "tunai" THEN 1 ELSE 0 END), 0) as tunai_count,
-                        COALESCE(SUM(CASE WHEN cara_bayar = "transfer" THEN 1 ELSE 0 END), 0) as transfer_count,
-                        COALESCE(SUM(CASE WHEN cara_bayar = "cair di luar" THEN 1 ELSE 0 END), 0) as cair_count,
-                        COALESCE(SUM(CASE WHEN cara_bayar = "belum dibayar" THEN 1 ELSE 0 END), 0) as belum_count
-                    ')->first();
+            // Query operasional hari ini
+            $opStats = DB::table('transaksi_operasional')
+                ->where('perusahaan_id', $tenantId)
+                ->whereNull('deleted_at')
+                ->whereDate('tanggal', $today)
+                ->selectRaw('
+                    COALESCE(SUM(CASE WHEN operasional = "pemasukan" THEN nominal ELSE 0 END), 0) as total_pemasukan,
+                    COALESCE(SUM(CASE WHEN operasional = "pengeluaran" THEN nominal ELSE 0 END), 0) as total_pengeluaran
+                ')->first();
 
-                // Query operasional hari ini
-                $opStats = DB::table('transaksi_operasional')
-                    ->where('perusahaan_id', $tenantId)
-                    ->whereNull('deleted_at')
-                    ->whereDate('tanggal', $today)
-                    ->selectRaw('
-                        COALESCE(SUM(CASE WHEN operasional = "pemasukan" THEN nominal ELSE 0 END), 0) as total_pemasukan,
-                        COALESCE(SUM(CASE WHEN operasional = "pengeluaran" THEN nominal ELSE 0 END), 0) as total_pengeluaran
-                    ')->first();
+            // Query tambah saldo hari ini
+            $saldoStats = DB::table('tambah_saldo')
+                ->where('perusahaan_id', $tenantId)
+                ->whereNull('deleted_at')
+                ->whereDate('tanggal', $today)
+                ->selectRaw('COALESCE(SUM(nominal), 0) as total_tambah_saldo')
+                ->first();
 
-                // Query tambah saldo hari ini
-                $saldoStats = DB::table('tambah_saldo')
-                    ->where('perusahaan_id', $tenantId)
-                    ->whereNull('deleted_at')
-                    ->whereDate('tanggal', $today)
-                    ->selectRaw('COALESCE(SUM(nominal), 0) as total_tambah_saldo')
-                    ->first();
+            // Uang Masuk: Topup + Ops Pemasukan (Transfer sudah tidak masuk sini)
+            $totalIncoming = (float)$opStats->total_pemasukan
+                + (float)$saldoStats->total_tambah_saldo;
 
-                $totalIncoming = (float)$doStats->total_debt_payments
-                    + (float)$doStats->remaining_payments
-                    + (float)$opStats->total_pemasukan
-                    + (float)$saldoStats->total_tambah_saldo;
+            // Uang Keluar: Tunai + Potong Hutang + Bongkar + Lain + Ops Pengeluaran
+            $totalExpenditure = (float)$doStats->total_bayar_tunai
+                + (float)$doStats->total_bayar_mixed 
+                + (float)$doStats->total_potong_hutang // Sekarang memotong kas
+                + (float)$doStats->total_bongkar
+                + (float)$doStats->total_lain
+                + (float)$opStats->total_pengeluaran;
 
-                $totalExpenditure = (float)$doStats->total + (float)$opStats->total_pengeluaran;
+            $currentSaldo = \App\Models\Perusahaan::find($tenantId)->saldo ?? 0;
 
-                $currentSaldo = \App\Models\Perusahaan::find($tenantId)->saldo ?? 0;
-
-                return [
-                    Stat::make('Saldo Kas Perusahaan', money($currentSaldo, 'IDR'))
+            return [
+                Stat::make('Saldo Kas Perusahaan', money($currentSaldo, 'IDR'))
                         ->description('Total saldo tersedia saat ini')
                         ->descriptionIcon('heroicon-m-wallet')
                         ->color($currentSaldo < 0 ? 'danger' : 'success'),
 
                     Stat::make('DO Hari Ini', (int)$doStats->count)
-                        ->description('Total Bruto: ' . money($doStats->total, 'IDR'))
+                        ->description('Total Bruto: ' . money($doStats->total_bruto, 'IDR'))
                         ->descriptionIcon('heroicon-m-document-text')
                         ->color('info'),
 
@@ -86,10 +92,8 @@ class TransaksiDoStatWidget extends BaseWidget
                         </div>
                     '))
                         ->description(sprintf(
-                            'Saldo: %s | Hutang: %s | Sisa: %s | Ops: %s',
+                            'Topup: %s | Ops: %s',
                             money($saldoStats->total_tambah_saldo, 'IDR'),
-                            money($doStats->total_debt_payments, 'IDR'),
-                            money($doStats->remaining_payments, 'IDR'),
                             money($opStats->total_pemasukan, 'IDR')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-up')
@@ -101,9 +105,10 @@ class TransaksiDoStatWidget extends BaseWidget
                         </div>
                     '))
                         ->description(sprintf(
-                            'DO: %s | Operasional: %s',
-                            money($doStats->total, 'IDR'),
-                            money($opStats->total_pengeluaran, 'IDR')
+                            'Tunai: %s | Pt. Hutang: %s | Operasional: %s',
+                            money($doStats->total_bayar_tunai + $doStats->total_bayar_mixed, 'IDR'),
+                            money($doStats->total_potong_hutang, 'IDR'),
+                            money($opStats->total_pengeluaran + $doStats->total_bongkar + $doStats->total_lain, 'IDR')
                         ))
                         ->descriptionIcon('heroicon-m-arrow-trending-down')
                         ->color('danger'),
@@ -119,7 +124,6 @@ class TransaksiDoStatWidget extends BaseWidget
                         ->descriptionIcon('heroicon-m-credit-card')
                         ->color('warning'),
                 ];
-            });
         } catch (\Exception $e) {
             Log::error('TransaksiDoStatWidget Error:', ['message' => $e->getMessage()]);
 
