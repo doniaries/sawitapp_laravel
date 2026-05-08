@@ -10,8 +10,8 @@ use Livewire\Attributes\On;
 class TransaksiDoStatWidget extends BaseWidget
 {
     protected static ?int $sort = 1;
-    protected ?string $pollingInterval = '10s';
-    protected static bool $isLazy = false;
+    protected ?string $pollingInterval = null; // Matikan polling agar tidak membebani server terus-menerus
+    protected static bool $isLazy = true; // Aktifkan Lazy Loading agar tabel muncul duluan
     protected int | string | array $columnSpan = 'full';
     
     public ?string $startDate = null;

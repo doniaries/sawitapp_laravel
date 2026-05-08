@@ -9,6 +9,7 @@ use App\Models\JurnalKeuangan;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Filament\Actions;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
@@ -22,17 +23,30 @@ use Illuminate\Support\HtmlString;
 class ListTransaksiDos extends ListRecords
 {
     protected static string $resource = TransaksiDoResource::class;
+    public ?string $activeTab = 'hari_ini';
+
+    public function render(): \Illuminate\Contracts\View\View
+    {
+        return parent::render();
+    }
     
     public function mount(): void
     {
         parent::mount();
+
+        // Inject CSS untuk menyembunyikan baris "Halaman ini" di footer tabel
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            'panels::content.start',
+            fn (): string => '<style>.fi-ta-summary-row:first-child { display: none !important; }</style>',
+        );
         
-        if ($this->activeTab === 'hari_ini') {
-            $this->tableFilters['tanggal_range'] = [
-                'dari_tanggal' => today()->toDateString(),
-                'sampai_tanggal' => today()->toDateString(),
-            ];
+        // Pastikan tab default adalah hari_ini
+        if (!$this->activeTab) {
+            $this->activeTab = 'hari_ini';
         }
+
+        // Paksa sinkronisasi widget di awal
+        $this->updatedActiveTab();
     }
 
     protected function getHeaderActions(): array
@@ -188,6 +202,7 @@ class ListTransaksiDos extends ListRecords
             'hari_ini' => Tab::make('Hari Ini')
                 ->icon('heroicon-o-calendar')
                 ->badge($this->getTabCount('hari_ini'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
                 ->badgeColor('success'),
 
             'semua' => Tab::make('Semua Transaksi')
@@ -198,49 +213,56 @@ class ListTransaksiDos extends ListRecords
             'tunai' => Tab::make('Tunai')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('tunai'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'tunai')->whereDate('tanggal', today()))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', '=', 'tunai', 'and')->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
                 ->badgeColor('success'),
 
             'transfer' => Tab::make('Transfer')
                 ->icon('heroicon-o-credit-card')
                 ->badge($this->getTabCount('transfer'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'transfer')->whereDate('tanggal', today()))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', '=', 'transfer', 'and')->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
                 ->badgeColor('info'),
 
             'cair_luar' => Tab::make('Cair di Luar')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('cair_luar'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'cair di luar')->whereDate('tanggal', today()))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', '=', 'cair di luar', 'and')->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
                 ->badgeColor('warning'),
 
             'belum_dibayar' => Tab::make('Belum Dibayar')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('belum_dibayar'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'belum dibayar')->whereDate('tanggal', today()))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', '=', 'belum dibayar', 'and')->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
                 ->badgeColor('danger'),
         ];
     }
 
+    protected ?array $cachedTabCounts = null;
+
     protected function getTabCount(string $tab): int
     {
-        $tenantId = Filament::getTenant()?->id;
-        $baseQuery = TransaksiDo::query()->when($tenantId, fn($q) => $q->where('perusahaan_id', $tenantId));
+        if ($this->cachedTabCounts === null) {
+            $tenantId = Filament::getTenant()?->id;
+            if (!$tenantId) return 0;
 
-        $filter = $this->tableFilters['tanggal_range'] ?? null;
-        $hasFilter = !empty($filter['dari_tanggal']) || !empty($filter['sampai_tanggal']);
+            $today = today()->toDateString();
+            
+            $counts = DB::table('transaksi_do')
+                ->where('perusahaan_id', $tenantId)
+                ->whereNull('deleted_at')
+                ->selectRaw("
+                    COUNT(*) as semua,
+                    COUNT(CASE WHEN DATE(tanggal) = ? THEN 1 END) as hari_ini,
+                    COUNT(CASE WHEN cara_bayar = 'tunai' AND DATE(tanggal) = ? THEN 1 END) as tunai,
+                    COUNT(CASE WHEN cara_bayar = 'transfer' AND DATE(tanggal) = ? THEN 1 END) as transfer,
+                    COUNT(CASE WHEN cara_bayar = 'cair di luar' AND DATE(tanggal) = ? THEN 1 END) as cair_luar,
+                    COUNT(CASE WHEN cara_bayar = 'belum dibayar' AND DATE(tanggal) = ? THEN 1 END) as belum_dibayar
+                ", [$today, $today, $today, $today, $today])
+                ->first();
 
-        // Cache or calculate based on tab
-        return match ($tab) {
-            'hari_ini' => (clone $baseQuery)->whereDate('tanggal', today())->count(),
-            'semua' => (clone $baseQuery)->count(), 
-            default => (clone $baseQuery)
-                ->whereDate('tanggal', today()) // Scoping category tabs to today
-                ->when($tab === 'tunai', fn($q) => $q->where('cara_bayar', 'tunai'))
-                ->when($tab === 'transfer', fn($q) => $q->where('cara_bayar', 'transfer'))
-                ->when($tab === 'cair_luar', fn($q) => $q->where('cara_bayar', 'cair di luar'))
-                ->when($tab === 'belum_dibayar', fn($q) => $q->where('cara_bayar', 'belum dibayar'))
-                ->count(),
-        };
+            $this->cachedTabCounts = (array) $counts;
+        }
+
+        return $this->cachedTabCounts[$tab] ?? 0;
     }
 
     protected static function getSummaryTableHtml(string|null $tanggal): HtmlString
@@ -250,31 +272,31 @@ class ListTransaksiDos extends ListRecords
         $perusahaanId = Filament::getTenant()->id;
 
         // Data Jurnal Keuangan yang Mempengaruhi Kas
-        $masuk = JurnalKeuangan::where('perusahaan_id', $perusahaanId)
-            ->whereDate('tanggal', $tanggal)
-            ->where('jenis_transaksi', 'Pemasukan')
-            ->where('mempengaruhi_kas', true)
+        $masuk = JurnalKeuangan::where('perusahaan_id', '=', $perusahaanId, 'and')
+            ->whereRaw("DATE(tanggal) = ?", [$tanggal])
+            ->where('jenis_transaksi', '=', 'Pemasukan', 'and')
+            ->where('mempengaruhi_kas', '=', true, 'and')
             ->sum('nominal');
 
-        $keluar = JurnalKeuangan::where('perusahaan_id', $perusahaanId)
-            ->whereDate('tanggal', $tanggal)
-            ->where('jenis_transaksi', 'Pengeluaran')
-            ->where('mempengaruhi_kas', true)
+        $keluar = JurnalKeuangan::where('perusahaan_id', '=', $perusahaanId, 'and')
+            ->whereRaw("DATE(tanggal) = ?", [$tanggal])
+            ->where('jenis_transaksi', '=', 'Pengeluaran', 'and')
+            ->where('mempengaruhi_kas', '=', true, 'and')
             ->sum('nominal');
 
         // Data DO (Pembelian)
-        $doCount = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->count();
-        $doTotal = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('sub_total');
+        $doCount = TransaksiDo::where('perusahaan_id', '=', $perusahaanId, 'and')->whereRaw("DATE(tanggal) = ?", [$tanggal])->count();
+        $doTotal = TransaksiDo::where('perusahaan_id', '=', $perusahaanId, 'and')->whereRaw("DATE(tanggal) = ?", [$tanggal])->sum('sub_total');
 
         // Data Operasional
-        $opCount = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->count();
-        $opTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('nominal');
+        $opCount = TransaksiOperasional::where('perusahaan_id', '=', $perusahaanId, 'and')->whereRaw("DATE(tanggal) = ?", [$tanggal])->count();
+        $opTotal = TransaksiOperasional::where('perusahaan_id', '=', $perusahaanId, 'and')->whereRaw("DATE(tanggal) = ?", [$tanggal])->sum('nominal');
 
         // Saldo Awal: Ambil dari saldo_akhir_fisik TutupHari sebelumnya
         $lastClosing = TutupHari::where('perusahaan_id', '=', $perusahaanId, 'and')
             ->where('tanggal', '<', $tanggal, 'and')
             ->latest('tanggal')
-            ->first(['*']);
+            ->first();
 
         if ($lastClosing) {
             $saldoAwal = $lastClosing->saldo_akhir_fisik;

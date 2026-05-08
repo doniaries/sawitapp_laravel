@@ -23,7 +23,6 @@ class TransaksiDoTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->deferLoading()
             ->columns([
                 TextColumn::make('tanggal')
                     ->label('Tanggal')
@@ -104,6 +103,7 @@ class TransaksiDoTable
                     ->summarize(
                         Sum::make()
                             ->label('Total')
+
                             ->currency('IDR', true)
                             ->visible(function ($livewire) {
                                 $filter = $livewire->getTableFilterState('tanggal_range');
@@ -119,6 +119,7 @@ class TransaksiDoTable
                     ->summarize(
                         Sum::make()
                             ->label('Total')
+
                             ->currency('IDR', true)
                             ->visible(function ($livewire) {
                                 $filter = $livewire->getTableFilterState('tanggal_range');
@@ -135,6 +136,7 @@ class TransaksiDoTable
                     ->summarize(
                         Sum::make()
                             ->label('Total')
+
                             ->currency('IDR', true)
                             ->visible(function ($livewire) {
                                 $filter = $livewire->getTableFilterState('tanggal_range');
@@ -153,6 +155,7 @@ class TransaksiDoTable
                     ->summarize(
                         Sum::make()
                             ->label('Total')
+
                             ->currency('IDR', true)
                             ->visible(function ($livewire) {
                                 $filter = $livewire->getTableFilterState('tanggal_range');
@@ -201,11 +204,11 @@ class TransaksiDoTable
                         return $query
                             ->when(
                                 $data['dari_tanggal'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereRaw("DATE(tanggal) >= ?", [$date]),
                             )
                             ->when(
                                 $data['sampai_tanggal'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereRaw("DATE(tanggal) <= ?", [$date]),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
