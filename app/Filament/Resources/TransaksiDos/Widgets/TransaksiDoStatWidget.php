@@ -52,9 +52,18 @@ class TransaksiDoStatWidget extends BaseWidget
                         COALESCE(SUM(CASE WHEN operasional = "pengeluaran" THEN nominal ELSE 0 END), 0) as total_pengeluaran
                     ')->first();
 
+                // Query tambah saldo hari ini
+                $saldoStats = DB::table('tambah_saldo')
+                    ->where('perusahaan_id', $tenantId)
+                    ->whereNull('deleted_at')
+                    ->whereDate('tanggal', $today)
+                    ->selectRaw('COALESCE(SUM(nominal), 0) as total_tambah_saldo')
+                    ->first();
+
                 $totalIncoming = (float)$doStats->total_debt_payments
                     + (float)$doStats->remaining_payments
-                    + (float)$opStats->total_pemasukan;
+                    + (float)$opStats->total_pemasukan
+                    + (float)$saldoStats->total_tambah_saldo;
 
                 $totalExpenditure = (float)$doStats->total + (float)$opStats->total_pengeluaran;
 
@@ -70,7 +79,8 @@ class TransaksiDoStatWidget extends BaseWidget
                         </div>
                     '))
                         ->description(sprintf(
-                            'Hutang: %s | Sisa: %s | Ops: %s',
+                            'Saldo: %s | Hutang: %s | Sisa: %s | Ops: %s',
+                            money($saldoStats->total_tambah_saldo, 'IDR'),
                             money($doStats->total_debt_payments, 'IDR'),
                             money($doStats->remaining_payments, 'IDR'),
                             money($opStats->total_pemasukan, 'IDR')

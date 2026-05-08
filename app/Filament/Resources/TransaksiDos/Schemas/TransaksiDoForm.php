@@ -358,12 +358,21 @@ class TransaksiDoForm
                                     ];
                                 }),
 
-                            Text::make(fn() => 'Saldo Perusahaan: ' . money(\Filament\Facades\Filament::getTenant()->saldo ?? 0, 'IDR'))
+                            Text::make(function () {
+                                $saldo = \App\Models\Perusahaan::find(\Filament\Facades\Filament::getTenant()->id)->saldo ?? 0;
+                                return 'Saldo Kas Saat Ini: ' . money($saldo, 'IDR');
+                            })
                                 ->weight('bold')
-                                ->extraAttributes([
-                                    'style' => 'font-weight: 700; font-size: 1rem; color: #010d10 !important; background-color: #e6ca28 !important; display: inline-block; padding: 6px 16px; border-radius: 8px; box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1);',
-                                    'class' => 'mt-1 mb-4'
-                                ]),
+                                ->extraAttributes(function () {
+                                    $saldo = \App\Models\Perusahaan::find(\Filament\Facades\Filament::getTenant()->id)->saldo ?? 0;
+                                    $bgColor = $saldo < 0 ? '#dc2626' : '#e6ca28';
+                                    $textColor = $saldo < 0 ? '#ffffff' : '#010d10';
+                                    
+                                    return [
+                                        'style' => "font-weight: 700; font-size: 1rem; color: {$textColor} !important; background-color: {$bgColor} !important; display: inline-block; padding: 6px 16px; border-radius: 8px; box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1); transition: all 0.3s ease;",
+                                        'class' => 'mt-1 mb-4'
+                                    ];
+                                }),
 
 
 
