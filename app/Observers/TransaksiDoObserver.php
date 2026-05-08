@@ -186,16 +186,15 @@ class TransaksiDoObserver
     {
         try {
             DB::beginTransaction();
-            if ($transaksiDo->cara_bayar === 'tunai') {
-                $perusahaan = Perusahaan::lockForUpdate()->first();
-                $totalPemasukan = ($transaksiDo->upah_bongkar ?? 0) + ($transaksiDo->biaya_lain ?? 0) + ($transaksiDo->pembayaran_hutang ?? 0);
-                
-                // Saldo tetap diupdate saat restore
-                if ($totalPemasukan > 0) $perusahaan->increment('saldo', $totalPemasukan);
-                if ($transaksiDo->sisa_bayar > 0) $perusahaan->decrement('saldo', $transaksiDo->sisa_bayar);
+            
+            // Handle hutang penjual jika ada potongan hutang
+            if ($transaksiDo->pembayaran_hutang > 0) {
+                $this->handleHutangPenjual($transaksiDo);
             }
-            if ($transaksiDo->pembayaran_hutang > 0) $this->handleHutangPenjual($transaksiDo);
+            
+            // Proses ulang jurnal (Job akan menangani update saldo perusahaan secara atomik)
             \App\Jobs\ProsesJurnalDo::dispatch($transaksiDo);
+            
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();

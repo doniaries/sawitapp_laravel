@@ -8,6 +8,7 @@ enum TipeNama: string
     case PEKERJA = 'pekerja';
     case USER = 'user';
     case SUPIR = 'supir';
+    case LAINNYA = 'lainnya';
 
     public function getLabel(): string
     {
@@ -16,6 +17,7 @@ enum TipeNama: string
             self::PEKERJA => 'Pekerja',
             self::USER => 'Karyawan',
             self::SUPIR => 'Supir',
+            self::LAINNYA => 'Lain-lain',
         };
     }
 

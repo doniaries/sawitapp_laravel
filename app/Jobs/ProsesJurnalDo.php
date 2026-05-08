@@ -52,7 +52,7 @@ class ProsesJurnalDo
                         }
                     }
                 }
-                $journal->forceDelete(); // Gunakan forceDelete agar tidak menumpuk di soft deletes
+                $journal->forceDelete();
             }
 
             if ($this->transaksiDo->trashed()) {
@@ -60,12 +60,10 @@ class ProsesJurnalDo
                 return;
             }
 
-            $mempengaruhiKas = $this->transaksiDo->cara_bayar === 'tunai';
-            
-            // 2. Record GROSS EXPENDITURE
+            // 2. Record PURCHASE EXPENDITURE (Pembelian Buah - Net of deductions)
             if ($this->transaksiDo->cara_bayar === 'tunai & transfer') {
                 $nominalTunai = (float) $this->transaksiDo->nominal_tunai;
-                $nominalTransfer = $this->transaksiDo->sub_total - $nominalTunai;
+                $nominalTransfer = max(0, (float) $this->transaksiDo->sisa_bayar - $nominalTunai);
 
                 if ($nominalTunai > 0) {
                     $this->createLaporan($financeAction, [
@@ -81,7 +79,7 @@ class ProsesJurnalDo
                         'pihak_terkait' => $this->transaksiDo->penjual?->nama,
                         'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                         'cara_pembayaran' => 'tunai',
-                        'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Bruto - Bagian Tunai)",
+                        'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Bagian Tunai)",
                         'mempengaruhi_kas' => true
                     ]);
                 }
@@ -100,46 +98,52 @@ class ProsesJurnalDo
                         'pihak_terkait' => $this->transaksiDo->penjual?->nama,
                         'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                         'cara_pembayaran' => 'transfer',
-                        'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Bruto - Bagian Transfer)",
+                        'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Bagian Transfer)",
                         'mempengaruhi_kas' => false
                     ]);
                 }
             } else {
-                $this->createLaporan($financeAction, [
-                    'perusahaan_id' => $this->transaksiDo->perusahaan_id,
-                    'tanggal' => $this->transaksiDo->tanggal,
-                    'jenis_transaksi' => 'Pengeluaran',
-                    'kategori' => 'DO',
-                    'sub_kategori' => 'Pembelian Buah',
-                    'nominal' => $this->transaksiDo->sub_total,
-                    'sumber_transaksi' => 'DO',
-                    'referensi_id' => $this->transaksiDo->id,
-                    'nomor_referensi' => $this->transaksiDo->nomor,
-                    'pihak_terkait' => $this->transaksiDo->penjual?->nama,
-                    'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
-                    'cara_pembayaran' => $this->transaksiDo->cara_bayar,
-                    'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor} (Bruto)",
-                    'mempengaruhi_kas' => $mempengaruhiKas
-                ]);
+                $mempengaruhiKasUtama = $this->transaksiDo->cara_bayar === 'tunai';
+                
+                if ($this->transaksiDo->sisa_bayar > 0) {
+                    $this->createLaporan($financeAction, [
+                        'perusahaan_id' => $this->transaksiDo->perusahaan_id,
+                        'tanggal' => $this->transaksiDo->tanggal,
+                        'jenis_transaksi' => 'Pengeluaran',
+                        'kategori' => 'DO',
+                        'sub_kategori' => 'Pembelian Buah',
+                        'nominal' => $this->transaksiDo->sisa_bayar,
+                        'sumber_transaksi' => 'DO',
+                        'referensi_id' => $this->transaksiDo->id,
+                        'nomor_referensi' => $this->transaksiDo->nomor,
+                        'pihak_terkait' => $this->transaksiDo->penjual?->nama,
+                        'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
+                        'cara_pembayaran' => $this->transaksiDo->cara_bayar,
+                        'keterangan' => "Pembelian DO #{$this->transaksiDo->nomor}",
+                        'mempengaruhi_kas' => $mempengaruhiKasUtama
+                    ]);
+                }
             }
 
-            // 3. Record INCOME COMPONENTS (Deductions)
+            // 3. Record EXPENSE COMPONENTS (Upah & Biaya)
+            $mempengaruhiKasBiaya = in_array($this->transaksiDo->cara_bayar, ['tunai', 'tunai & transfer']);
+
             if ($this->transaksiDo->upah_bongkar > 0) {
                 $this->createLaporan($financeAction, [
                     'perusahaan_id' => $this->transaksiDo->perusahaan_id,
                     'tanggal' => $this->transaksiDo->tanggal,
-                    'jenis_transaksi' => 'Pemasukan',
+                    'jenis_transaksi' => 'Pengeluaran',
                     'kategori' => 'DO',
                     'sub_kategori' => 'Upah Bongkar',
                     'nominal' => $this->transaksiDo->upah_bongkar,
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $this->transaksiDo->id,
                     'nomor_referensi' => $this->transaksiDo->nomor,
-                    'pihak_terkait' => $this->transaksiDo->penjual?->nama,
-                    'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
-                    'cara_pembayaran' => $this->transaksiDo->cara_bayar,
-                    'keterangan' => "Potongan Upah Bongkar DO #{$this->transaksiDo->nomor}",
-                    'mempengaruhi_kas' => $mempengaruhiKas
+                    'pihak_terkait' => 'Pekerja Bongkar',
+                    'tipe_pihak' => \App\Enums\TipeNama::PEKERJA,
+                    'cara_pembayaran' => 'tunai',
+                    'keterangan' => "Biaya Upah Bongkar DO #{$this->transaksiDo->nomor}",
+                    'mempengaruhi_kas' => $mempengaruhiKasBiaya
                 ]);
             }
 
@@ -147,21 +151,22 @@ class ProsesJurnalDo
                 $this->createLaporan($financeAction, [
                     'perusahaan_id' => $this->transaksiDo->perusahaan_id,
                     'tanggal' => $this->transaksiDo->tanggal,
-                    'jenis_transaksi' => 'Pemasukan',
+                    'jenis_transaksi' => 'Pengeluaran',
                     'kategori' => 'DO',
                     'sub_kategori' => 'Biaya Lain',
                     'nominal' => $this->transaksiDo->biaya_lain,
                     'sumber_transaksi' => 'DO',
                     'referensi_id' => $this->transaksiDo->id,
                     'nomor_referensi' => $this->transaksiDo->nomor,
-                    'pihak_terkait' => $this->transaksiDo->penjual?->nama,
-                    'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
-                    'cara_pembayaran' => $this->transaksiDo->cara_bayar,
-                    'keterangan' => "Potongan Biaya Lain DO #{$this->transaksiDo->nomor}",
-                    'mempengaruhi_kas' => $mempengaruhiKas
+                    'pihak_terkait' => 'Lain-lain',
+                    'tipe_pihak' => \App\Enums\TipeNama::LAINNYA,
+                    'cara_pembayaran' => 'tunai',
+                    'keterangan' => "Biaya Lain-lain DO #{$this->transaksiDo->nomor}",
+                    'mempengaruhi_kas' => $mempengaruhiKasBiaya
                 ]);
             }
 
+            // 4. Record INCOME COMPONENTS (Potong Hutang - Non Cash Offset)
             if ($this->transaksiDo->pembayaran_hutang > 0) {
                 $this->createLaporan($financeAction, [
                     'perusahaan_id' => $this->transaksiDo->perusahaan_id,
@@ -177,7 +182,7 @@ class ProsesJurnalDo
                     'tipe_pihak' => \App\Enums\TipeNama::PENJUAL,
                     'cara_pembayaran' => $this->transaksiDo->cara_bayar,
                     'keterangan' => "Potongan Hutang via DO #{$this->transaksiDo->nomor}",
-                    'mempengaruhi_kas' => $mempengaruhiKas
+                    'mempengaruhi_kas' => false
                 ]);
             }
 
