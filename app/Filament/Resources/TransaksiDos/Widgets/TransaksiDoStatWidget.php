@@ -67,7 +67,14 @@ class TransaksiDoStatWidget extends BaseWidget
 
                 $totalExpenditure = (float)$doStats->total + (float)$opStats->total_pengeluaran;
 
+                $currentSaldo = \App\Models\Perusahaan::find($tenantId)->saldo ?? 0;
+
                 return [
+                    Stat::make('Saldo Kas Perusahaan', money($currentSaldo, 'IDR'))
+                        ->description('Total saldo tersedia saat ini')
+                        ->descriptionIcon('heroicon-m-wallet')
+                        ->color($currentSaldo < 0 ? 'danger' : 'success'),
+
                     Stat::make('DO Hari Ini', (int)$doStats->count)
                         ->description('Total Bruto: ' . money($doStats->total, 'IDR'))
                         ->descriptionIcon('heroicon-m-document-text')
