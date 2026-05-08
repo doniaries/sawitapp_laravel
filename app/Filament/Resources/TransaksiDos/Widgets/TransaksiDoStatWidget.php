@@ -33,6 +33,7 @@ class TransaksiDoStatWidget extends BaseWidget
                 ->whereDate('tanggal', $today)
                 ->selectRaw('
                     COUNT(*) as count,
+                    COALESCE(SUM(tonase), 0) as total_tonase,
                     COALESCE(SUM(sub_total), 0) as total_bruto,
                     COALESCE(SUM(pembayaran_hutang), 0) as total_potong_hutang,
                     COALESCE(SUM(upah_bongkar), 0) as total_bongkar,
@@ -87,6 +88,11 @@ class TransaksiDoStatWidget extends BaseWidget
                         ->description('Total Bruto: ' . money($doStats->total_bruto, 'IDR'))
                         ->descriptionIcon('heroicon-m-document-text')
                         ->color('info'),
+
+                    Stat::make('Total Tonase', number_format($doStats->total_tonase, 0, ',', '.') . ' Kg')
+                        ->description('Volume buah masuk hari ini')
+                        ->descriptionIcon('heroicon-m-scale')
+                        ->color('warning'),
 
                     Stat::make('Uang Masuk (Hari Ini)', new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-success-600 text-white font-bold text-base shadow-sm">
