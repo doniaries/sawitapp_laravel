@@ -13,6 +13,16 @@ class TransaksiDoStatWidget extends BaseWidget
     protected ?string $pollingInterval = '10s';
     protected static bool $isLazy = false;
     protected int | string | array $columnSpan = 'full';
+    
+    public ?string $startDate = null;
+    public ?string $endDate = null;
+
+    #[On('filter-transaksi')]
+    public function updateFilter(array $data): void
+    {
+        $this->startDate = $data['startDate'] ?? null;
+        $this->endDate = $data['endDate'] ?? null;
+    }
 
     protected function getStats(): array
     {
@@ -23,14 +33,21 @@ class TransaksiDoStatWidget extends BaseWidget
             $tenant = \Filament\Facades\Filament::getTenant();
             if (!$tenant) return [];
 
-            $today = today()->toDateString();
+            $startDate = $this->startDate ?: today()->toDateString();
+            $endDate = $this->endDate ?: today()->toDateString();
             $tenantId = $tenant->id;
 
-            // Query transaksi DO hari ini
+            // Jika startDate dan endDate null (kasus tab "Semua"), kita tampilkan semua data
+            $isFiltering = !empty($this->startDate) || !empty($this->endDate);
+
+            // Query transaksi DO
             $doStats = DB::table('transaksi_do')
                 ->where('perusahaan_id', $tenantId)
                 ->whereNull('deleted_at')
-                ->whereDate('tanggal', $today)
+                ->when($isFiltering, function ($q) use ($startDate, $endDate) {
+                    return $q->whereDate('tanggal', '>=', $startDate)
+                             ->whereDate('tanggal', '<=', $endDate);
+                }, fn($q) => $q->whereDate('tanggal', today()))
                 ->selectRaw('
                     COUNT(*) as count,
                     COALESCE(SUM(tonase), 0) as total_tonase,
@@ -47,21 +64,27 @@ class TransaksiDoStatWidget extends BaseWidget
                     COALESCE(SUM(CASE WHEN cara_bayar = "belum dibayar" THEN 1 ELSE 0 END), 0) as belum_count
                 ')->first();
 
-            // Query operasional hari ini
+            // Query operasional
             $opStats = DB::table('transaksi_operasional')
                 ->where('perusahaan_id', $tenantId)
                 ->whereNull('deleted_at')
-                ->whereDate('tanggal', $today)
+                ->when($isFiltering, function ($q) use ($startDate, $endDate) {
+                    return $q->whereDate('tanggal', '>=', $startDate)
+                             ->whereDate('tanggal', '<=', $endDate);
+                }, fn($q) => $q->whereDate('tanggal', today()))
                 ->selectRaw('
                     COALESCE(SUM(CASE WHEN operasional = "pemasukan" THEN nominal ELSE 0 END), 0) as total_pemasukan,
                     COALESCE(SUM(CASE WHEN operasional = "pengeluaran" THEN nominal ELSE 0 END), 0) as total_pengeluaran
                 ')->first();
 
-            // Query tambah saldo hari ini
+            // Query tambah saldo
             $saldoStats = DB::table('tambah_saldo')
                 ->where('perusahaan_id', $tenantId)
                 ->whereNull('deleted_at')
-                ->whereDate('tanggal', $today)
+                ->when($isFiltering, function ($q) use ($startDate, $endDate) {
+                    return $q->whereDate('tanggal', '>=', $startDate)
+                             ->whereDate('tanggal', '<=', $endDate);
+                }, fn($q) => $q->whereDate('tanggal', today()))
                 ->selectRaw('COALESCE(SUM(nominal), 0) as total_tambah_saldo')
                 ->first();
 
@@ -84,17 +107,17 @@ class TransaksiDoStatWidget extends BaseWidget
                         ->descriptionIcon('heroicon-m-wallet')
                         ->color($currentSaldo < 0 ? 'danger' : 'success'),
 
-                    Stat::make('DO Hari Ini', (int)$doStats->count)
+                Stat::make('DO', (int)$doStats->count)
                         ->description('Total Bruto: ' . money($doStats->total_bruto, 'IDR'))
                         ->descriptionIcon('heroicon-m-document-text')
                         ->color('info'),
 
                     Stat::make('Total Tonase', number_format($doStats->total_tonase, 0, ',', '.') . ' Kg')
-                        ->description('Volume buah masuk hari ini')
+                        ->description('Volume buah masuk')
                         ->descriptionIcon('heroicon-m-scale')
                         ->color('warning'),
 
-                    Stat::make('Uang Masuk (Hari Ini)', new \Illuminate\Support\HtmlString('
+                    Stat::make('Uang Masuk', new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-success-600 text-white font-bold text-base shadow-sm">
                             ' . money($totalIncoming, 'IDR') . '
                         </div>
@@ -107,7 +130,7 @@ class TransaksiDoStatWidget extends BaseWidget
                         ->descriptionIcon('heroicon-m-arrow-trending-up')
                         ->color('success'),
 
-                    Stat::make('Pengeluaran (Hari Ini)', new \Illuminate\Support\HtmlString('
+                    Stat::make('Pengeluaran', new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-danger-600 text-white font-bold text-base shadow-sm">
                             ' . money($totalExpenditure, 'IDR') . '
                         </div>

@@ -137,15 +137,16 @@ class ListTransaksiDos extends ListRecords
     // Handle tab changes
     public function updatedActiveTab(): void
     {
-        if ($this->activeTab === 'hari_ini') {
-            $this->tableFilters['tanggal_range'] = [
-                'dari_tanggal' => today()->toDateString(),
-                'sampai_tanggal' => today()->toDateString(),
-            ];
-        } elseif ($this->activeTab === 'semua') {
+        if ($this->activeTab === 'semua') {
             $this->tableFilters['tanggal_range'] = [
                 'dari_tanggal' => null,
                 'sampai_tanggal' => null,
+            ];
+        } else {
+            // Semua tab lain (Hari Ini, Tunai, Transfer, dll) menggunakan hari aktif
+            $this->tableFilters['tanggal_range'] = [
+                'dari_tanggal' => today()->toDateString(),
+                'sampai_tanggal' => today()->toDateString(),
             ];
         }
 
@@ -197,25 +198,25 @@ class ListTransaksiDos extends ListRecords
             'tunai' => Tab::make('Tunai')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('tunai'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'tunai'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'tunai')->whereDate('tanggal', today()))
                 ->badgeColor('success'),
 
             'transfer' => Tab::make('Transfer')
                 ->icon('heroicon-o-credit-card')
                 ->badge($this->getTabCount('transfer'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'transfer'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'transfer')->whereDate('tanggal', today()))
                 ->badgeColor('info'),
 
             'cair_luar' => Tab::make('Cair di Luar')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('cair_luar'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'cair di luar'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'cair di luar')->whereDate('tanggal', today()))
                 ->badgeColor('warning'),
 
             'belum_dibayar' => Tab::make('Belum Dibayar')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('belum_dibayar'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'belum dibayar'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'belum dibayar')->whereDate('tanggal', today()))
                 ->badgeColor('danger'),
         ];
     }
@@ -231,16 +232,13 @@ class ListTransaksiDos extends ListRecords
         // Cache or calculate based on tab
         return match ($tab) {
             'hari_ini' => (clone $baseQuery)->whereDate('tanggal', today())->count(),
-            'semua' => (clone $baseQuery)->count(), // "count di semua transaksi seharusnya untuk semua tanggal"
+            'semua' => (clone $baseQuery)->count(), 
             default => (clone $baseQuery)
+                ->whereDate('tanggal', today()) // Scoping category tabs to today
                 ->when($tab === 'tunai', fn($q) => $q->where('cara_bayar', 'tunai'))
                 ->when($tab === 'transfer', fn($q) => $q->where('cara_bayar', 'transfer'))
                 ->when($tab === 'cair_luar', fn($q) => $q->where('cara_bayar', 'cair di luar'))
                 ->when($tab === 'belum_dibayar', fn($q) => $q->where('cara_bayar', 'belum dibayar'))
-                ->when($hasFilter, function ($q) use ($filter) {
-                    return $q->when($filter['dari_tanggal'] ?? null, fn($q, $date) => $q->whereDate('tanggal', '>=', $date))
-                        ->when($filter['sampai_tanggal'] ?? null, fn($q, $date) => $q->whereDate('tanggal', '<=', $date));
-                })
                 ->count(),
         };
     }
