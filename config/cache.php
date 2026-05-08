@@ -110,7 +110,7 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', 'successmandiri_'),
+    'prefix' => env('CACHE_PREFIX', 'sawitapp_'),
     'query_ttl' => 3600, // Cache query selama 1 jam
 
 ];

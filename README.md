@@ -1,7 +1,7 @@
-tutorial
+# Sawit App Laravel
 
-1. git clone https://github.com/doniaries/successmandiri6.git
-2. cd successmandiri6
+1. git clone https://github.com/doniaries/sawitapp_laravel.git
+2. cd sawitapp_laravel
 3. composer install
 4. cp .env.example .env
 5. php artisan key:generate

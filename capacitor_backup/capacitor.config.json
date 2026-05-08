@@ -1,8 +1,0 @@
-{
-    "appId": "com.successmandiri.app",
-    "appName": "Success Mandiri",
-    "webDir": "mobile",
-    "android": {
-        "allowMixedContent": true
-    }
-}
