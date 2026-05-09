@@ -86,6 +86,12 @@ class TutupHari extends Model
     public static function performClosing(array $data, int $perusahaanId): self
     {
         $tanggal = $data['tanggal'];
+
+        if ($tanggal instanceof \Carbon\Carbon) {
+            $tanggal = $tanggal->toDateString();
+        } elseif (is_callable($tanggal)) {
+            $tanggal = $tanggal();
+        }
         
         $totalTonase = TransaksiDo::whereDate('tanggal', $tanggal)->sum('tonase');
         $totalRupiah = TransaksiDo::whereDate('tanggal', $tanggal)->sum('sub_total');
