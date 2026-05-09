@@ -19,27 +19,6 @@ class ListTransaksiDos extends ListRecords
         return parent::render();
     }
 
-    protected function getDefaultTableFiltersState(): ?array
-    {
-        // Jika sedang di tab 'semua', jangan beri filter default
-        if (request()->query('activeTab') === 'semua') {
-            return [
-                'tanggal_range' => [
-                    'dari_tanggal' => null,
-                    'sampai_tanggal' => null,
-                ],
-            ];
-        }
-
-        // Default filter ke hari ini untuk tab lainnya
-        return [
-            'tanggal_range' => [
-                'dari_tanggal' => now()->toDateString(),
-                'sampai_tanggal' => now()->toDateString(),
-            ],
-        ];
-    }
-
     public function mount(): void
     {
         parent::mount();
@@ -68,29 +47,7 @@ class ListTransaksiDos extends ListRecords
         }
     }
 
-    // Handle tab changes
-    public function updatedActiveTab(): void
-    {
-        if ($this->activeTab === 'semua') {
-            // Reset filter tanggal untuk menampilkan semua data
-            $this->tableFilters['tanggal_range'] = [
-                'dari_tanggal' => null,
-                'sampai_tanggal' => null,
-            ];
-        } else {
-            // Set filter ke hari ini untuk tab operasional
-            $today = today()->toDateString();
-            $this->tableFilters['tanggal_range'] = [
-                'dari_tanggal' => $today,
-                'sampai_tanggal' => $today,
-            ];
-        }
-
-        $this->resetTable();
-        $this->resetPage();
-    }
-
-    protected function getHeaderWidgets(): array
+    public function getHeaderWidgets(): array
     {
         return [
             \App\Filament\Resources\TransaksiDos\Widgets\TransaksiDoStatWidget::class,
@@ -115,31 +72,33 @@ class ListTransaksiDos extends ListRecords
             'hari_ini' => Tab::make('Hari Ini')
                 ->icon('heroicon-o-calendar')
                 ->badge($this->getTabCount('hari_ini'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', today()))
                 ->badgeColor('success'),
 
             'tunai' => Tab::make('Tunai')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('tunai'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'tunai'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'tunai')->whereDate('tanggal', today()))
                 ->badgeColor('success'),
 
             'transfer' => Tab::make('Transfer')
                 ->icon('heroicon-o-credit-card')
                 ->badge($this->getTabCount('transfer'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'transfer'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'transfer')->whereDate('tanggal', today()))
                 ->badgeColor('info'),
 
             'cair_luar' => Tab::make('Cair di Luar')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('cair_luar'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'cair di luar'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'cair di luar')->whereDate('tanggal', today()))
                 ->badgeColor('warning'),
 
             'belum_dibayar' => Tab::make('Belum Dibayar')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('belum_dibayar'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'belum dibayar'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'belum dibayar')->whereDate('tanggal', today()))
                 ->badgeColor('danger'),
+                
             'semua' => Tab::make('Semua Transaksi')
                 ->icon('heroicon-o-clipboard-document-list')
                 ->badge($this->getTabCount('semua'))
