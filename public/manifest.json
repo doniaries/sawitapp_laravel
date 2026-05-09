@@ -1,18 +1,19 @@
 {
-    "name": "Success Mandiri Dashboard",
-    "short_name": "SM Dashboard",
-    "start_url": "/admin",
-    "background_color": "#ffffff",
-    "theme_color": "#f59e0b",
+    "name": "Sawit App",
+    "short_name": "SawitApp",
+    "start_url": "/",
     "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#0284c7",
+    "description": "Aplikasi Manajemen Transaksi Sawit",
     "icons": [
         {
-            "src": "images/success.png",
+            "src": "/icons/icon-192x192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "images/success.png",
+            "src": "/icons/icon-512x512.png",
             "sizes": "512x512",
             "type": "image/png"
         }
