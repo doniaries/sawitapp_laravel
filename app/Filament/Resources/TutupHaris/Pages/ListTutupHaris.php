@@ -17,7 +17,13 @@ class ListTutupHaris extends ListRecords
                 ->label('Tutup Hari Baru')
                 ->modalWidth('7xl')
                 ->createAnother(false)
-                ->modalHeading('Proses Tutup Hari'),
+                ->modalHeading('Proses Tutup Hari')
+                ->using(function (array $data): \App\Models\TutupHari {
+                    return \App\Models\TutupHari::performClosing(
+                        $data,
+                        \Filament\Facades\Filament::getTenant()->id
+                    );
+                }),
         ];
     }
 }

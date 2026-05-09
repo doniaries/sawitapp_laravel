@@ -44,17 +44,20 @@ class TutupHari extends Model
         return $this->belongsTo(Perusahaan::class);
     }
 
-    public function user(): BelongsTo
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\User::class);
     }
 
     /**
      * Cek apakah sebuah tanggal sudah ditutup.
      */
-    public static function isClosed($date, $perusahaanId): bool
+    public static function isClosed(string|null $date, int $perusahaanId): bool
     {
-        return self::where('perusahaan_id', $perusahaanId)
+        if (!$date) return false;
+        
+        return self::query()
+            ->where('perusahaan_id', $perusahaanId)
             ->where('tanggal', $date)
             ->where('status', 'closed')
             ->exists();
@@ -63,8 +66,10 @@ class TutupHari extends Model
     /**
      * Cek apakah user boleh memodifikasi data pada tanggal tertentu.
      */
-    public static function canModify($date, $perusahaanId, $user = null): bool
+    public static function canModify(string|null $date, int $perusahaanId, $user = null): bool
     {
+        if (!$date) return true;
+
         $user = $user ?? auth()->user();
 
         if (!$user) {
@@ -76,7 +81,6 @@ class TutupHari extends Model
             return true;
         }
 
-        // Jika tidak, cek apakah hari sudah ditutup
         return !self::isClosed($date, $perusahaanId);
     }
 
@@ -93,22 +97,32 @@ class TutupHari extends Model
             $tanggal = $tanggal();
         }
         
-        $totalTonase = TransaksiDo::whereDate('tanggal', $tanggal)->sum('tonase');
-        $totalRupiah = TransaksiDo::whereDate('tanggal', $tanggal)->sum('sub_total');
-        $totalMasuk = JurnalKeuangan::whereDate('tanggal', $tanggal)
+        $totalTonase = TransaksiDo::query()->whereDate('tanggal', $tanggal)->sum('tonase');
+        $totalRupiah = TransaksiDo::query()->whereDate('tanggal', $tanggal)->sum('sub_total');
+
+        $totalMasuk = JurnalKeuangan::query()
+            ->whereDate('tanggal', $tanggal)
             ->where('jenis_transaksi', 'Pemasukan')
+            ->where('mempengaruhi_kas', true)
             ->sum('nominal');
-        $totalKeluar = JurnalKeuangan::whereDate('tanggal', $tanggal)
+
+        $totalKeluar = JurnalKeuangan::query()
+            ->whereDate('tanggal', $tanggal)
             ->where('jenis_transaksi', 'Pengeluaran')
+            ->where('mempengaruhi_kas', true)
             ->sum('nominal');
         
         $perusahaan = Perusahaan::query()->find($perusahaanId);
         $saldoAwal = $perusahaan?->saldo ?? 0;
         
         $saldoSistem = $saldoAwal + $totalMasuk - $totalKeluar;
-        $saldoFisik = (float) ($data['saldo_akhir_fisik'] ?? 0);
+        
+        // Jika saldo fisik tidak diisi (misal: auto closing), samakan dengan saldo sistem agar tidak ada selisih
+        $saldoFisik = isset($data['saldo_akhir_fisik']) && $data['saldo_akhir_fisik'] !== null
+            ? (float) $data['saldo_akhir_fisik'] 
+            : $saldoSistem;
 
-        $closing = self::create([
+        $closing = self::query()->create([
             'perusahaan_id' => $perusahaanId,
             'tanggal' => $tanggal,
             'total_do_tonase' => $totalTonase,

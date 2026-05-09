@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\TransaksiDos\Pages;
 
 use App\Filament\Resources\TransaksiDos\TransaksiDoResource;
-use App\Models\TransaksiDo;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;

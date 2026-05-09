@@ -25,6 +25,7 @@ class SummaryKasInfolist extends Component implements HasForms, HasSchemas
         InteractsWithSchemas::getCachedSchemas insteadof InteractsWithForms;
     }
 
+    /** @var string|null */
     public $tanggal;
 
     public function mount($tanggal = null)
@@ -60,20 +61,20 @@ class SummaryKasInfolist extends Component implements HasForms, HasSchemas
         $opTotal = $opQuery->sum('nominal');
 
         // 3. Rekonsiliasi Kas (Sesuai logika getSummaryTableHtml)
-        $masuk = JurnalKeuangan::where('perusahaan_id', $perusahaanId)
+        $masuk = JurnalKeuangan::query()->where('perusahaan_id', $perusahaanId)
             ->whereDate('tanggal', $tanggal)
             ->where('jenis_transaksi', 'Pemasukan')
             ->where('mempengaruhi_kas', true)
             ->sum('nominal');
 
-        $keluar = JurnalKeuangan::where('perusahaan_id', $perusahaanId)
+        $keluar = JurnalKeuangan::query()->where('perusahaan_id', $perusahaanId)
             ->whereDate('tanggal', $tanggal)
             ->where('jenis_transaksi', 'Pengeluaran')
             ->where('mempengaruhi_kas', true)
             ->sum('nominal');
 
         // Saldo Awal: Ambil dari saldo_akhir_fisik TutupHari sebelumnya
-        $lastClosing = TutupHari::where('perusahaan_id', $perusahaanId)
+        $lastClosing = TutupHari::query()->where('perusahaan_id', $perusahaanId)
             ->where('tanggal', '<', $tanggal)
             ->latest('tanggal')
             ->first();
@@ -82,7 +83,7 @@ class SummaryKasInfolist extends Component implements HasForms, HasSchemas
             $saldoAwal = $lastClosing->saldo_akhir_fisik;
         } else {
             // Jika belum pernah tutup hari, ambil saldo perusahaan saat ini - net hari ini
-            $perusahaan = Perusahaan::find($perusahaanId);
+            $perusahaan = Perusahaan::query()->find($perusahaanId);
             $saldoAwal = ($perusahaan?->saldo ?? 0) - ($masuk - $keluar);
         }
 

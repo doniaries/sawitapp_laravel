@@ -87,9 +87,9 @@ class TutupHariForm
             return Carbon::parse($lastClosing->tanggal)->addDay()->format('Y-m-d');
         }
 
-        $oldestDo = TransaksiDo::where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
-        $oldestOp = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
-        $oldestJurnal = JurnalKeuangan::where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
+        $oldestDo = TransaksiDo::query()->where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
+        $oldestOp = TransaksiOperasional::query()->where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
+        $oldestJurnal = JurnalKeuangan::query()->where('perusahaan_id', $perusahaanId)->oldest('tanggal')->first()?->tanggal;
 
         $dates = array_filter([$oldestDo, $oldestOp, $oldestJurnal]);
 

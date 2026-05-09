@@ -18,16 +18,11 @@ use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Support\Colors\Color;
-use App\Models\TransaksiDo;
 use App\Models\TutupHari;
-use App\Models\TransaksiOperasional;
-use App\Models\Perusahaan;
+use App\Models\TransaksiDo;
 use App\Traits\HasCurrencyInput;
 use Filament\Notifications\Notification;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Schemas\Components\Grid;
 use Illuminate\Support\Facades\Auth;
 
 class TransaksiDoTable
