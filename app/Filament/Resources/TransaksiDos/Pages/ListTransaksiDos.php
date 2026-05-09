@@ -29,7 +29,7 @@ class ListTransaksiDos extends ListRecords
     {
         return parent::render();
     }
-    
+
     public function mount(): void
     {
         parent::mount();
@@ -37,16 +37,8 @@ class ListTransaksiDos extends ListRecords
         // Inject CSS untuk menyembunyikan baris "Halaman ini" di footer tabel
         \Filament\Support\Facades\FilamentView::registerRenderHook(
             'panels::content.start',
-            fn (): string => '<style>.fi-ta-summary-row:first-child { display: none !important; }</style>',
+            fn(): string => '<style>.fi-ta-summary-row:first-child { display: none !important; }</style>',
         );
-        
-        // Pastikan tab default adalah hari_ini
-        if (!$this->activeTab) {
-            $this->activeTab = 'hari_ini';
-        }
-
-        // Paksa sinkronisasi widget di awal
-        $this->updatedActiveTab();
     }
 
     protected function getHeaderActions(): array
@@ -54,15 +46,16 @@ class ListTransaksiDos extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Tambah Transaksi')
-                ->visible(fn() => 
-                    \Illuminate\Support\Facades\Auth::user()->isSuperAdmin() || 
-                    !\App\Models\TutupHari::isClosed(today(), \Filament\Facades\Filament::getTenant()->id)
+                ->visible(
+                    fn() =>
+                    \Illuminate\Support\Facades\Auth::user()->isSuperAdmin() ||
+                        !\App\Models\TutupHari::isClosed(today(), \Filament\Facades\Filament::getTenant()->id)
                 ),
             Actions\Action::make('tutup_hari')
                 ->label('Tutup Hari')
                 ->icon('heroicon-o-lock-closed')
                 ->color('danger')
-                ->requiresConfirmation() 
+                ->requiresConfirmation()
                 ->modalHeading('Konfirmasi Penutupan Hari')
                 ->modalDescription('Apakah Anda yakin ingin melakukan ini?')
                 ->modalSubmitActionLabel('Konfirmasi & Tutup Hari')
@@ -70,7 +63,7 @@ class ListTransaksiDos extends ListRecords
                 ->form([
                     \Filament\Schemas\Components\Grid::make(3)
                         ->schema([
-                            \Filament\Forms\Components\Placeholder::make('full_summary')
+                            \Filament\Infolists\Components\ViewEntry::make('full_summary')
                                 ->label(null)
                                 ->content(fn(\Filament\Schemas\Components\Utilities\Get $get) => self::getSummaryTableHtml($get('tanggal')))
                                 ->columnSpan(2),
@@ -152,29 +145,27 @@ class ListTransaksiDos extends ListRecords
     public function updatedActiveTab(): void
     {
         if ($this->activeTab === 'semua') {
-            $this->tableFilters['tanggal_range'] = [
-                'dari_tanggal' => null,
-                'sampai_tanggal' => null,
+
+            $this->tableFilters = [
+                'tanggal_range' => [
+                    'dari_tanggal' => null,
+                    'sampai_tanggal' => null,
+                ],
             ];
         } else {
-            // Semua tab lain (Hari Ini, Tunai, Transfer, dll) menggunakan hari aktif
-            $this->tableFilters['tanggal_range'] = [
-                'dari_tanggal' => today()->toDateString(),
-                'sampai_tanggal' => today()->toDateString(),
+
+            $today = today()->toDateString();
+
+            $this->tableFilters = [
+                'tanggal_range' => [
+                    'dari_tanggal' => $today,
+                    'sampai_tanggal' => $today,
+                ],
             ];
         }
 
-        // Dispatch filter event to sync widgets
-        $filter = $this->tableFilters['tanggal_range'] ?? null;
-        
-        $this->dispatch('filter-transaksi', [
-            'startDate' => $filter['dari_tanggal'] ?? null,
-            'endDate' => $filter['sampai_tanggal'] ?? null,
-        ]);
-
-        $this->dispatch('tab-changed', [
-            'tab' => $this->activeTab
-        ]);
+        $this->resetTable();
+        $this->resetPage();
     }
 
     protected function getHeaderWidgets(): array
@@ -202,7 +193,6 @@ class ListTransaksiDos extends ListRecords
             'hari_ini' => Tab::make('Hari Ini')
                 ->icon('heroicon-o-calendar')
                 ->badge($this->getTabCount('hari_ini'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
                 ->badgeColor('success'),
 
             'semua' => Tab::make('Semua Transaksi')
@@ -213,25 +203,25 @@ class ListTransaksiDos extends ListRecords
             'tunai' => Tab::make('Tunai')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('tunai'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', '=', 'tunai', 'and')->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'tunai'))
                 ->badgeColor('success'),
 
             'transfer' => Tab::make('Transfer')
                 ->icon('heroicon-o-credit-card')
                 ->badge($this->getTabCount('transfer'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', '=', 'transfer', 'and')->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'transfer'))
                 ->badgeColor('info'),
 
             'cair_luar' => Tab::make('Cair di Luar')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('cair_luar'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', '=', 'cair di luar', 'and')->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'cair di luar'))
                 ->badgeColor('warning'),
 
             'belum_dibayar' => Tab::make('Belum Dibayar')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('belum_dibayar'))
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', '=', 'belum dibayar', 'and')->whereRaw("DATE(tanggal) = ?", [today()->toDateString()]))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'belum dibayar'))
                 ->badgeColor('danger'),
         ];
     }
@@ -245,7 +235,7 @@ class ListTransaksiDos extends ListRecords
             if (!$tenantId) return 0;
 
             $today = today()->toDateString();
-            
+
             $counts = DB::table('transaksi_do')
                 ->where('perusahaan_id', $tenantId)
                 ->whereNull('deleted_at')
@@ -272,25 +262,25 @@ class ListTransaksiDos extends ListRecords
         $perusahaanId = Filament::getTenant()->id;
 
         // Data Jurnal Keuangan yang Mempengaruhi Kas
-        $masuk = JurnalKeuangan::where('perusahaan_id', '=', $perusahaanId, 'and')
-            ->whereRaw("DATE(tanggal) = ?", [$tanggal])
-            ->where('jenis_transaksi', '=', 'Pemasukan', 'and')
-            ->where('mempengaruhi_kas', '=', true, 'and')
+        $masuk = JurnalKeuangan::where('perusahaan_id', $perusahaanId)
+            ->whereDate('tanggal', $tanggal)
+            ->where('jenis_transaksi', 'Pemasukan')
+            ->where('mempengaruhi_kas', true)
             ->sum('nominal');
 
-        $keluar = JurnalKeuangan::where('perusahaan_id', '=', $perusahaanId, 'and')
-            ->whereRaw("DATE(tanggal) = ?", [$tanggal])
-            ->where('jenis_transaksi', '=', 'Pengeluaran', 'and')
-            ->where('mempengaruhi_kas', '=', true, 'and')
+        $keluar = JurnalKeuangan::where('perusahaan_id', $perusahaanId)
+            ->whereDate('tanggal', $tanggal)
+            ->where('jenis_transaksi', 'Pengeluaran')
+            ->where('mempengaruhi_kas', true)
             ->sum('nominal');
 
         // Data DO (Pembelian)
-        $doCount = TransaksiDo::where('perusahaan_id', '=', $perusahaanId, 'and')->whereRaw("DATE(tanggal) = ?", [$tanggal])->count();
-        $doTotal = TransaksiDo::where('perusahaan_id', '=', $perusahaanId, 'and')->whereRaw("DATE(tanggal) = ?", [$tanggal])->sum('sub_total');
+        $doCount = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->count();
+        $doTotal = TransaksiDo::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('sub_total');
 
         // Data Operasional
-        $opCount = TransaksiOperasional::where('perusahaan_id', '=', $perusahaanId, 'and')->whereRaw("DATE(tanggal) = ?", [$tanggal])->count();
-        $opTotal = TransaksiOperasional::where('perusahaan_id', '=', $perusahaanId, 'and')->whereRaw("DATE(tanggal) = ?", [$tanggal])->sum('nominal');
+        $opCount = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->count();
+        $opTotal = TransaksiOperasional::where('perusahaan_id', $perusahaanId)->whereDate('tanggal', $tanggal)->sum('nominal');
 
         // Saldo Awal: Ambil dari saldo_akhir_fisik TutupHari sebelumnya
         $lastClosing = TutupHari::where('perusahaan_id', '=', $perusahaanId, 'and')

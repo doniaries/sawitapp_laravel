@@ -316,7 +316,7 @@ class TransaksiDoForm
                                 ->dehydrated()
                                 ->extraInputAttributes(function (Get $get) {
                                     $sisa = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('sisa_bayar') ?? 0);
-                                    $color = $sisa < 0 ? '#dc2626' : '#17b035'; 
+                                    $color = $sisa < 0 ? '#dc2626' : '#17b035';
                                     return [
                                         'style' => "font-size: 1.5rem !important; font-weight: 900; color: {$color} !important; -webkit-text-fill-color: {$color} !important; opacity: 1 !important; background: transparent; border: none; height: auto; line-height: 1.2;",
                                         'class' => 'text-center'
@@ -336,7 +336,7 @@ class TransaksiDoForm
                                     $biayaLain = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                     $caraBayar = $get('cara_bayar');
                                     $nominalTunai = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('nominal_tunai') ?? 0);
-                                    
+
                                     if ($record) {
                                         $oldSisa = (float) $record->sisa_bayar;
                                         $oldHutang = (float) $record->pembayaran_hutang;
@@ -345,23 +345,23 @@ class TransaksiDoForm
                                         $oldCara = $record->cara_bayar;
                                         $oldNominalTunai = (float) ($record->nominal_tunai ?? 0);
 
-                                        $oldCashPaid = match($oldCara) {
+                                        $oldCashPaid = match ($oldCara) {
                                             'tunai' => $oldSisa,
                                             'tunai & transfer' => $oldNominalTunai,
                                             default => 0,
                                         };
 
-                                        $oldNetEffect = - $oldBongkar - $oldLain - $oldCashPaid;
+                                        $oldNetEffect = -$oldBongkar - $oldLain - $oldCashPaid;
                                         $currentSaldo = $currentSaldo - $oldNetEffect;
                                     }
 
-                                    $cashPaid = match($caraBayar) {
+                                    $cashPaid = match ($caraBayar) {
                                         'tunai' => $sisaBayar,
                                         'tunai & transfer' => $nominalTunai,
                                         default => 0,
                                     };
 
-                                    $newNetEffect = - $upahBongkar - $biayaLain - $cashPaid;
+                                    $newNetEffect = -$upahBongkar - $biayaLain - $cashPaid;
                                     $estimated = $currentSaldo + $newNetEffect;
 
                                     return 'Estimasi Saldo Setelah Simpan (Sesuai Jurnal): ' . money($estimated, 'IDR');
@@ -374,7 +374,7 @@ class TransaksiDoForm
                                     $biayaLain = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('biaya_lain') ?? 0);
                                     $caraBayar = $get('cara_bayar');
                                     $nominalTunai = (float) \App\Traits\HasCurrencyInput::sanitizeNumber($get('nominal_tunai') ?? 0);
-                                    
+
                                     if ($record) {
                                         $oldSisa = (float) $record->sisa_bayar;
                                         $oldHutang = (float) $record->pembayaran_hutang;
@@ -383,25 +383,25 @@ class TransaksiDoForm
                                         $oldCara = $record->cara_bayar;
                                         $oldNominalTunai = (float) ($record->nominal_tunai ?? 0);
 
-                                        $oldCashPaid = match($oldCara) {
+                                        $oldCashPaid = match ($oldCara) {
                                             'tunai' => $oldSisa,
                                             'tunai & transfer' => $oldNominalTunai,
                                             default => 0,
                                         };
 
-                                        $oldNetEffect = - $oldBongkar - $oldLain - $oldCashPaid;
+                                        $oldNetEffect = -$oldBongkar - $oldLain - $oldCashPaid;
                                         $currentSaldo = $currentSaldo - $oldNetEffect;
                                     }
 
-                                    $cashPaid = match($caraBayar) {
+                                    $cashPaid = match ($caraBayar) {
                                         'tunai' => $sisaBayar,
                                         'tunai & transfer' => $nominalTunai,
                                         default => 0,
                                     };
 
-                                    $newNetEffect = - $upahBongkar - $biayaLain - $cashPaid;
+                                    $newNetEffect = -$upahBongkar - $biayaLain - $cashPaid;
                                     $displaySaldo = $currentSaldo + $newNetEffect;
-                                    
+
                                     $bgColor = $displaySaldo < 0 ? '#dc2626' : '#e6ca28';
                                     $textColor = $displaySaldo < 0 ? '#ffffff' : '#010d10';
                                     return [

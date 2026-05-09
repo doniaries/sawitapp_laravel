@@ -27,7 +27,7 @@ class TransaksiDoTable
                 TextColumn::make('tanggal')
                     ->label('Tanggal')
                     ->badge()
-                    ->formatStateUsing(fn($state) => $state->translatedFormat('d F Y'))
+                    ->formatStateUsing(fn($state) => $state instanceof \Carbon\Carbon ? $state->translatedFormat('d F Y') : \Carbon\Carbon::parse($state)->translatedFormat('d F Y'))
                     ->sortable(),
 
                 TextColumn::make('nomor')
@@ -190,13 +190,13 @@ class TransaksiDoTable
                             ->label('Dari Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            // ->default(today())
+                            ->default(today())
                             ->live(),
                         DatePicker::make('sampai_tanggal')
                             ->label('Sampai Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            // ->default(today())
+                            ->default(today())
                             ->live(),
                     ])
                     ->columns(2)
@@ -204,11 +204,11 @@ class TransaksiDoTable
                         return $query
                             ->when(
                                 $data['dari_tanggal'],
-                                fn(Builder $query, $date): Builder => $query->whereRaw("DATE(tanggal) >= ?", [$date]),
+                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date),
                             )
                             ->when(
                                 $data['sampai_tanggal'],
-                                fn(Builder $query, $date): Builder => $query->whereRaw("DATE(tanggal) <= ?", [$date]),
+                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
