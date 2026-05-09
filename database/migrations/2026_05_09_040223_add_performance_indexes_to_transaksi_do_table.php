@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('transaksi_do', function (Blueprint $table) {
             // Index untuk filter tanggal dan tenant
-            $table->index(['perusahaan_id', 'tanggal']);
+            // $table->index(['perusahaan_id', 'tanggal']);
             
             // Index untuk filter kategori (cara_bayar) dan tanggal
-            $table->index(['perusahaan_id', 'cara_bayar', 'tanggal']);
+            // $table->index(['perusahaan_id', 'cara_bayar', 'tanggal']);
         });
     }
 

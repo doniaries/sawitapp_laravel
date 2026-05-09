@@ -41,7 +41,14 @@ class Perusahaan extends Model implements HasMedia
         'no_izin_usaha',
         'logo',
         'slug',
+        'nama_kasir',
+        'kasir_id',
     ];
+
+    public function kasir(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'kasir_id');
+    }
 
     protected $casts = [
         'is_active' => 'boolean',

@@ -28,17 +28,15 @@ class PerusahaanForm
                                     ->required()
                                     ->maxLength(255)
                                     ->debounce(500),
-                                \Filament\Forms\Components\Select::make('type')
-                                    ->label('Tipe Perusahaan')
-                                    ->options([
-                                        'umum' => 'Umum',
-                                        'khusus' => 'Khusus',
-                                    ])
-                                    ->required()
-                                    ->default('umum'),
                                 TextInput::make('pimpinan')
                                     ->maxLength(255)
                                     ->debounce(500),
+                                \Filament\Forms\Components\Select::make('kasir_id')
+                                    ->label('Pilih Kasir (User)')
+                                    ->relationship('kasir', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->helperText('Pilih user yang bertugas sebagai kasir utama'),
                                 TextInput::make('alamat')
                                     ->maxLength(255)
                                     ->debounce(500),

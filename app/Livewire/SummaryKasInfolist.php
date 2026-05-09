@@ -43,7 +43,8 @@ class SummaryKasInfolist extends Component implements HasForms, HasSchemas
 
     public function getData(): array
     {
-        $perusahaanId = Filament::getTenant()->id;
+        $perusahaan = Filament::getTenant();
+        $perusahaanId = $perusahaan->id;
         $tanggal = $this->tanggal;
 
         // 1. Data DO
@@ -83,60 +84,63 @@ class SummaryKasInfolist extends Component implements HasForms, HasSchemas
             $saldoAwal = $lastClosing->saldo_akhir_fisik;
         } else {
             // Jika belum pernah tutup hari, ambil saldo perusahaan saat ini - net hari ini
-            $perusahaan = Perusahaan::query()->find($perusahaanId);
-            $saldoAwal = ($perusahaan?->saldo ?? 0) - ($masuk - $keluar);
+            $perusahaanModel = Perusahaan::query()->find($perusahaanId);
+            $saldoAwal = ($perusahaanModel?->saldo ?? 0) - ($masuk - $keluar);
         }
 
-        $saldoSistem = $saldoAwal + $masuk - $keluar;
-
         return [
+            'nama_perusahaan' => $perusahaan->name,
+            'nama_kasir' => $perusahaan->kasir?->name ?? $perusahaan->nama_kasir ?? \Filament\Facades\Filament::auth()->user()->name,
+            'tanggal_display' => \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y'),
             'do_count' => $doCount,
             'do_total' => $doTotal,
             'op_count' => $opCount,
             'op_total' => $opTotal,
-            'saldo_awal' => $saldoAwal,
             'total_masuk' => $masuk,
             'total_keluar' => $keluar,
-            'saldo_sistem' => $saldoSistem,
+            'saldo_awal' => $saldoAwal,
+            'saldo_sistem' => $saldoAwal + $masuk - $keluar,
         ];
     }
 
-    public function schema(Schema $schema): Schema
+    public function infolist(Schema $schema): Schema
     {
         return $schema
             ->state($this->getData())
             ->schema([
-                Section::make('Ringkasan Transaksi Pembelian (DO)')
-                    ->description('Ringkasan volume dan nilai pembelian buah sawit.')
-                    ->icon('heroicon-o-shopping-cart')
-                    ->collapsible()
+                Section::make('Informasi Penutupan')
+                    ->icon('heroicon-o-information-circle')
+                    ->compact()
+                    ->schema([
+                        TextEntry::make('nama_perusahaan')
+                            ->label('Perusahaan')
+                            ->weight('bold')
+                            ->color('primary'),
+                        TextEntry::make('tanggal_display')
+                            ->label('Tanggal Tutup')
+                            ->weight('bold'),
+                        TextEntry::make('nama_kasir')
+                            ->label('Kasir')
+                            ->weight('bold'),
+                    ])->columns(3),
+
+                Section::make('Ringkasan Transaksi')
+                    ->description('Rekapitulasi operasional harian.')
+                    ->icon('heroicon-o-document-magnifying-glass')
                     ->schema([
                         TextEntry::make('do_count')
-                            ->label('Banyak DO')
-                            ->badge()
-                            ->color('primary')
-                            ->suffix(' DO'),
+                            ->label('Total DO')
+                            ->suffix(' Transaksi'),
                         TextEntry::make('do_total')
-                            ->label('Total Pembelian DO')
+                            ->label('Nilai Bruto DO')
                             ->money('IDR')
-                            ->size(TextSize::Large)
                             ->weight('bold'),
-                    ])->columns(2),
-
-                Section::make('Biaya Operasional')
-                    ->description('Total pengeluaran biaya operasional kantor dan lapangan.')
-                    ->icon('heroicon-o-banknotes')
-                    ->collapsible()
-                    ->schema([
                         TextEntry::make('op_count')
-                            ->label('Jumlah Item')
-                            ->badge()
-                            ->color('warning')
-                            ->suffix(' Item'),
+                            ->label('Total Ops')
+                            ->suffix(' Transaksi'),
                         TextEntry::make('op_total')
-                            ->label('Total Biaya')
+                            ->label('Nilai Operasional')
                             ->money('IDR')
-                            ->size(TextSize::Large)
                             ->weight('bold'),
                     ])->columns(2),
 

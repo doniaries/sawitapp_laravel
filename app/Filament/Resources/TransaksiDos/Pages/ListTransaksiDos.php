@@ -101,11 +101,6 @@ class ListTransaksiDos extends ListRecords
                 ->badge($this->getTabCount('hari_ini'))
                 ->badgeColor('success'),
 
-            'semua' => Tab::make('Semua Transaksi')
-                ->icon('heroicon-o-clipboard-document-list')
-                ->badge($this->getTabCount('semua'))
-                ->badgeColor('primary'),
-
             'tunai' => Tab::make('Tunai')
                 ->icon('heroicon-o-banknotes')
                 ->badge($this->getTabCount('tunai'))
@@ -129,6 +124,10 @@ class ListTransaksiDos extends ListRecords
                 ->badge($this->getTabCount('belum_dibayar'))
                 ->modifyQueryUsing(fn(Builder $query) => $query->where('cara_bayar', 'belum dibayar'))
                 ->badgeColor('danger'),
+            'semua' => Tab::make('Semua Transaksi')
+                ->icon('heroicon-o-clipboard-document-list')
+                ->badge($this->getTabCount('semua'))
+                ->badgeColor('primary'),
         ];
     }
 

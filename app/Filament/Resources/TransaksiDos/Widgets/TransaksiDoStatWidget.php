@@ -13,7 +13,7 @@ class TransaksiDoStatWidget extends BaseWidget
     protected ?string $pollingInterval = null; // Matikan polling agar tidak membebani server terus-menerus
     protected static bool $isLazy = true; // Aktifkan Lazy Loading agar tabel muncul duluan
     protected int | string | array $columnSpan = 'full';
-    
+
     public ?string $startDate = null;
     public ?string $endDate = null;
 
@@ -46,7 +46,7 @@ class TransaksiDoStatWidget extends BaseWidget
                 ->whereNull('deleted_at')
                 ->when($isFiltering, function ($q) use ($startDate, $endDate) {
                     return $q->whereDate('tanggal', '>=', $startDate)
-                             ->whereDate('tanggal', '<=', $endDate);
+                        ->whereDate('tanggal', '<=', $endDate);
                 }, fn($q) => $q->whereDate('tanggal', today()))
                 ->selectRaw('
                     COUNT(*) as count,
@@ -70,7 +70,7 @@ class TransaksiDoStatWidget extends BaseWidget
                 ->whereNull('deleted_at')
                 ->when($isFiltering, function ($q) use ($startDate, $endDate) {
                     return $q->whereDate('tanggal', '>=', $startDate)
-                             ->whereDate('tanggal', '<=', $endDate);
+                        ->whereDate('tanggal', '<=', $endDate);
                 }, fn($q) => $q->whereDate('tanggal', today()))
                 ->selectRaw('
                     COALESCE(SUM(CASE WHEN operasional = "pemasukan" THEN nominal ELSE 0 END), 0) as total_pemasukan,
@@ -83,7 +83,7 @@ class TransaksiDoStatWidget extends BaseWidget
                 ->whereNull('deleted_at')
                 ->when($isFiltering, function ($q) use ($startDate, $endDate) {
                     return $q->whereDate('tanggal', '>=', $startDate)
-                             ->whereDate('tanggal', '<=', $endDate);
+                        ->whereDate('tanggal', '<=', $endDate);
                 }, fn($q) => $q->whereDate('tanggal', today()))
                 ->selectRaw('COALESCE(SUM(nominal), 0) as total_tambah_saldo')
                 ->first();
@@ -94,66 +94,72 @@ class TransaksiDoStatWidget extends BaseWidget
 
             // Uang Keluar: Sisa Bayar Tunai + Bongkar + Lain + Ops Pengeluaran
             $totalExpenditure = (float)$doStats->total_bayar_tunai
-                + (float)$doStats->total_bayar_mixed 
+                + (float)$doStats->total_bayar_mixed
                 + (float)$doStats->total_bongkar
                 + (float)$doStats->total_lain
                 + (float)$opStats->total_pengeluaran;
 
-            $currentSaldo = \App\Models\Perusahaan::find($tenantId)->saldo ?? 0;
+            $currentSaldo = \App\Models\Perusahaan::query()->find($tenantId)->saldo ?? 0;
+
+            $periodLabel = $isFiltering ? '' : ' (Hari Ini)';
+
+            // Nama Kasir: Prioritas 1: Relasi User, Prioritas 2: Teks Manual, Prioritas 3: User Login Aktif
+            $cashierName = $tenant->kasir?->name ?? $tenant->nama_kasir ?? \Filament\Facades\Filament::auth()->user()->name;
 
             return [
-                Stat::make('Saldo Kas Perusahaan', money($currentSaldo, 'IDR'))
-                        ->description('Total saldo tersedia saat ini')
-                        ->descriptionIcon('heroicon-m-wallet')
-                        ->color($currentSaldo < 0 ? 'danger' : 'success'),
+                Stat::make($tenant->name, \Carbon\Carbon::parse($startDate)->translatedFormat('d F Y'))
+                        ->description('Kasir: ' . $cashierName)
+                        ->descriptionIcon('heroicon-m-user-circle')
+                        ->color('primary'),
 
-                Stat::make('DO', (int)$doStats->count)
-                        ->description('Total Bruto: ' . money($doStats->total_bruto, 'IDR'))
-                        ->descriptionIcon('heroicon-m-document-text')
-                        ->color('info'),
+                Stat::make('Saldo Kas', money($currentSaldo, 'IDR'))
+                    ->description('Saldo tersedia saat ini')
+                    ->descriptionIcon('heroicon-m-wallet')
+                    ->color($currentSaldo < 0 ? 'danger' : 'success'),
 
-                    Stat::make('Total Tonase', number_format($doStats->total_tonase, 0, ',', '.') . ' Kg')
-                        ->description('Volume buah masuk')
-                        ->descriptionIcon('heroicon-m-scale')
-                        ->color('warning'),
+                Stat::make('Transaksi DO' . $periodLabel, (int)$doStats->count . ' DO')
+                    ->description(sprintf(
+                        'Bruto: %s | T:%d, Tr:%d, C:%d, B:%d',
+                        money($doStats->total_bruto, 'IDR'),
+                        $doStats->tunai_count,
+                        $doStats->transfer_count,
+                        $doStats->cair_count,
+                        $doStats->belum_count
+                    ))
+                    ->descriptionIcon('heroicon-m-document-text')
+                    ->color('info'),
 
-                    Stat::make('Uang Masuk', new \Illuminate\Support\HtmlString('
+                Stat::make('Total Tonase' . $periodLabel, number_format($doStats->total_tonase, 0, ',', '.') . ' Kg')
+                    ->description('Volume buah masuk')
+                    ->descriptionIcon('heroicon-m-scale')
+                    ->color('warning'),
+
+                Stat::make('Uang Masuk' . $periodLabel, new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-success-600 text-white font-bold text-base shadow-sm">
                             ' . money($totalIncoming, 'IDR') . '
                         </div>
                     '))
-                        ->description(sprintf(
-                            'Topup: %s | Ops: %s',
-                            money($saldoStats->total_tambah_saldo, 'IDR'),
-                            money($opStats->total_pemasukan, 'IDR')
-                        ))
-                        ->descriptionIcon('heroicon-m-arrow-trending-up')
-                        ->color('success'),
+                    ->description(sprintf(
+                        'Topup: %s | Ops: %s',
+                        money($saldoStats->total_tambah_saldo, 'IDR'),
+                        money($opStats->total_pemasukan, 'IDR')
+                    ))
+                    ->descriptionIcon('heroicon-m-arrow-trending-up')
+                    ->color('success'),
 
-                    Stat::make('Pengeluaran', new \Illuminate\Support\HtmlString('
+                Stat::make('Pengeluaran' . $periodLabel, new \Illuminate\Support\HtmlString('
                         <div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-danger-600 text-white font-bold text-base shadow-sm">
                             ' . money($totalExpenditure, 'IDR') . '
                         </div>
                     '))
-                        ->description(sprintf(
-                            'Bayar Tunai: %s | Ops/Biaya: %s',
-                            money($doStats->total_bayar_tunai + $doStats->total_bayar_mixed, 'IDR'),
-                            money($opStats->total_pengeluaran + $doStats->total_bongkar + $doStats->total_lain, 'IDR')
-                        ))
-                        ->descriptionIcon('heroicon-m-arrow-trending-down')
-                        ->color('danger'),
-
-                    Stat::make('Rekap Cara Bayar', (int)$doStats->count . ' DO')
-                        ->description(sprintf(
-                            'Tunai: %d | Transfer: %d | Cair: %d | Belum: %d',
-                            $doStats->tunai_count,
-                            $doStats->transfer_count,
-                            $doStats->cair_count,
-                            $doStats->belum_count
-                        ))
-                        ->descriptionIcon('heroicon-m-credit-card')
-                        ->color('warning'),
-                ];
+                    ->description(sprintf(
+                        'Tunai: %s | Ops/Biaya: %s',
+                        money($doStats->total_bayar_tunai + $doStats->total_bayar_mixed, 'IDR'),
+                        money($opStats->total_pengeluaran + $doStats->total_bongkar + $doStats->total_lain, 'IDR')
+                    ))
+                    ->descriptionIcon('heroicon-m-arrow-trending-down')
+                    ->color('danger'),
+            ];
         } catch (\Exception $e) {
             Log::error('TransaksiDoStatWidget Error:', ['message' => $e->getMessage()]);
 

@@ -70,7 +70,8 @@ class TutupHari extends Model
     {
         if (!$date) return true;
 
-        $user = $user ?? auth()->user();
+        /** @var \App\Models\User|null $user */
+        $user = $user ?? \Illuminate\Support\Facades\Auth::user();
 
         if (!$user) {
             return false;
@@ -97,17 +98,17 @@ class TutupHari extends Model
             $tanggal = $tanggal();
         }
         
-        $totalTonase = TransaksiDo::query()->whereDate('tanggal', $tanggal)->sum('tonase');
-        $totalRupiah = TransaksiDo::query()->whereDate('tanggal', $tanggal)->sum('sub_total');
+        $totalTonase = TransaksiDo::query()->whereRaw("DATE(tanggal) = ?", [$tanggal], 'and')->sum('tonase');
+        $totalRupiah = TransaksiDo::query()->whereRaw("DATE(tanggal) = ?", [$tanggal], 'and')->sum('sub_total');
 
         $totalMasuk = JurnalKeuangan::query()
-            ->whereDate('tanggal', $tanggal)
+            ->whereRaw("DATE(tanggal) = ?", [$tanggal], 'and')
             ->where('jenis_transaksi', 'Pemasukan')
             ->where('mempengaruhi_kas', true)
             ->sum('nominal');
 
         $totalKeluar = JurnalKeuangan::query()
-            ->whereDate('tanggal', $tanggal)
+            ->whereRaw("DATE(tanggal) = ?", [$tanggal], 'and')
             ->where('jenis_transaksi', 'Pengeluaran')
             ->where('mempengaruhi_kas', true)
             ->sum('nominal');
