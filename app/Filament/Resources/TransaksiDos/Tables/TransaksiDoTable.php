@@ -198,13 +198,11 @@ class TransaksiDoTable
                             ->label('Dari Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today())
                             ->live(),
                         DatePicker::make('sampai_tanggal')
                             ->label('Sampai Tanggal')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today())
                             ->live(),
                     ])
                     ->columns(2)

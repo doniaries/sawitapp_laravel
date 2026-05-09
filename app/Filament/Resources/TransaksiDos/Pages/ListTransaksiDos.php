@@ -19,6 +19,27 @@ class ListTransaksiDos extends ListRecords
         return parent::render();
     }
 
+    protected function getDefaultTableFiltersState(): ?array
+    {
+        // Jika sedang di tab 'semua', jangan beri filter default
+        if (request()->query('activeTab') === 'semua') {
+            return [
+                'tanggal_range' => [
+                    'dari_tanggal' => null,
+                    'sampai_tanggal' => null,
+                ],
+            ];
+        }
+
+        // Default filter ke hari ini untuk tab lainnya
+        return [
+            'tanggal_range' => [
+                'dari_tanggal' => now()->toDateString(),
+                'sampai_tanggal' => now()->toDateString(),
+            ],
+        ];
+    }
+
     public function mount(): void
     {
         parent::mount();
@@ -51,22 +72,17 @@ class ListTransaksiDos extends ListRecords
     public function updatedActiveTab(): void
     {
         if ($this->activeTab === 'semua') {
-
-            $this->tableFilters = [
-                'tanggal_range' => [
-                    'dari_tanggal' => null,
-                    'sampai_tanggal' => null,
-                ],
+            // Reset filter tanggal untuk menampilkan semua data
+            $this->tableFilters['tanggal_range'] = [
+                'dari_tanggal' => null,
+                'sampai_tanggal' => null,
             ];
         } else {
-
+            // Set filter ke hari ini untuk tab operasional
             $today = today()->toDateString();
-
-            $this->tableFilters = [
-                'tanggal_range' => [
-                    'dari_tanggal' => $today,
-                    'sampai_tanggal' => $today,
-                ],
+            $this->tableFilters['tanggal_range'] = [
+                'dari_tanggal' => $today,
+                'sampai_tanggal' => $today,
             ];
         }
 

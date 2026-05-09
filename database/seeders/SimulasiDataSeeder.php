@@ -54,42 +54,37 @@ class SimulasiDataSeeder extends Seeder
         }
 
         $now = now();
-        $totalData = 400;
-        $startOfMonth = $now->copy()->startOfMonth();
-        $endMonth = $now->copy();
+        $daysToSeed = [
+            ['date' => $now->copy()->subDays(2), 'do_count' => 50, 'ops_count' => 20],
+            ['date' => $now->copy()->subDays(1), 'do_count' => 100, 'ops_count' => 30],
+            ['date' => $now->copy(), 'do_count' => 10, 'ops_count' => 15],
+        ];
 
-        $this->command->info('Menyuntikkan modal 500 Juta (4x)...');
-        for ($k = 1; $k <= 4; $k++) {
-            $tglInjeksi = Carbon::createFromTimestamp(rand($startOfMonth->timestamp, $endMonth->timestamp));
-            JurnalKeuangan::create([
-                'perusahaan_id' => $perusahaanId,
-                'tanggal' => $tglInjeksi,
-                'jenis_transaksi' => 'Pemasukan',
-                'kategori' => 'Saldo',
-                'sub_kategori' => 'Tambah Saldo',
-                'nominal' => 500000000,
-                'cara_pembayaran' => 'transfer',
-                'keterangan' => 'Injeksi Modal Strategis #' . $k,
-                'mempengaruhi_kas' => true,
-                'sumber_transaksi' => 'Manual',
-                'referensi_id' => 0,
-                'nomor_referensi' => 'BIG-INJ-' . $k,
-            ]);
-        }
-
-        $this->command->info('Memulai simulasi 400 transaksi (Harga: 3500-3600, Berat: 1000-2000)...');
-        $progressBar = $this->command->getOutput()->createProgressBar($totalData);
+        $totalDo = array_sum(array_column($daysToSeed, 'do_count'));
+        $this->command->info("Menghasilkan data untuk 3 hari terakhir (Total DO: {$totalDo})...");
+        $progressBar = $this->command->getOutput()->createProgressBar($totalDo + 65); // DO + Ops + Saldo
         $progressBar->start();
 
+        foreach ($daysToSeed as $day) {
+            $currentDate = $day['date'];
+            
+            // 1. Injeksi Modal (1 per hari jika ada)
+            if ($faker->boolean(70)) {
+                TambahSaldo::create([
+                    'perusahaan_id' => $perusahaanId,
+                    'user_id' => 1,
+                    'tanggal' => $currentDate->copy()->setHour(9),
+                    'nominal' => $faker->randomElement([10000000, 20000000, 50000000]),
+                    'keterangan' => 'Injeksi Modal Harian (' . $currentDate->format('d/m') . ')',
+                ]);
+            }
 
-        for ($i = 0; $i < $totalData; $i++) {
-            $tanggal = $startOfMonth->copy()->addDays(rand(0, $now->day - 1))->addHours(rand(8, 17));
-            $roll = rand(1, 100);
-
-            if ($roll <= 70) { 
+            // 2. Transaksi DO
+            for ($i = 0; $i < $day['do_count']; $i++) {
+                $tanggalTrans = $currentDate->copy()->setHour(rand(8, 17))->setMinute(rand(0, 59));
                 $penjual = $penjuals->random();
-                $tonase = $faker->numberBetween(1000, 2000); 
-                $harga = $faker->numberBetween(3500, 3600); 
+                $tonase = $faker->numberBetween(1000, 2500); 
+                $harga = 3600;
                 $subTotal = $tonase * $harga;
                 
                 $sisaHutangReal = (float) $penjual->hutang;
@@ -104,8 +99,8 @@ class SimulasiDataSeeder extends Seeder
                 TransaksiDo::create([
                     'perusahaan_id' => $perusahaanId,
                     'user_id' => 1,
-                    'nomor' => 'DO-' . $tanggal->format('Ym') . '-' . str_pad($i, 4, '0', STR_PAD_LEFT),
-                    'tanggal' => $tanggal,
+                    'nomor' => 'DO-' . $tanggalTrans->format('Ymd') . '-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
+                    'tanggal' => $tanggalTrans,
                     'penjual_id' => $penjual->id,
                     'supir_id' => $faker->randomElement($supirIds),
                     'no_polisi' => 'BA ' . $faker->numberBetween(1000, 9999) . ' ' . $faker->lexify('??'),
@@ -117,143 +112,53 @@ class SimulasiDataSeeder extends Seeder
                     'keterangan_biaya_lain' => 'Biaya Simulasi',
                     'hutang_awal' => $sisaHutangReal,
                     'pembayaran_hutang' => $bayarHutang,
-                    'sisa_hutang_penjual' => $sisaHutangReal - $bayarHutang,
-                    'sisa_bayar' => $subTotal - $bayarHutang - $upahBongkar - $biayaLain,
-                    'cara_bayar' => 'transfer',
+                    'sisa_hutang_penjual' => max(0, $sisaHutangReal - $bayarHutang),
+                    'sisa_bayar' => max(0, $subTotal - $bayarHutang - $upahBongkar - $biayaLain),
+                    'cara_bayar' => $faker->randomElement(['tunai', 'transfer']),
                     'nominal_tunai' => 0,
-                    'keterangan_pembayaran' => 'DO Simulasi ' . $tanggal->format('d/m'),
+                    'keterangan_pembayaran' => 'DO ' . ($currentDate->isToday() ? 'HARI INI' : $currentDate->format('d/m/Y')),
                 ]);
 
-                $penjual->hutang = $sisaHutangReal - $bayarHutang;
+                $penjual->hutang = max(0, $sisaHutangReal - $bayarHutang);
+                $progressBar->advance();
+            }
 
-                if ($faker->boolean(30)) {
-                    $supirId = $faker->randomElement($supirIds);
+            // 3. Transaksi Operasional
+            for ($j = 0; $j < $day['ops_count']; $j++) {
+                $tanggalOps = $currentDate->copy()->setHour(rand(8, 17))->setMinute(rand(0, 59));
+                $isPemasukan = $faker->boolean(30);
+                
+                if ($isPemasukan) {
                     TransaksiOperasional::create([
                         'perusahaan_id' => $perusahaanId,
                         'user_id' => 1,
-                        'tanggal' => $tanggal,
+                        'tanggal' => $tanggalOps,
                         'operasional' => 'pemasukan',
                         'kategori' => KategoriOperasional::BAYAR_HUTANG,
-                        'nominal' => $faker->numberBetween(100000, 500000),
+                        'nominal' => $faker->numberBetween(100000, 1000000),
                         'pihak_type' => 'Supir',
-                        'pihak_id' => $supirId,
-                        'keterangan' => 'Bayar Hutang Supir (Simulasi)',
-                    ]);
-                }
-            } 
-            else {
-                if ($faker->boolean(50)) {
-                    TransaksiOperasional::create([
-                        'perusahaan_id' => $perusahaanId,
-                        'user_id' => 1,
-                        'tanggal' => $tanggal,
-                        'operasional' => 'pengeluaran',
-                        'kategori' => KategoriOperasional::LAIN_LAIN,
-                        'nominal' => $faker->numberBetween(50000, 100000),
-                        'keterangan' => 'Belanja Kasir (Simulasi)',
+                        'pihak_id' => $faker->randomElement($supirIds),
+                        'keterangan' => 'Bayar Hutang Supir (' . $currentDate->format('d/m') . ')',
                     ]);
                 } else {
-                    $kat = $faker->randomElement($kategoriOps);
+                    $kat = $faker->randomElement([KategoriOperasional::UANG_JALAN, KategoriOperasional::BAHAN_BAKAR, KategoriOperasional::LAIN_LAIN]);
+                    $ket = ($kat == KategoriOperasional::LAIN_LAIN) ? 'Belanja Kasir (' . $currentDate->format('d/m') . ')' : 'Ops ' . $kat->label();
+                    
                     TransaksiOperasional::create([
                         'perusahaan_id' => $perusahaanId,
                         'user_id' => 1,
-                        'tanggal' => $tanggal,
-                        'operasional' => $kat->getJenisOperasional(),
+                        'tanggal' => $tanggalOps,
+                        'operasional' => 'pengeluaran',
                         'kategori' => $kat,
-                        'nominal' => $faker->numberBetween(50000, 1000000),
-                        'keterangan' => 'Operasional ' . $kat->label(),
+                        'nominal' => $faker->numberBetween(50000, 500000),
+                        'keterangan' => $ket,
                     ]);
                 }
+                $progressBar->advance();
             }
-
-            $progressBar->advance();
-        }
-
-        // TAMBAHAN: DATA KHUSUS HARI INI (PADAT)
-        $this->command->info("\nMenambahkan data khusus untuk hari ini (" . $now->format('d/m/Y') . ")...");
-        
-        // 1. 10 Transaksi DO Hari Ini
-        for ($j = 0; $j < 10; $j++) {
-            $tanggalToday = $now->copy()->subMinutes(rand(0, 480)); 
-            $penjual = $penjuals->random();
-            $tonase = $faker->numberBetween(1200, 2500);
-            $harga = 3600;
-            $subTotal = $tonase * $harga;
-            
-            $upahBongkar = $faker->numberBetween(50000, 100000);
-            $biayaLain = $faker->numberBetween(100000, 300000);
-            $bayarHutang = ($penjual->hutang > 200000) ? $faker->numberBetween(200000, 500000) : 0;
-
-            TransaksiDo::create([
-                'perusahaan_id' => $perusahaanId,
-                'user_id' => 1,
-                'nomor' => 'DO-' . $tanggalToday->format('Ym') . '-TODAY-' . ($j+1),
-                'tanggal' => $tanggalToday,
-                'penjual_id' => $penjual->id,
-                'supir_id' => $faker->randomElement($supirIds),
-                'no_polisi' => 'BA ' . $faker->numberBetween(1000, 9999) . ' ' . $faker->lexify('??'),
-                'tonase' => $tonase,
-                'harga_satuan' => $harga,
-                'sub_total' => $subTotal,
-                'upah_bongkar' => $upahBongkar,
-                'biaya_lain' => $biayaLain,
-                'hutang_awal' => $penjual->hutang,
-                'pembayaran_hutang' => $bayarHutang,
-                'sisa_hutang_penjual' => max(0, $penjual->hutang - $bayarHutang),
-                'sisa_bayar' => max(0, $subTotal - $bayarHutang - $upahBongkar - $biayaLain),
-                'cara_bayar' => $faker->randomElement(['tunai', 'transfer']),
-                'nominal_tunai' => 0,
-                'keterangan_pembayaran' => 'DO AKTIF HARI INI',
-            ]);
-        }
-
-        // 2. 15 Transaksi Operasional Hari Ini (Banyak)
-        for ($k = 0; $k < 15; $k++) {
-            $tanggalToday = $now->copy()->subMinutes(rand(0, 500));
-            $isPemasukan = $faker->boolean(30);
-            
-            if ($isPemasukan) {
-                // Bayar Hutang Supir
-                TransaksiOperasional::create([
-                    'perusahaan_id' => $perusahaanId,
-                    'user_id' => 1,
-                    'tanggal' => $tanggalToday,
-                    'operasional' => 'pemasukan',
-                    'kategori' => KategoriOperasional::BAYAR_HUTANG,
-                    'nominal' => $faker->numberBetween(200000, 1000000),
-                    'pihak_type' => 'Supir',
-                    'pihak_id' => $faker->randomElement($supirIds),
-                    'keterangan' => 'Bayar Hutang Supir Hari Ini',
-                ]);
-            } else {
-                // Pengeluaran Beragam
-                $kat = $faker->randomElement([KategoriOperasional::UANG_JALAN, KategoriOperasional::BAHAN_BAKAR, KategoriOperasional::LAIN_LAIN]);
-                $ket = ($kat == KategoriOperasional::LAIN_LAIN) ? 'Belanja Kasir Hari Ini' : 'Ops ' . $kat->label();
-                
-                TransaksiOperasional::create([
-                    'perusahaan_id' => $perusahaanId,
-                    'user_id' => 1,
-                    'tanggal' => $tanggalToday,
-                    'operasional' => 'pengeluaran',
-                    'kategori' => $kat,
-                    'nominal' => $faker->numberBetween(50000, 300000),
-                    'keterangan' => $ket,
-                ]);
-            }
-        }
-
-        // 3. 3 Transaksi Tambah Saldo Hari Ini
-        for ($l = 0; $l < 3; $l++) {
-            TambahSaldo::create([
-                'perusahaan_id' => $perusahaanId,
-                'user_id' => 1,
-                'tanggal' => $now->copy()->subHours(rand(1, 5)),
-                'nominal' => $faker->randomElement([5000000, 10000000, 20000000]),
-                'keterangan' => 'Tambah Saldo Modal Hari Ini',
-            ]);
         }
 
         $progressBar->finish();
-        $this->command->info("\n[BERHASIL] 400 data bulanan + 28 data khusus hari ini (10 DO, 15 Ops, 3 Saldo) telah dimasukkan.");
+        $this->command->info("\n[BERHASIL] Simulasi 3 hari selesai: H-2 (50), Kemarin (100), Hari Ini (10).");
     }
 }
