@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\{TransaksiOperasional, TransaksiDo, JurnalKeuangan, TambahSaldo};
 use App\Observers\{TransaksiOperasionalObserver, TransaksiDoObserver, TambahSaldoObserver};
 
+use Illuminate\Database\Eloquent\Relations\Relation;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -29,6 +31,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register Morph Map
+        Relation::morphMap([
+            'Supir' => \App\Models\Supir::class,
+            'Penjual' => \App\Models\Penjual::class,
+            'Pekerja' => \App\Models\Pekerja::class,
+        ]);
+
         Gate::guessPolicyNamesUsing(function (string $modelClass) {
             return str_replace('Models', 'Policies', $modelClass) . 'Policy';
         });

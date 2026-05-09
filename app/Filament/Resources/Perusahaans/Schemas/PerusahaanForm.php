@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Perusahaans\Schemas;
 
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
