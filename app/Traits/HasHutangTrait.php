@@ -7,8 +7,9 @@ use App\Models\TransaksiOperasional;
 use App\Enums\KategoriOperasional;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\MutasiHutang;
 
 /**
  * @mixin \Illuminate\Database\Eloquent\Model
@@ -44,6 +45,16 @@ trait HasHutangTrait
                 $model->setAttribute('slug', Str::slug($model->getAttribute('nama')));
             }
         });
+    }
+
+    /**
+     * Relasi ke mutasi hutang (Unified Ledger)
+     */
+    public function mutasiHutang(): MorphMany
+    {
+        return $this->morphMany(MutasiHutang::class, 'pihak')
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc');
     }
 
     /**

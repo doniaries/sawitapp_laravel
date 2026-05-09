@@ -21,30 +21,41 @@ class ListTransaksiOperasionals extends ListRecords
         ];
     }
 
+    public function getDefaultActiveTab(): string | int | null
+    {
+        return 'hari_ini';
+    }
+
     public function getTabs(): array
     {
         return [
-            'semua' => Tab::make('Semua')
-                ->icon('heroicon-o-list-bullet')
-                ->badge(fn() => TransaksiOperasional::count()),
+            'hari_ini' => Tab::make('Hari Ini')
+                ->icon('heroicon-o-calendar')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('tanggal', today()))
+                ->badge(TransaksiOperasional::whereDate('tanggal', today())->count())
+                ->badgeColor('success'),
 
             'pemasukan' => Tab::make('Pemasukan')
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
-                    $query->where('operasional', 'pemasukan')
+                    $query->where('operasional', 'pemasukan')->whereDate('tanggal', today())
                 )
                 ->icon('heroicon-o-arrow-trending-up')
-                ->badge(fn() => TransaksiOperasional::where('operasional', 'pemasukan')->count())
+                ->badge(TransaksiOperasional::where('operasional', 'pemasukan')->whereDate('tanggal', today())->count())
                 ->badgeColor('success'),
 
             'pengeluaran' => Tab::make('Pengeluaran')
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
-                    $query->where('operasional', 'pengeluaran')
+                    $query->where('operasional', 'pengeluaran')->whereDate('tanggal', today())
                 )
                 ->icon('heroicon-o-arrow-trending-down')
-                ->badge(fn() => TransaksiOperasional::where('operasional', 'pengeluaran')->count())
+                ->badge(TransaksiOperasional::where('operasional', 'pengeluaran')->whereDate('tanggal', today())->count())
                 ->badgeColor('danger'),
+
+            'semua' => Tab::make('Semua')
+                ->icon('heroicon-o-list-bullet')
+                ->badge(TransaksiOperasional::count()),
         ];
     }
 

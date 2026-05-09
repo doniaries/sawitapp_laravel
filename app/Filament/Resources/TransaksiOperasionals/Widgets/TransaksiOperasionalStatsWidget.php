@@ -15,31 +15,37 @@ class TransaksiOperasionalStatsWidget extends BaseWidget
     protected function getStats(): array
     {
         $tenantId = \Filament\Facades\Filament::getTenant()?->id;
-        $cacheKey = "transaksi_operasional_stats_tenant_{$tenantId}";
+        $cacheKey = "transaksi_operasional_stats_tenant_{$tenantId}_" . now()->format('Y-m-d-H');
 
         $stats = \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($tenantId) {
-            $today = now()->toDateString();
+            $startOfToday = today()->startOfDay()->toDateTimeString();
+            $endOfToday = today()->endOfDay()->toDateTimeString();
 
-            // Today Stats
-            $todayPemasukanQuery = TransaksiOperasional::where('perusahaan_id', $tenantId)
+            // Pemasukan Today
+            $todayPemasukan = \Illuminate\Support\Facades\DB::table('transaksi_operasional')
+                ->where('perusahaan_id', $tenantId)
                 ->where('operasional', 'pemasukan')
-                ->whereDate('tanggal', $today);
-                
-            $todayPemasukan = $todayPemasukanQuery->sum('nominal');
-            $countPemasukan = $todayPemasukanQuery->count();
+                ->whereNull('deleted_at')
+                ->where('tanggal', '>=', $startOfToday)
+                ->where('tanggal', '<=', $endOfToday)
+                ->selectRaw('COUNT(*) as count, SUM(nominal) as total')
+                ->first();
 
-            $todayPengeluaranQuery = TransaksiOperasional::where('perusahaan_id', $tenantId)
+            // Pengeluaran Today
+            $todayPengeluaran = \Illuminate\Support\Facades\DB::table('transaksi_operasional')
+                ->where('perusahaan_id', $tenantId)
                 ->where('operasional', 'pengeluaran')
-                ->whereDate('tanggal', $today);
-                
-            $todayPengeluaran = $todayPengeluaranQuery->sum('nominal');
-            $countPengeluaran = $todayPengeluaranQuery->count();
+                ->whereNull('deleted_at')
+                ->where('tanggal', '>=', $startOfToday)
+                ->where('tanggal', '<=', $endOfToday)
+                ->selectRaw('COUNT(*) as count, SUM(nominal) as total')
+                ->first();
 
             return [
-                'pemasukan' => $todayPemasukan,
-                'count_pemasukan' => $countPemasukan,
-                'pengeluaran' => $todayPengeluaran,
-                'count_pengeluaran' => $countPengeluaran,
+                'pemasukan' => $todayPemasukan->total ?? 0,
+                'count_pemasukan' => $todayPemasukan->count ?? 0,
+                'pengeluaran' => $todayPengeluaran->total ?? 0,
+                'count_pengeluaran' => $todayPengeluaran->count ?? 0,
             ];
         });
 

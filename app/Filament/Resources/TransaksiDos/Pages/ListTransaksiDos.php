@@ -114,19 +114,26 @@ class ListTransaksiDos extends ListRecords
             $tenantId = Filament::getTenant()?->id;
             if (!$tenantId) return 0;
 
-            $today = today()->toDateString();
+            $startOfToday = today()->startOfDay()->toDateTimeString();
+            $endOfToday = today()->endOfDay()->toDateTimeString();
 
             $counts = DB::table('transaksi_do')
                 ->where('perusahaan_id', $tenantId)
                 ->whereNull('deleted_at')
                 ->selectRaw("
                     COUNT(*) as semua,
-                    COUNT(CASE WHEN DATE(tanggal) = ? THEN 1 END) as hari_ini,
-                    COUNT(CASE WHEN cara_bayar = 'tunai' AND DATE(tanggal) = ? THEN 1 END) as tunai,
-                    COUNT(CASE WHEN cara_bayar = 'transfer' AND DATE(tanggal) = ? THEN 1 END) as transfer,
-                    COUNT(CASE WHEN cara_bayar = 'cair di luar' AND DATE(tanggal) = ? THEN 1 END) as cair_luar,
-                    COUNT(CASE WHEN cara_bayar = 'belum dibayar' AND DATE(tanggal) = ? THEN 1 END) as belum_dibayar
-                ", [$today, $today, $today, $today, $today])
+                    COUNT(CASE WHEN tanggal >= ? AND tanggal <= ? THEN 1 END) as hari_ini,
+                    COUNT(CASE WHEN cara_bayar = 'tunai' AND tanggal >= ? AND tanggal <= ? THEN 1 END) as tunai,
+                    COUNT(CASE WHEN cara_bayar = 'transfer' AND tanggal >= ? AND tanggal <= ? THEN 1 END) as transfer,
+                    COUNT(CASE WHEN cara_bayar = 'cair di luar' AND tanggal >= ? AND tanggal <= ? THEN 1 END) as cair_luar,
+                    COUNT(CASE WHEN cara_bayar = 'belum dibayar' AND tanggal >= ? AND tanggal <= ? THEN 1 END) as belum_dibayar
+                ", [
+                    $startOfToday, $endOfToday, 
+                    $startOfToday, $endOfToday, 
+                    $startOfToday, $endOfToday, 
+                    $startOfToday, $endOfToday, 
+                    $startOfToday, $endOfToday
+                ])
                 ->first();
 
             $this->cachedTabCounts = (array) $counts;

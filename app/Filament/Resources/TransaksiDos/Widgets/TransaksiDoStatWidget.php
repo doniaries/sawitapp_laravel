@@ -33,21 +33,19 @@ class TransaksiDoStatWidget extends BaseWidget
             $tenant = \Filament\Facades\Filament::getTenant();
             if (!$tenant) return [];
 
-            $startDate = $this->startDate ?: today()->toDateString();
-            $endDate = $this->endDate ?: today()->toDateString();
-            $tenantId = $tenant->id;
+            $startOfToday = today()->startOfDay()->toDateTimeString();
+            $endOfToday = today()->endOfDay()->toDateTimeString();
 
-            // Jika startDate dan endDate null (kasus tab "Semua"), kita tampilkan semua data
-            $isFiltering = !empty($this->startDate) || !empty($this->endDate);
+            $startDate = $this->startDate ? \Carbon\Carbon::parse($this->startDate)->startOfDay()->toDateTimeString() : $startOfToday;
+            $endDate = $this->endDate ? \Carbon\Carbon::parse($this->endDate)->endOfDay()->toDateTimeString() : $endOfToday;
+            $tenantId = $tenant->id;
 
             // Query transaksi DO
             $doStats = DB::table('transaksi_do')
                 ->where('perusahaan_id', $tenantId)
                 ->whereNull('deleted_at')
-                ->when($isFiltering, function ($q) use ($startDate, $endDate) {
-                    return $q->whereDate('tanggal', '>=', $startDate)
-                        ->whereDate('tanggal', '<=', $endDate);
-                }, fn($q) => $q->whereDate('tanggal', today()))
+                ->where('tanggal', '>=', $startDate)
+                ->where('tanggal', '<=', $endDate)
                 ->selectRaw('
                     COUNT(*) as count,
                     COALESCE(SUM(tonase), 0) as total_tonase,
@@ -64,14 +62,12 @@ class TransaksiDoStatWidget extends BaseWidget
                     COALESCE(SUM(CASE WHEN cara_bayar = "belum dibayar" THEN 1 ELSE 0 END), 0) as belum_count
                 ')->first();
 
-            // Query operasional dengan breakdown
+            // Query operasional
             $opStats = DB::table('transaksi_operasional')
                 ->where('perusahaan_id', $tenantId)
                 ->whereNull('deleted_at')
-                ->when($isFiltering, function ($q) use ($startDate, $endDate) {
-                    return $q->whereDate('tanggal', '>=', $startDate)
-                        ->whereDate('tanggal', '<=', $endDate);
-                }, fn($q) => $q->whereDate('tanggal', today()))
+                ->where('tanggal', '>=', $startDate)
+                ->where('tanggal', '<=', $endDate)
                 ->selectRaw('
                     COALESCE(SUM(CASE WHEN operasional = "pemasukan" THEN nominal ELSE 0 END), 0) as total_pemasukan,
                     COALESCE(SUM(CASE WHEN operasional = "pengeluaran" THEN nominal ELSE 0 END), 0) as total_pengeluaran,
@@ -83,10 +79,8 @@ class TransaksiDoStatWidget extends BaseWidget
             $saldoStats = DB::table('tambah_saldo')
                 ->where('perusahaan_id', $tenantId)
                 ->whereNull('deleted_at')
-                ->when($isFiltering, function ($q) use ($startDate, $endDate) {
-                    return $q->whereDate('tanggal', '>=', $startDate)
-                        ->whereDate('tanggal', '<=', $endDate);
-                }, fn($q) => $q->whereDate('tanggal', today()))
+                ->where('tanggal', '>=', $startDate)
+                ->where('tanggal', '<=', $endDate)
                 ->selectRaw('COALESCE(SUM(nominal), 0) as total_tambah_saldo')
                 ->first();
 
@@ -102,6 +96,9 @@ class TransaksiDoStatWidget extends BaseWidget
                 + (float)$opStats->total_pengeluaran;
 
             $currentSaldo = \App\Models\Perusahaan::query()->find($tenantId)->saldo ?? 0;
+            
+            // Cek apakah sedang memfilter rentang waktu khusus atau default hari ini
+            $isFiltering = !empty($this->startDate) || !empty($this->endDate);
             $periodLabel = $isFiltering ? '' : ' (Hari Ini)';
             $cashierName = $tenant->kasir?->name ?? $tenant->nama_kasir ?? \Filament\Facades\Filament::auth()->user()->name;
 

@@ -38,7 +38,7 @@ class SimulasiDataSeeder extends Seeder
         \App\Models\PembayaranHutang::where('perusahaan_id', '=', $perusahaanId, 'and')->forceDelete();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         
-        $perusahaan->update(['saldo' => 50000000]); 
+        $perusahaan->update(['saldo' => 200000000]); // Mulai dengan 200 Juta
 
         $penjuals = Penjual::where('perusahaan_id', '=', $perusahaanId, 'and')->get(['*']);
         $supirIds = Supir::where('perusahaan_id', '=', $perusahaanId, 'and')->pluck('id')->toArray();
@@ -68,16 +68,14 @@ class SimulasiDataSeeder extends Seeder
         foreach ($daysToSeed as $day) {
             $currentDate = $day['date'];
             
-            // 1. Injeksi Modal (1 per hari jika ada)
-            if ($faker->boolean(70)) {
-                TambahSaldo::create([
-                    'perusahaan_id' => $perusahaanId,
-                    'user_id' => 1,
-                    'tanggal' => $currentDate->copy()->setHour(9),
-                    'nominal' => $faker->randomElement([10000000, 20000000, 50000000]),
-                    'keterangan' => 'Injeksi Modal Harian (' . $currentDate->format('d/m') . ')',
-                ]);
-            }
+            // 1. Injeksi Modal (Wajib setiap hari agar saldo tidak minus karena transaksi DO besar)
+            TambahSaldo::create([
+                'perusahaan_id' => $perusahaanId,
+                'user_id' => 1,
+                'tanggal' => $currentDate->copy()->setHour(8), // Pagi jam 8
+                'nominal' => $faker->randomElement([500000000, 750000000, 1000000000]), // 500 Juta - 1 Milyar
+                'keterangan' => 'Injeksi Modal Harian (' . $currentDate->format('d/m') . ')',
+            ]);
 
             // 2. Transaksi DO
             for ($i = 0; $i < $day['do_count']; $i++) {
